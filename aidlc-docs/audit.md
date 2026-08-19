@@ -290,3 +290,74 @@ key prefix를 바꾸면 Dev-C의 `components-map.json` 참조와 어긋나므로
 Dev-C 착수 전에 결정해야 한다.
 
 ---
+
+## key 표기 camelCase 전환 + Dev-A 개선 과제 정리
+**Timestamp**: 2026-08-19T17:16:00+09:00
+**User Input**: "일단 DEV A가 개선할 점을 정리해줘. 그리고 현재 다국어 key 값이 snake case 로 작성되어 있는데 camelcase 여야해"
+**AI Response**: identifier를 camelCase로 전환(구분자 버그 동시 수정), 개선 과제 7건 문서화
+**Context**: Construction Phase - Unit 1 품질 개선
+
+### camelCase 전환
+
+`generateIdentifier()`를 수정. 전환 과정에서 **구분자 처리 버그**를 함께 발견·수정했다.
+
+기존 로직은 영숫자 외 문자를 공백 삽입 없이 제거해서 단어가 붙었다.
+
+| 원문 | 이전 (버그) | 현재 |
+|------|-------------|------|
+| Workspace/Group Settings | `workspacegroup_settings` | `workspaceGroupSettings` |
+| Add-On Service | `addon_service` | `addOnService` |
+| (UTC+09:00) Asia/Seoul | `utc0900_asiaseoul` | `utc0900AsiaSeoul` |
+| Single Sign-On (SSO) | `single_signon_sso` | `singleSignOnSso` |
+| Business Site Information | `business_site_information` | `businessSiteInformation` |
+
+부가 변경:
+- 숫자 전용 토큰을 앞 토큰에 병합 (UTC 09 00 → utc0900)
+- 단어 수 상한 3 → 4 (3단어로는 의미 구분이 부족한 사례 존재)
+
+### 검증 (실측)
+
+| 항목 | 결과 |
+|------|------|
+| key 수 / 구조 | 110개, 4개 언어 완전 일치 |
+| underscore 포함 key | 0건 |
+| camelCase 규칙 위반 | 1건 (`30A101Bldg`) |
+| 문서 내 `console.*` key 실존성 | 전부 일치 |
+| components-map snake_case | 0건 |
+
+위반 1건은 샘플 주소(`30, A101 bldg.`)로 Layer 4 제거 대상.
+i18next는 key를 문자열로 사용하므로 실사용 영향 없음.
+
+### 문서 동기화
+
+key 예시를 포함한 5개 문서를 실제 생성값으로 갱신하고 교차 검증했다.
+`PROJECT_GUIDE.md`, `tech-env.md`, `i18n-workflow.md`, `requirements.md`, `SKILL.md`
+
+### 산출물
+
+- `aidlc-docs/construction/dev-a-improvements.md` (신규) — 개선 과제 7건
+
+### 개선 과제 요약
+
+| # | 과제 | 심각도 | 상태 |
+|---|------|--------|------|
+| 1 | 추출 필터 보강 (Layer 4, 12건) | 높음 | Dev-B 반송 대기 |
+| 2 | 중복 key 제거 (3건) | 높음 | 미착수 |
+| 3 | 용어 제안 정확도 (제품명·부분단어 노이즈) | 중간 | 미착수 |
+| 4 | 번역 비결정성 | 중간 | Dev-B와 역할 조율 필요 |
+| 5 | 프레임 확장 | 중간 | Dev-C 결정 대기 |
+| 6 | 제품명 번역 금지 반영 | 낮음 | 미착수 |
+| 7 | 문장 조각 (`is required`) | 낮음 | 디자이너 이슈 |
+
+### 결정 필요 사항
+
+**#4 번역 비결정성** — Dev-A 로컬 캐시 vs Dev-B Vectra 번역 메모리(US-2.3)가
+같은 문제를 다룬다. 중복 구현을 피해야 한다.
+권장: Vectra로 통합하고 Dev-A는 조회 인터페이스만 호출.
+근거: 자가발전이 요구사항(Q10-3)이므로 Vectra 쪽에 무게가 있다.
+
+**#2 중복 key** — 전부 병합하면 안 된다. `Delete`는 라벨과 버튼이 실제로 다른
+UI 요소일 수 있고 언어별로 다르게 번역될 수 있다(`삭제` vs `삭제됨`).
+제안: 동일 프레임 + 동일 텍스트만 병합. 프레임이 다르면 유지.
+
+---
