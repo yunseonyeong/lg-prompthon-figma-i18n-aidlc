@@ -1,23 +1,35 @@
-# AI-DLC State
+# AI-DLC State Tracking
 
-## Project
-- **Name**: Figma i18n DLC
-- **Type**: Greenfield
-- **Description**: Figma UX 시나리오 기반 문맥 인식 다국어 자동화
+## Project Information
+- **Project Name**: Figma i18n DLC
+- **Project Type**: Greenfield
+- **Start Date**: 2026-08-19T10:44:00+09:00
+- **Current Stage**: INCEPTION - Application Design
 
-## Current Phase
-- **Phase**: INCEPTION
-- **Stage**: Not Started
+## Workspace State
+- **Existing Code**: No
+- **Programming Languages**: TypeScript (planned)
+- **Build System**: Vite (planned)
+- **Project Structure**: Empty (Greenfield)
+- **Workspace Root**: /home/seonyeongyun/workspace
+- **Reverse Engineering Needed**: No
 
-## Inception Phase Progress
-- [ ] Workspace Detection
-- [ ] Requirements Analysis
-- [ ] User Stories
-- [ ] Workflow Planning
+## Code Location Rules
+- **Application Code**: Workspace root `/src/` (NEVER in aidlc-docs/)
+- **Documentation**: aidlc-docs/ only
+- **Structure patterns**: See code-generation.md Critical Rules
+
+## Stage Progress
+
+### Inception Phase
+- [x] Workspace Detection
+- [x] Requirements Analysis
+- [x] User Stories
+- [x] Workflow Planning
 - [ ] Application Design
 - [ ] Units Generation
 
-## Construction Phase Progress
+### Construction Phase
 - [ ] Functional Design
 - [ ] NFR Requirements
 - [ ] NFR Design
@@ -25,8 +37,11 @@
 - [ ] Code Generation
 - [ ] Build and Test
 
-## Operations Phase Progress
+### Operations Phase
 - [ ] Operations
+
+## Decisions (ADR)
+- ADR-001: Vector DB → Vectra (Accepted, 2026-08-19)
 
 ## Extension Configuration
 | Extension | Enabled | Notes |

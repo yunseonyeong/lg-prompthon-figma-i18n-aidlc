@@ -12,9 +12,18 @@
   "hooks": {
     "agentSpawn": [
       {
-        "command": "echo 'Code Gen Agent Ready | Stack: React + TypeScript + react-i18next'"
+        "command": "echo 'Code Gen Agent Ready | Stack: React + TypeScript + react-i18next | Figma MCP: connected'"
       }
     ]
+  },
+  "mcpServers": {
+    "figma": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--stdio"],
+      "env": {
+        "FIGMA_API_KEY": "${FIGMA_API_KEY}"
+      }
+    }
   },
   "keyboardShortcut": "ctrl+shift+c",
   "welcomeMessage": "⚡ Code Gen Agent 준비 완료!\n\ni18n JSON 파일과 생성할 컴포넌트를 알려주세요.\nReact + TypeScript + react-i18next 기반으로 코드를 생성합니다."
