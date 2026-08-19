@@ -97,8 +97,8 @@
 | `title` | 화면/섹션 제목 | `console.setting.group.title.console` |
 | `status` | 상태 텍스트 | `console.doc.title.status.modified` |
 | `button` | 버튼 텍스트 | `console.setting.group.button.publish` |
-| `label` | 입력 라벨 | `console.setting.group.label.business_site_information` |
-| `placeholder` | 입력 힌트 | `console.setting.group.placeholder.lg_electronics` |
+| `label` | 입력 라벨 | `console.setting.group.label.businessSiteInformation` |
+| `placeholder` | 입력 힌트 | `console.setting.group.placeholder.lgElectronics` |
 | `description` | 설명 텍스트 | 예약 (현재 프레임 미생성) |
 | `message` | 알림/에러 메시지 | 예약 (현재 프레임 미생성) |
 

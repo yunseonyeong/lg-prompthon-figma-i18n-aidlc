@@ -166,8 +166,8 @@ main
 | `title` | 제목 | `console.setting.group.title.console` |
 | `status` | 상태 | `console.doc.title.status.modified` |
 | `button` | 버튼 | `console.setting.group.button.publish` |
-| `label` | 라벨 | `console.setting.group.label.business_site_information` |
-| `placeholder` | 힌트 | `console.setting.group.placeholder.lg_electronics` |
+| `label` | 라벨 | `console.setting.group.label.businessSiteInformation` |
+| `placeholder` | 힌트 | `console.setting.group.placeholder.lgElectronics` |
 | `description` | 설명 | (현재 프레임에서는 미생성) |
 | `message` | 알림/에러 | (현재 프레임에서는 미생성) |
 

@@ -183,7 +183,7 @@ export const BusinessSiteInfo = ({ isModified }: BusinessSiteInfoProps) => {
   return (
     <div>
       <h2>{t('console.setting.group.title.console')}</h2>
-      <label>{t('console.setting.group.label.business_site_information')}</label>
+      <label>{t('console.setting.group.label.businessSiteInformation')}</label>
       <button>{t('console.setting.group.button.publish')}</button>
       {isModified && <span>{t('console.doc.title.status.modified')}</span>}
     </div>
@@ -205,15 +205,15 @@ export const BusinessSiteInfo = ({ isModified }: BusinessSiteInfoProps) => {
       "group": {
         "title": {
           "console": "Console",
-          "workspacegroup_settings": "Workspace/Group Settings"
+          "workspaceGroupSettings": "Workspace/Group Settings"
         },
         "label": {
           "business_site_information": "Business Site Information",
-          "vertical_type": "Vertical Type *"
+          "verticalType": "Vertical Type *"
         },
         "button": {
           "publish": "Publish",
-          "assign_device": "Assign Device"
+          "assignDevice": "Assign Device"
         }
       }
     },

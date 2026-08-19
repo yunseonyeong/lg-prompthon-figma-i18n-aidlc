@@ -46,7 +46,7 @@ Figma MCP의 `get_file` 도구를 사용하여:
 예시 (실제 생성값):
 ```
 console.setting.group.title.console                    → "Console"
-console.setting.group.label.business_site_information  → "Business Site Information"
+console.setting.group.label.businessSiteInformation  → "Business Site Information"
 console.setting.group.button.publish                   → "Publish"
 console.doc.title.status.modified                      → "Modified"
 ```
