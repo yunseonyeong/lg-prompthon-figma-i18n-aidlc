@@ -1,6 +1,6 @@
 # 용어집 등록 제안 (Dev-A → Dev-B)
 
-생성 시각: 2026-08-19T07:55:52.823Z
+생성 시각: 2026-08-19T08:00:45.299Z
 대상 Figma File: zdG3CHXVU6TzD4cc28o5Yb
 대상 Frame: 15682:100905
 
@@ -23,7 +23,7 @@
 | Memo | 2 | 메모 | Memo | ☐ |
 | Automatic | 2 | 자동 라이선스 할당 | Automatic license assignment | ☐ |
 | Thema | 2 | 테마 03 | Thema 03 | ☐ |
-| Single | 2 | 싱글 사인온(SSO) | Single Sign-On (SSO) | ☐ |
+| Single | 2 | 싱글 사인온 (SSO) | Single Sign-On (SSO) | ☐ |
 | About | 2 | 역할 정보 | About Role | ☐ |
 
 총 16개 용어 제안

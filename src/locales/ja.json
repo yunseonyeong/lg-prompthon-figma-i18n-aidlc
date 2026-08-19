@@ -1,5 +1,5 @@
 {
-  "signage": {
+  "console": {
     "setting": {
       "group": {
         "label": {
@@ -53,9 +53,9 @@
           "address_details": "住所詳細",
           "30_a101_bldg": "30, A101棟",
           "address_memo": "住所メモ",
-          "set_single_signon": "SSOをオンにし、選択した認証タイプの詳細を設定します。",
-          "sort_by": "並び替え",
-          "last_updated": "最終更新日",
+          "set_single_signon": "SSOをオンにし、選択した認証タイプの詳細を設定してください。",
+          "sort_by": "並び順",
+          "last_updated": "最終更新",
           "total": "合計",
           "workspace_n": "ワークスペース N",
           "device_n": "デバイス N",
@@ -94,7 +94,7 @@
           "api_access": "APIアクセス",
           "automatic_license_assignment": "自動ライセンス割り当て",
           "automatic_device_approval": "自動デバイス承認",
-          "single_signon_sso": "シングルサインオン(SSO)"
+          "single_signon_sso": "シングルサインオン (SSO)"
         },
         "button": {
           "publish": "配信",
@@ -102,7 +102,7 @@
           "assign_device": "デバイス割り当て",
           "edit_group": "グループ編集",
           "button": "ボタン",
-          "create_business_site": "ビジネスサイト作成",
+          "create_business_site": "ビジネスサイトを作成",
           "turn_off": "オフ",
           "off": "オフ",
           "edit": "編集",

@@ -5,682 +5,682 @@
     "children": [
       {
         "type": "title",
-        "key": "signage.setting.group.title.workspacegroup_settings",
+        "key": "console.setting.group.title.workspacegroup_settings",
         "originalText": "Workspace/Group Settings"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.signage",
+        "key": "console.setting.group.label.signage",
         "originalText": "Signage"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.is_required",
+        "key": "console.setting.group.label.is_required",
         "originalText": "is required"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.calendar",
+        "key": "console.setting.group.label.calendar",
         "originalText": "Calendar"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.list",
+        "key": "console.setting.group.label.list",
         "originalText": "List"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.publish",
+        "key": "console.setting.group.button.publish",
         "originalText": "Publish"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.save",
+        "key": "console.setting.group.button.save",
         "originalText": "Save"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.assign_device",
+        "key": "console.setting.group.button.assign_device",
         "originalText": "Assign Device"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.edit_group",
+        "key": "console.setting.group.button.edit_group",
         "originalText": "Edit Group"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.publish",
+        "key": "console.setting.group.button.publish",
         "originalText": "Publish"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.last_update_time",
+        "key": "console.setting.group.label.last_update_time",
         "originalText": "Last Update Time"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.button",
+        "key": "console.setting.group.button.button",
         "originalText": "Button"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.button",
+        "key": "console.setting.group.button.button",
         "originalText": "Button"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.search",
+        "key": "console.setting.group.label.search",
         "originalText": "Search"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.business_a",
+        "key": "console.setting.group.label.business_a",
         "originalText": "Business A"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.workspace_a1",
+        "key": "console.setting.group.label.workspace_a1",
         "originalText": "Workspace A1"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.create_business_site",
+        "key": "console.setting.group.button.create_business_site",
         "originalText": "Create Business Site"
       },
       {
         "type": "title",
-        "key": "signage.setting.group.title.business_site_name",
+        "key": "console.setting.group.title.business_site_name",
         "originalText": "Business Site Name"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.group_auto_update",
+        "key": "console.setting.group.label.group_auto_update",
         "originalText": "Group Auto Update : On"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.turn_off",
+        "key": "console.setting.group.button.turn_off",
         "originalText": "Turn Off"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.off",
+        "key": "console.setting.group.button.off",
         "originalText": "Off"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.edit",
+        "key": "console.setting.group.button.edit",
         "originalText": "Edit"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.business_site_information",
+        "key": "console.setting.group.label.business_site_information",
         "originalText": "Business Site Information"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.delete",
+        "key": "console.setting.group.button.delete",
         "originalText": "Delete"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.edit",
+        "key": "console.setting.group.button.edit",
         "originalText": "Edit"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.business_site_id",
+        "key": "console.setting.group.label.business_site_id",
         "originalText": "Business Site ID *"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supporting_text",
         "originalText": "supporting text"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.subsidiary",
+        "key": "console.setting.group.label.subsidiary",
         "originalText": "Subsidiary"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.license_policy",
+        "key": "console.setting.group.label.license_policy",
         "originalText": "License Policy"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.period",
+        "key": "console.setting.group.label.period",
         "originalText": "Period"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.business_site_name",
+        "key": "console.setting.group.label.business_site_name",
         "originalText": "Business Site Name *"
       },
       {
         "type": "placeholder",
-        "key": "signage.setting.group.placeholder.lg_electronics",
+        "key": "console.setting.group.placeholder.lg_electronics",
         "originalText": "LG Electronics"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supporting_text",
         "originalText": "supporting text"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.region_country",
+        "key": "console.setting.group.label.region_country",
         "originalText": "Region / Country *"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.asia_pacific",
+        "key": "console.setting.group.label.asia_pacific",
         "originalText": "Asia & Pacific"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.label",
+        "key": "console.setting.group.label.label",
         "originalText": "Label"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.korea",
+        "key": "console.setting.group.label.korea",
         "originalText": "Korea"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.time_zone",
+        "key": "console.setting.group.label.time_zone",
         "originalText": "Time Zone *"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.utc0900_asiaseoul",
+        "key": "console.setting.group.label.utc0900_asiaseoul",
         "originalText": "(UTC+09:00) Asia/Seoul"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.vertical_type",
+        "key": "console.setting.group.label.vertical_type",
         "originalText": "Vertical Type *"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.system_integrator",
+        "key": "console.setting.group.label.system_integrator",
         "originalText": "System Integrator"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.business_type",
+        "key": "console.setting.group.label.business_type",
         "originalText": "Business Type *"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.end_customer",
+        "key": "console.setting.group.label.end_customer",
         "originalText": "End Customer"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.si_integrator_name",
+        "key": "console.setting.group.label.si_integrator_name",
         "originalText": "SI integrator Name *"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.utc0900_asiaseoul",
+        "key": "console.setting.group.label.utc0900_asiaseoul",
         "originalText": "(UTC+09:00) Asia/Seoul"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.end_customer_name",
+        "key": "console.setting.group.label.end_customer_name",
         "originalText": "End Customer Name *"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.system_integrator",
+        "key": "console.setting.group.label.system_integrator",
         "originalText": "System Integrator"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.memo",
+        "key": "console.setting.group.label.memo",
         "originalText": "Memo"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supporting_text",
         "originalText": "supporting text"
       },
       {
         "type": "title",
-        "key": "signage.setting.group.title.api_access",
+        "key": "console.setting.group.title.api_access",
         "originalText": "API Access"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.on",
+        "key": "console.setting.group.label.on",
         "originalText": "ON"
       },
       {
         "type": "title",
-        "key": "signage.setting.group.title.automatic_license_assignment",
+        "key": "console.setting.group.title.automatic_license_assignment",
         "originalText": "Automatic license assignment"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.on",
+        "key": "console.setting.group.label.on",
         "originalText": "ON"
       },
       {
         "type": "title",
-        "key": "signage.setting.group.title.automatic_device_approval",
+        "key": "console.setting.group.title.automatic_device_approval",
         "originalText": "Automatic device approval"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.on",
+        "key": "console.setting.group.label.on",
         "originalText": "ON"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.business_site_logo",
+        "key": "console.setting.group.label.business_site_logo",
         "originalText": "Business Site Logo"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.image",
+        "key": "console.setting.group.label.image",
         "originalText": "Image *"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supporting_text",
         "originalText": "supporting text"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.unit",
+        "key": "console.setting.group.label.unit",
         "originalText": "unit"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.filenamesample00123jpg",
+        "key": "console.setting.group.label.filenamesample00123jpg",
         "originalText": "FileName_sample_00123.jpg"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.alt_text",
+        "key": "console.setting.group.label.alt_text",
         "originalText": "Alt Text"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.lg_logo_image",
+        "key": "console.setting.group.label.lg_logo_image",
         "originalText": "LG logo image"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.unit",
+        "key": "console.setting.group.label.unit",
         "originalText": "unit"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.theme_color",
+        "key": "console.setting.group.label.theme_color",
         "originalText": "Theme Color"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.basic",
+        "key": "console.setting.group.label.basic",
         "originalText": "Basic"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.dark",
+        "key": "console.setting.group.label.dark",
         "originalText": "Dark"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.thema_03",
+        "key": "console.setting.group.label.thema_03",
         "originalText": "Thema 03"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.thema_04",
+        "key": "console.setting.group.label.thema_04",
         "originalText": "Thema 04"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supporting_text",
         "originalText": "supporting text"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.business_site_address",
+        "key": "console.setting.group.label.business_site_address",
         "originalText": "Business Site Address"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.magokjungang_10ro_gangseogu",
+        "key": "console.setting.group.label.magokjungang_10ro_gangseogu",
         "originalText": "MagokJungang 10-ro, Gangseo-gu, Seoul"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.address_details",
+        "key": "console.setting.group.label.address_details",
         "originalText": "Address Details"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.30_a101_bldg",
+        "key": "console.setting.group.label.30_a101_bldg",
         "originalText": "30, A101 bldg."
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.address_memo",
+        "key": "console.setting.group.label.address_memo",
         "originalText": "Address Memo"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supporting_text",
         "originalText": "supporting text"
       },
       {
         "type": "title",
-        "key": "signage.setting.group.title.single_signon_sso",
+        "key": "console.setting.group.title.single_signon_sso",
         "originalText": "Single Sign-On (SSO)"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.set_single_signon",
+        "key": "console.setting.group.label.set_single_signon",
         "originalText": "Set Single Sign-On (SSO) to ON and set the detailes for the selected authentication type."
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.sort_by",
+        "key": "console.setting.group.label.sort_by",
         "originalText": "Sort by"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.last_updated",
+        "key": "console.setting.group.label.last_updated",
         "originalText": "Last Updated"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.add_workspace",
+        "key": "console.setting.group.button.add_workspace",
         "originalText": "Add Workspace"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.user_search",
+        "key": "console.setting.group.button.user_search",
         "originalText": "User Search"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.about_role",
+        "key": "console.setting.group.button.about_role",
         "originalText": "About Role"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.change_business_site",
+        "key": "console.setting.group.button.change_business_site",
         "originalText": "Change Business Site"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.user_search",
+        "key": "console.setting.group.button.user_search",
         "originalText": "User Search"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.about_role",
+        "key": "console.setting.group.button.about_role",
         "originalText": "About Role"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.total",
+        "key": "console.setting.group.label.total",
         "originalText": "Total"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.workspace_n",
+        "key": "console.setting.group.label.workspace_n",
         "originalText": "Workspace N"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.device_n",
+        "key": "console.setting.group.label.device_n",
         "originalText": "Device N"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.user_n",
+        "key": "console.setting.group.label.user_n",
         "originalText": "User N"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.search_for_workspace",
+        "key": "console.setting.group.label.search_for_workspace",
         "originalText": "Search for Workspace"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.filter",
+        "key": "console.setting.group.button.filter",
         "originalText": "Filter"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.workspace_name",
+        "key": "console.setting.group.label.workspace_name",
         "originalText": "Workspace Name"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.device_count",
+        "key": "console.setting.group.label.device_count",
         "originalText": "Device Count"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.user_count",
+        "key": "console.setting.group.label.user_count",
         "originalText": "User Count"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.licensed_product",
+        "key": "console.setting.group.label.licensed_product",
         "originalText": "Licensed Product"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.time_zone",
+        "key": "console.setting.group.label.time_zone",
         "originalText": "Time Zone"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.delete",
+        "key": "console.setting.group.label.delete",
         "originalText": "Delete"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.dashboard",
+        "key": "console.setting.group.label.dashboard",
         "originalText": "Dashboard"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.space",
+        "key": "console.setting.group.label.space",
         "originalText": "Space"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.devices",
+        "key": "console.setting.group.label.devices",
         "originalText": "Devices"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.data",
+        "key": "console.setting.group.label.data",
         "originalText": "Data"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.content",
+        "key": "console.setting.group.label.content",
         "originalText": "Content"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.rules",
+        "key": "console.setting.group.label.rules",
         "originalText": "Rules"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.schedule",
+        "key": "console.setting.group.label.schedule",
         "originalText": "Schedule"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.addon_service",
+        "key": "console.setting.group.label.addon_service",
         "originalText": "Add-On Service"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.site_map",
+        "key": "console.setting.group.label.site_map",
         "originalText": "Site Map"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.floor_plan",
+        "key": "console.setting.group.label.floor_plan",
         "originalText": "Floor Plan"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.history",
+        "key": "console.setting.group.label.history",
         "originalText": "History"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.report",
+        "key": "console.setting.group.label.report",
         "originalText": "Report"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.analytics",
+        "key": "console.setting.group.label.analytics",
         "originalText": "Analytics"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.library",
+        "key": "console.setting.group.label.library",
         "originalText": "Library"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.videowall",
+        "key": "console.setting.group.label.videowall",
         "originalText": "Videowall"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.content_schedule",
+        "key": "console.setting.group.label.content_schedule",
         "originalText": "Content Schedule"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.control_schedule",
+        "key": "console.setting.group.label.control_schedule",
         "originalText": "Control Schedule"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.art_lounge",
+        "key": "console.setting.group.label.art_lounge",
         "originalText": "Art Lounge"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.hotel_mobile_app",
+        "key": "console.setting.group.label.hotel_mobile_app",
         "originalText": "Hotel Mobile App"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.dashboard",
+        "key": "console.setting.group.label.dashboard",
         "originalText": "Dashboard"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.device",
+        "key": "console.setting.group.label.device",
         "originalText": "Device"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.data",
+        "key": "console.setting.group.label.data",
         "originalText": "Data"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.content",
+        "key": "console.setting.group.label.content",
         "originalText": "Content"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.site",
+        "key": "console.setting.group.label.site",
         "originalText": "Site"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.ads",
+        "key": "console.setting.group.label.ads",
         "originalText": "Ads"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.art_lounge",
+        "key": "console.setting.group.label.art_lounge",
         "originalText": "Art Lounge"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.addon_service",
+        "key": "console.setting.group.label.addon_service",
         "originalText": "Add-On Service"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.setting",
+        "key": "console.setting.group.label.setting",
         "originalText": "Setting"
       },
       {
         "type": "title",
-        "key": "signage.setting.group.title.console",
+        "key": "console.setting.group.title.console",
         "originalText": "Console"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.device",
+        "key": "console.setting.group.label.device",
         "originalText": "Device"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.data",
+        "key": "console.setting.group.label.data",
         "originalText": "Data"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.content",
+        "key": "console.setting.group.label.content",
         "originalText": "Content"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.site",
+        "key": "console.setting.group.label.site",
         "originalText": "Site"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.ads",
+        "key": "console.setting.group.label.ads",
         "originalText": "Ads"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.art_lounge",
+        "key": "console.setting.group.label.art_lounge",
         "originalText": "Art Lounge"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.addon_service",
+        "key": "console.setting.group.label.addon_service",
         "originalText": "Add-On Service"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.settings",
+        "key": "console.setting.group.label.settings",
         "originalText": "Settings"
       },
       {
         "type": "label",
-        "key": "signage.setting.group.label.business_site_name",
+        "key": "console.setting.group.label.business_site_name",
         "originalText": "Business Site Name"
       },
       {
         "type": "button",
-        "key": "signage.setting.group.button.extend",
+        "key": "console.setting.group.button.extend",
         "originalText": "Extend"
       }
     ]
@@ -691,17 +691,17 @@
     "children": [
       {
         "type": "title",
-        "key": "signage.doc.title.title.settings",
+        "key": "console.doc.title.title.settings",
         "originalText": "Settings"
       },
       {
         "type": "status",
-        "key": "signage.doc.title.status.modified",
+        "key": "console.doc.title.status.modified",
         "originalText": "Modified"
       },
       {
         "type": "label",
-        "key": "signage.doc.title.label.description_description_description",
+        "key": "console.doc.title.label.description_description_description",
         "originalText": "Description Description \nDescription Description"
       }
     ]

@@ -1,5 +1,5 @@
 {
-  "signage": {
+  "console": {
     "setting": {
       "group": {
         "label": {
@@ -21,7 +21,7 @@
           "supporting_text": "辅助文本",
           "subsidiary": "子公司",
           "license_policy": "许可证策略",
-          "period": "周期",
+          "period": "期限",
           "business_site_name": "业务站点名称",
           "region_country": "地区 / 国家 *",
           "asia_pacific": "亚洲及太平洋",
@@ -42,14 +42,14 @@
           "unit": "单位",
           "filenamesample00123jpg": "FileName_sample_00123.jpg",
           "alt_text": "替代文本",
-          "lg_logo_image": "LG标志图像",
+          "lg_logo_image": "LG 标志图像",
           "theme_color": "主题颜色",
           "basic": "基本",
           "dark": "深色",
           "thema_03": "主题03",
           "thema_04": "主题04",
           "business_site_address": "业务站点地址",
-          "magokjungang_10ro_gangseogu": "麻谷中央10路、江西区、首尔",
+          "magokjungang_10ro_gangseogu": "麻谷中央10路，江西区，首尔",
           "address_details": "地址详情",
           "30_a101_bldg": "30, A101栋",
           "address_memo": "地址备注",
@@ -62,8 +62,8 @@
           "user_n": "用户 N",
           "search_for_workspace": "工作区搜索",
           "workspace_name": "工作区名称",
-          "device_count": "设备数量",
-          "user_count": "用户数量",
+          "device_count": "设备数",
+          "user_count": "用户数",
           "licensed_product": "许可产品",
           "delete": "删除",
           "dashboard": "仪表板",
@@ -74,7 +74,7 @@
           "addon_service": "附加服务",
           "site_map": "站点地图",
           "floor_plan": "平面图",
-          "history": "记录",
+          "history": "历史",
           "report": "报告",
           "analytics": "分析",
           "library": "库",
@@ -94,7 +94,7 @@
           "api_access": "API 访问",
           "automatic_license_assignment": "自动许可证分配",
           "automatic_device_approval": "自动设备批准",
-          "single_signon_sso": "单点登录(SSO)"
+          "single_signon_sso": "单点登录 (SSO)"
         },
         "button": {
           "publish": "发布",

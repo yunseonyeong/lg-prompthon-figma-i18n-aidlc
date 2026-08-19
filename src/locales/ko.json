@@ -1,5 +1,5 @@
 {
-  "signage": {
+  "console": {
     "setting": {
       "group": {
         "label": {
@@ -53,10 +53,10 @@
           "address_details": "주소 상세",
           "30_a101_bldg": "30, A101동",
           "address_memo": "주소 메모",
-          "set_single_signon": "SSO를 켜고 선택한 인증 유형의 세부 정보를 설정합니다.",
+          "set_single_signon": "SSO를 켜고 선택한 인증 유형의 세부 정보를 설정하세요.",
           "sort_by": "정렬 기준",
           "last_updated": "최종 업데이트",
-          "total": "총계",
+          "total": "전체",
           "workspace_n": "워크스페이스 N",
           "device_n": "장치 N",
           "user_n": "사용자 N",
@@ -94,7 +94,7 @@
           "api_access": "API 액세스",
           "automatic_license_assignment": "자동 라이선스 할당",
           "automatic_device_approval": "자동 장치 승인",
-          "single_signon_sso": "싱글 사인온(SSO)"
+          "single_signon_sso": "싱글 사인온 (SSO)"
         },
         "button": {
           "publish": "배포",
@@ -104,7 +104,7 @@
           "button": "버튼",
           "create_business_site": "비즈니스 사이트 생성",
           "turn_off": "끄기",
-          "off": "끄기",
+          "off": "꺼짐",
           "edit": "편집",
           "delete": "삭제",
           "add_workspace": "워크스페이스 추가",

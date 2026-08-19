@@ -34,7 +34,11 @@ const CONFIG = {
   friendliModel: process.env.FRIENDLI_MODEL || 'depe675tjc2rcpo',
   outputDir: path.resolve(__dirname, '../locales'),
   languages: ['en', 'ko', 'ja', 'zh-CN'],
-  domain: 'signage', // 기본 도메인 (Figma 분석 후 자동 결정 가능)
+  // i18n key의 최상위 prefix (예: console.setting.group.title.xxx)
+  keyPrefix: 'console',
+  // 번역 프롬프트에 전달할 도메인 설명. 구체적일수록 문맥 번역 품질이 올라간다.
+  domainDescription:
+    'LG Business Cloud console — a B2B admin console for managing business sites, workspaces, device groups, users, roles and licenses',
   // 특정 프레임만 추출 (빈 배열이면 전체 추출)
   targetFrameIds: [
     '15682:100905', // Settings 관련 - UI 텍스트 풍부, 테이블 적음
@@ -336,7 +340,7 @@ function isTranslatableUIText(text: string): boolean {
 
 // ===== US-1.3: i18n Key 자동 생성 =====
 export function generateI18nKey(node: TextNode, frameContexts: Map<string, string>): string {
-  const domain = CONFIG.domain;
+  const domain = CONFIG.keyPrefix;
   const feature = frameContexts.get(node.frameName) || 'common';
   const role = node.role;
   const identifier = generateIdentifier(node.text);
@@ -455,7 +459,8 @@ async function translateBatch(
     ? `\nUX SCENARIO CONTEXT (for reference only, do NOT translate these):\n${contextEntries.slice(0, 20).map((e) => `- [${e.context}] "${e.source}"`).join('\n')}`
     : '';
 
-  const prompt = `You are a professional translator for a ${CONFIG.domain} product UI.
+  const prompt = `You are a professional translator for the following product UI:
+${CONFIG.domainDescription}
 Translate the following UI texts into Korean (ko), Japanese (ja), and Chinese Simplified (zh-CN).
 
 CRITICAL RULES:
