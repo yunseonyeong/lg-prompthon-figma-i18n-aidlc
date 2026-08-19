@@ -103,3 +103,66 @@
 - Next Phase: Application Design
 
 ---
+
+## CONSTRUCTION - Unit 1: i18n Pipeline (Dev-A)
+**Timestamp**: 2026-08-19T15:20:00+09:00
+**User Input**: "바로 Construction 진행해줘. DEV A 역할 수행해줘"
+**AI Response**: US-1.1 ~ US-1.5 구현 완료
+**Context**: Construction Phase - Code Generation (Unit 1)
+
+### 브랜치
+`feat/figma-i18n-pipeline`
+
+### 구현 내역
+
+| US | 내용 | 결과 |
+|----|------|------|
+| US-1.1 | Figma 텍스트 추출 | 프레임 지정 추출, 시나리오 설명 테이블 제외 |
+| US-1.2 | UX 흐름 문맥 분석 | inferFeature/inferRole/isTranslatableUIText |
+| US-1.3 | i18n Key 자동 생성 | `{domain}.{feature}.{role}.{identifier}`, 중복 0 |
+| US-1.4 | EXAONE 번역 | Friendli API, 앵커 용어 + 누적 용어집 |
+| US-1.5 | Locale JSON 출력 | 4개 언어 + components-map + glossary-proposal |
+
+### 검증 결과 (실측)
+- 대상: Figma `zdG3CHXVU6TzD4cc28o5Yb`, Frame `15682:100905`
+- 전체 텍스트 노드 13,822개 → 필터 후 번역 대상 139개 → 최종 110 key
+- 4개 언어 key 구조 100% 일치 (en=ko=ja=zh-CN=110)
+- 용어 일관성 위반 0건
+- Placeholder 번역 0건
+
+### 해결한 문제
+1. **배치 간 용어 불일치** (구조적 문제)
+   - 증상: Workspace가 "워크스페이스"/"작업 공간" 등 6가지로 번역
+   - 원인: 10개씩 배치 번역 → 배치마다 독립 판단
+   - 해결: 핵심 용어를 앵커로 먼저 번역 → 결과를 누적 용어집으로 다음 배치에 주입
+   - 결과: Workspace 6가지 → 1가지, Business Site 7가지 → 1가지
+2. **Placeholder 번역됨**
+   - 증상: `{Company name}` → `{회사 이름}`
+   - 해결: `{...}` 패턴 번역 대상 제외
+3. **노이즈 텍스트** — 날짜/버전/파일크기/카운터/약어코드 필터 추가
+
+### 산출물
+- `src/pipeline/figma-i18n-pipeline.ts`
+- `src/locales/{en,ko,ja,zh-CN}.json`
+- `src/components-map.json` (→ Dev-C)
+- `glossary-proposal.md` (→ Dev-B, 23개 용어 제안)
+
+### Dev-B에게 전달할 이슈
+- `requirements/domain-glossary.md`의 "용어 추가 요청 형식" 예시 행(`NewTerm`)이 실제 용어로 파싱됨 → 템플릿 행 제거 또는 주석 처리 필요
+- 용어집 등록 제안 23건 검토 요청 (Business Site, Art Lounge, System Integrator, End Customer 우선)
+
+### Dev-C에게 전달할 사항
+- `src/components-map.json` 사용 가능
+- 프레임 2개: `Console_Setting_Group@User`(136개 텍스트), `Doc Title`(3개)
+- 각 항목에 `type`(role), `key`, `originalText` 포함
+- Figma File Key / Frame ID는 `CONFIG.targetFrameIds`에서 교체 가능
+
+### 실행 방법
+```bash
+export FIGMA_API_KEY=<figma token>
+export FRIENDLI_API_KEY=<friendli key>   # ~/.hermes/.env 참조
+export FIGMA_FILE_KEY=zdG3CHXVU6TzD4cc28o5Yb
+node src/pipeline/figma-i18n-pipeline.ts
+```
+
+---

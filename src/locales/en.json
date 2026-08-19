@@ -1,0 +1,136 @@
+{
+  "signage": {
+    "setting": {
+      "group": {
+        "label": {
+          "content": "Content",
+          "schedule": "Schedule",
+          "device": "Device",
+          "settings": "Settings",
+          "signage": "Signage",
+          "is_required": "is required",
+          "calendar": "Calendar",
+          "list": "List",
+          "last_update_time": "Last Update Time",
+          "search": "Search",
+          "business_a": "Business A",
+          "workspace_a1": "Workspace A1",
+          "group_auto_update": "Group Auto Update : On",
+          "business_site_information": "Business Site Information",
+          "business_site_id": "Business Site ID *",
+          "supporting_text": "supporting text",
+          "subsidiary": "Subsidiary ",
+          "license_policy": "License Policy",
+          "period": "Period",
+          "business_site_name": "Business Site Name",
+          "region_country": "Region / Country *",
+          "asia_pacific": "Asia & Pacific",
+          "label": "Label",
+          "korea": "Korea",
+          "time_zone": "Time Zone",
+          "utc0900_asiaseoul": "(UTC+09:00) Asia/Seoul",
+          "vertical_type": "Vertical Type *",
+          "system_integrator": "System Integrator",
+          "business_type": "Business Type *",
+          "end_customer": "End Customer",
+          "si_integrator_name": "SI integrator Name *",
+          "end_customer_name": "End Customer Name *",
+          "memo": "Memo",
+          "on": "ON",
+          "business_site_logo": "Business Site Logo",
+          "image": "Image *",
+          "unit": "unit",
+          "filenamesample00123jpg": "FileName_sample_00123.jpg",
+          "alt_text": "Alt Text ",
+          "lg_logo_image": "LG logo image",
+          "theme_color": "Theme Color",
+          "basic": "Basic",
+          "dark": "Dark",
+          "thema_03": "Thema 03",
+          "thema_04": "Thema 04",
+          "business_site_address": "Business Site Address ",
+          "magokjungang_10ro_gangseogu": "MagokJungang 10-ro, Gangseo-gu, Seoul",
+          "address_details": "Address Details",
+          "30_a101_bldg": "30, A101 bldg.",
+          "address_memo": "Address Memo",
+          "set_single_signon": "Set Single Sign-On (SSO) to ON and set the detailes for the selected authentication type.",
+          "sort_by": "Sort by",
+          "last_updated": "Last Updated",
+          "total": "Total",
+          "workspace_n": "Workspace N",
+          "device_n": "Device N",
+          "user_n": "User N",
+          "search_for_workspace": "Search for Workspace",
+          "workspace_name": "Workspace Name",
+          "device_count": "Device Count",
+          "user_count": "User Count",
+          "licensed_product": "Licensed Product",
+          "delete": "Delete",
+          "dashboard": "Dashboard",
+          "space": "Space",
+          "devices": "Devices",
+          "data": "Data",
+          "rules": "Rules",
+          "addon_service": "Add-On Service",
+          "site_map": "Site Map",
+          "floor_plan": "Floor Plan",
+          "history": "History",
+          "report": "Report",
+          "analytics": "Analytics",
+          "library": "Library",
+          "videowall": "Videowall",
+          "content_schedule": "Content Schedule",
+          "control_schedule": "Control Schedule",
+          "art_lounge": "Art Lounge",
+          "hotel_mobile_app": "Hotel Mobile App",
+          "site": "Site",
+          "ads": "Ads",
+          "setting": "Setting"
+        },
+        "title": {
+          "console": "Console",
+          "workspacegroup_settings": "Workspace/Group Settings",
+          "business_site_name": "Business Site Name",
+          "api_access": "API Access",
+          "automatic_license_assignment": "Automatic license assignment",
+          "automatic_device_approval": "Automatic device approval",
+          "single_signon_sso": "Single Sign-On (SSO)"
+        },
+        "button": {
+          "publish": "Publish",
+          "save": "Save",
+          "assign_device": "Assign Device",
+          "edit_group": "Edit Group",
+          "button": "Button",
+          "create_business_site": "Create Business Site",
+          "turn_off": "Turn Off",
+          "off": "Off",
+          "edit": "Edit",
+          "delete": "Delete",
+          "add_workspace": "Add Workspace",
+          "user_search": "User Search",
+          "about_role": "About Role",
+          "change_business_site": "Change Business Site",
+          "filter": "Filter",
+          "extend": "Extend"
+        },
+        "placeholder": {
+          "lg_electronics": " LG Electronics"
+        }
+      }
+    },
+    "doc": {
+      "title": {
+        "title": {
+          "settings": "Settings"
+        },
+        "status": {
+          "modified": "Modified "
+        },
+        "label": {
+          "description_description_description": "Description Description \nDescription Description "
+        }
+      }
+    }
+  }
+}
