@@ -8,7 +8,7 @@
           "device": "장치",
           "settings": "설정",
           "signage": "사이니지",
-          "is_required": "필수 항목입니다",
+          "is_required": "필수입니다",
           "calendar": "캘린더",
           "list": "목록",
           "last_update_time": "마지막 업데이트 시간",
@@ -24,12 +24,12 @@
           "period": "기간",
           "business_site_name": "비즈니스 사이트 이름",
           "region_country": "지역 / 국가 *",
-          "asia_pacific": "아시아 & 태평양",
+          "asia_pacific": "아시아 및 태평양",
           "label": "레이블",
           "korea": "한국",
           "time_zone": "시간대",
           "utc0900_asiaseoul": "(UTC+09:00) 아시아/서울",
-          "vertical_type": "세로 유형 *",
+          "vertical_type": "산업 분야 *",
           "system_integrator": "시스템 통합업체",
           "business_type": "비즈니스 유형 *",
           "end_customer": "최종 고객",
@@ -53,10 +53,10 @@
           "address_details": "주소 상세",
           "30_a101_bldg": "30, A101동",
           "address_memo": "주소 메모",
-          "set_single_signon": "SSO를 켜고 선택한 인증 유형의 세부 정보를 설정하세요.",
+          "set_single_signon": "SSO를 켜고 선택한 인증 유형의 세부 정보를 설정합니다.",
           "sort_by": "정렬 기준",
-          "last_updated": "마지막 업데이트",
-          "total": "전체",
+          "last_updated": "최종 업데이트",
+          "total": "총계",
           "workspace_n": "워크스페이스 N",
           "device_n": "장치 N",
           "user_n": "사용자 N",
@@ -94,7 +94,7 @@
           "api_access": "API 액세스",
           "automatic_license_assignment": "자동 라이선스 할당",
           "automatic_device_approval": "자동 장치 승인",
-          "single_signon_sso": "싱글 사인온 (SSO)"
+          "single_signon_sso": "싱글 사인온(SSO)"
         },
         "button": {
           "publish": "배포",
@@ -104,7 +104,7 @@
           "button": "버튼",
           "create_business_site": "비즈니스 사이트 생성",
           "turn_off": "끄기",
-          "off": "끔",
+          "off": "끄기",
           "edit": "편집",
           "delete": "삭제",
           "add_workspace": "워크스페이스 추가",
@@ -112,7 +112,7 @@
           "about_role": "역할 정보",
           "change_business_site": "비즈니스 사이트 변경",
           "filter": "필터",
-          "extend": "확장"
+          "extend": "연장"
         },
         "placeholder": {
           "lg_electronics": "LG Electronics"
