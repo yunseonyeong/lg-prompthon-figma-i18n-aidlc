@@ -161,15 +161,18 @@ main
 {domain}.{feature}.{role}.{identifier}
 ```
 
-| Role | 용도 | 예시 |
-|------|------|------|
-| `title` | 제목 | `signage.player.title.management` |
-| `status` | 상태 | `signage.player.status.offline` |
-| `button` | 버튼 | `signage.player.button.restart` |
-| `label` | 라벨 | `signage.channel.label.name` |
-| `description` | 설명 | `signage.schedule.description.set` |
-| `placeholder` | 힌트 | `signage.player.placeholder.search` |
-| `message` | 알림/에러 | `signage.player.message.error` |
+| Role | 용도 | 실제 생성 예시 |
+|------|------|---------------|
+| `title` | 제목 | `console.setting.group.title.console` |
+| `status` | 상태 | `console.doc.title.status.modified` |
+| `button` | 버튼 | `console.setting.group.button.publish` |
+| `label` | 라벨 | `console.setting.group.label.business_site_information` |
+| `placeholder` | 힌트 | `console.setting.group.placeholder.lg_electronics` |
+| `description` | 설명 | (현재 프레임에서는 미생성) |
+| `message` | 알림/에러 | (현재 프레임에서는 미생성) |
+
+> `{domain}`은 `CONFIG.keyPrefix`로 제어합니다. 현재 값은 `console`입니다.
+> 대상 파일이 LG Business Cloud 콘솔이므로 `signage`에서 변경되었습니다.
 
 ---
 

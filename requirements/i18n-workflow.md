@@ -6,7 +6,7 @@
 2. **Context 파악**: UX 흐름(페이지 순서, 프레임 계층)을 분석하여 도메인과 문맥을 파악한다.
 3. **Key 생성**: 텍스트별 i18n key를 계층적으로 네이밍한다.
    - 형식: `{domain}.{page}.{component}.{element}`
-   - 예: `signage.player.status.offline`
+   - 예: `console.setting.group.button.publish`
 4. **Localization**: 문맥 기반으로 다국어 번역한다. 반드시 domain-glossary를 참조한다.
 5. **Code 생성**: i18n JSON 파일과 FE 컴포넌트 코드를 생성한다.
 
