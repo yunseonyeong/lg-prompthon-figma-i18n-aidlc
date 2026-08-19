@@ -8,14 +8,14 @@
           "device": "デバイス",
           "settings": "設定",
           "signage": "サイネージ",
-          "is_required": "必須です",
+          "is_required": "必須項目です",
           "calendar": "カレンダー",
           "list": "リスト",
           "last_update_time": "最終更新時間",
           "search": "検索",
           "business_a": "ビジネスA",
           "workspace_a1": "ワークスペースA1",
-          "group_auto_update": "グループ自動更新: ON",
+          "group_auto_update": "グループ自動更新：オン",
           "business_site_information": "ビジネスサイト情報",
           "business_site_id": "ビジネスサイトID *",
           "supporting_text": "補助テキスト",
@@ -24,7 +24,7 @@
           "period": "期間",
           "business_site_name": "ビジネスサイト名",
           "region_country": "地域 / 国 *",
-          "asia_pacific": "アジア＆太平洋",
+          "asia_pacific": "アジア & 太平洋",
           "label": "ラベル",
           "korea": "韓国",
           "time_zone": "タイムゾーン",
@@ -49,9 +49,9 @@
           "thema_03": "テーマ03",
           "thema_04": "テーマ04",
           "business_site_address": "ビジネスサイトアドレス",
-          "magokjungang_10ro_gangseogu": "マゴクチュンアンロ 10, カンソ-グ, ソウル",
+          "magokjungang_10ro_gangseogu": "マゴクチュンアン10ロ、カンソグ、ソウル",
           "address_details": "住所詳細",
-          "30_a101_bldg": "30, A101 ビル",
+          "30_a101_bldg": "30, A101棟",
           "address_memo": "住所メモ",
           "set_single_signon": "SSOをオンにし、選択した認証タイプの詳細を設定してください。",
           "sort_by": "並び順",
@@ -109,7 +109,7 @@
           "delete": "削除",
           "add_workspace": "ワークスペースを追加",
           "user_search": "ユーザー検索",
-          "about_role": "ロール情報",
+          "about_role": "役割情報",
           "change_business_site": "ビジネスサイト変更",
           "filter": "フィルター",
           "extend": "拡張"
@@ -125,7 +125,7 @@
           "settings": "設定"
         },
         "status": {
-          "modified": "修正済み "
+          "modified": "修正済み"
         },
         "label": {
           "description_description_description": "説明 説明 説明"
