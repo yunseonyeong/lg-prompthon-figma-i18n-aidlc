@@ -19,7 +19,7 @@
           "business_site_information": "Business Site Information",
           "business_site_id": "Business Site ID *",
           "supporting_text": "supporting text",
-          "subsidiary": "Subsidiary ",
+          "subsidiary": "Subsidiary",
           "license_policy": "License Policy",
           "period": "Period",
           "business_site_name": "Business Site Name",
@@ -41,14 +41,14 @@
           "image": "Image *",
           "unit": "unit",
           "filenamesample00123jpg": "FileName_sample_00123.jpg",
-          "alt_text": "Alt Text ",
+          "alt_text": "Alt Text",
           "lg_logo_image": "LG logo image",
           "theme_color": "Theme Color",
           "basic": "Basic",
           "dark": "Dark",
           "thema_03": "Thema 03",
           "thema_04": "Thema 04",
-          "business_site_address": "Business Site Address ",
+          "business_site_address": "Business Site Address",
           "magokjungang_10ro_gangseogu": "MagokJungang 10-ro, Gangseo-gu, Seoul",
           "address_details": "Address Details",
           "30_a101_bldg": "30, A101 bldg.",
@@ -115,7 +115,7 @@
           "extend": "Extend"
         },
         "placeholder": {
-          "lg_electronics": " LG Electronics"
+          "lg_electronics": "LG Electronics"
         }
       }
     },
@@ -125,10 +125,10 @@
           "settings": "Settings"
         },
         "status": {
-          "modified": "Modified "
+          "modified": "Modified"
         },
         "label": {
-          "description_description_description": "Description Description \nDescription Description "
+          "description_description_description": "Description Description \nDescription Description"
         }
       }
     }

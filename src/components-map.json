@@ -141,7 +141,7 @@
       {
         "type": "label",
         "key": "signage.setting.group.label.subsidiary",
-        "originalText": "Subsidiary "
+        "originalText": "Subsidiary"
       },
       {
         "type": "label",
@@ -161,7 +161,7 @@
       {
         "type": "placeholder",
         "key": "signage.setting.group.placeholder.lg_electronics",
-        "originalText": " LG Electronics"
+        "originalText": "LG Electronics"
       },
       {
         "type": "label",
@@ -306,7 +306,7 @@
       {
         "type": "label",
         "key": "signage.setting.group.label.alt_text",
-        "originalText": "Alt Text "
+        "originalText": "Alt Text"
       },
       {
         "type": "label",
@@ -351,7 +351,7 @@
       {
         "type": "label",
         "key": "signage.setting.group.label.business_site_address",
-        "originalText": "Business Site Address "
+        "originalText": "Business Site Address"
       },
       {
         "type": "label",
@@ -697,12 +697,12 @@
       {
         "type": "status",
         "key": "signage.doc.title.status.modified",
-        "originalText": "Modified "
+        "originalText": "Modified"
       },
       {
         "type": "label",
         "key": "signage.doc.title.label.description_description_description",
-        "originalText": "Description Description \nDescription Description "
+        "originalText": "Description Description \nDescription Description"
       }
     ]
   }

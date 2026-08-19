@@ -176,40 +176,53 @@ main
 
 ```bash
 # 1. 프로젝트 클론
-git clone https://github.com/yunseonyeong/lg-prompthon-figma-i18n-aidlc.git
+git clone git@github.com:yunseonyeong/lg-prompthon-figma-i18n-aidlc.git
 cd lg-prompthon-figma-i18n-aidlc
 
 # 2. 환경변수 설정
 cp .env.example .env
-# .env에 FIGMA_API_KEY 입력
+# .env에 FIGMA_API_KEY, FIGMA_FILE_KEY 입력
+# FRIENDLI_API_KEY는 ~/.hermes/.env 에서 자동으로 읽힘
 
-# 3. 본인 브랜치 생성
+# 3. 의존성 설치
+npm install
+
+# 4. 본인 브랜치 생성
 git checkout -b feat/<본인-브랜치명>
 ```
+
+> ⚠️ **`npm create vite` 를 실행하지 마세요.**
+> `package.json`은 이미 구성되어 있습니다 (React + i18next + Vectra + tsx + vitest).
+> `npm create vite`를 실행하면 기존 설정이 덮어써집니다.
+> Vite 설정이 추가로 필요하면 `vite.config.ts`만 별도로 만드세요.
 
 ### Dev-A
 
 ```bash
-kiro-cli chat --agent i18n-agent
-# "requirements/vision.md와 requirements/questions.md를 읽고 US-1.1부터 진행해줘"
+npm run pipeline    # Figma → 번역 → locale JSON 생성
 ```
+
+- 대상 파일/프레임 변경: `src/pipeline/figma-i18n-pipeline.ts` 의 `CONFIG.targetFrameIds`
 
 ### Dev-B
 
 ```bash
-npm install vectra
 kiro-cli chat --agent review-agent
-# "requirements/domain-glossary.md를 읽고 US-2.1 검증 로직부터 구현해줘"
+# "src/locales/ 를 검증하고 glossary-proposal.md 를 검토해줘"
 ```
+
+- 입력: `src/locales/*.json`, `glossary-proposal.md`
+- 스크립트 자리: `npm run validate:i18n`, `npm run glossary:audit`, `npm run memory:index`
 
 ### Dev-C
 
 ```bash
-npm create vite@latest . -- --template react-ts
-npm install react-i18next i18next
 kiro-cli chat --agent code-gen-agent
-# "requirements/tech-env.md를 읽고 US-3.1 프로젝트 초기화를 진행해줘"
+# "src/components-map.json 을 읽고 US-3.1 프로젝트 초기화부터 진행해줘"
 ```
+
+- 입력: `src/components-map.json` (프레임별 key 매핑), `src/locales/*.json`
+- Figma 디자인 정보는 code-gen-agent의 Figma MCP로 직접 조회 가능
 
 ---
 

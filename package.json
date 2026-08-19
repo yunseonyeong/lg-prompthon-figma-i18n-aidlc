@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
+    "pipeline": "tsx src/pipeline/figma-i18n-pipeline.ts",
     "validate:i18n": "tsx scripts/validate-i18n.ts",
     "glossary:audit": "tsx scripts/glossary-audit.ts",
     "memory:index": "tsx scripts/memory-index.ts",

@@ -10,14 +10,23 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// ===== 환경변수 로드 =====
+// 프로젝트 .env를 우선 로드하고, 없는 값은 ~/.hermes/.env에서 보완한다.
+// (해커톤 환경에서 FRIENDLI_API_KEY가 ~/.hermes/.env에 발급되어 있음)
+dotenv.config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
+dotenv.config({ path: path.join(os.homedir(), '.hermes', '.env'), quiet: true });
 
 // ===== 설정 =====
 const CONFIG = {
   figmaApiKey: process.env.FIGMA_API_KEY || '',
-  figmaFileKey: process.env.FIGMA_FILE_KEY || 'lNOFoSESnL6VHsUzhiw0j0',
+  // 기본값은 실제 작업 대상 파일. targetFrameIds와 짝을 맞춰야 한다.
+  figmaFileKey: process.env.FIGMA_FILE_KEY || 'zdG3CHXVU6TzD4cc28o5Yb',
   // EXAONE via Friendli API (Hermes Agent)
   friendliApiUrl:
     process.env.FRIENDLI_API_URL || 'https://api.friendli.ai/dedicated/v1/chat/completions',
@@ -144,7 +153,8 @@ function traverseNodes(node: FigmaNode, parentPath: string, results: TextNode[])
     results.push({
       id: node.id,
       name: node.name,
-      text: node.characters,
+      // Figma 텍스트에 선행/후행 공백이 포함된 경우가 많아 정규화한다.
+      text: node.characters.trim(),
       path: currentPath,
       frameName,
       style: {
@@ -509,11 +519,13 @@ Respond ONLY with a JSON array, no explanation:
     return entries.map((entry, idx) => {
       const t = translations.find((tr: any) => tr.index === idx + 1);
       if (t) {
+        // 모델 응답에 선행/후행 공백이 섞이는 경우가 있어 정규화한다.
+        const clean = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
         entry.translations = {
-          en: entry.source,
-          ko: t.ko,
-          ja: t.ja,
-          'zh-CN': t['zh-CN'],
+          en: entry.source.trim(),
+          ko: clean(t.ko),
+          ja: clean(t.ja),
+          'zh-CN': clean(t['zh-CN']),
         };
       }
       return entry;
@@ -759,6 +771,22 @@ export async function runPipeline(fileKey?: string): Promise<void> {
   const textNodes = await extractTextsFromFigma(targetFileKey);
   console.log(`   추출된 텍스트 노드: ${textNodes.length}개`);
 
+  // 가드: 추출 결과가 비어있으면 중단한다.
+  // 잘못된 File Key / Frame ID로 실행했을 때 기존 산출물을 빈 값으로 덮어쓰는 것을 방지.
+  // (Dev-B/Dev-C가 이 산출물을 입력으로 사용하므로 유실되면 작업이 막힌다)
+  if (textNodes.length === 0) {
+    console.error('');
+    console.error('❌ 추출된 텍스트가 0개입니다. 산출물을 덮어쓰지 않고 중단합니다.');
+    console.error('');
+    console.error('확인할 항목:');
+    console.error(`   - FIGMA_FILE_KEY: ${targetFileKey}`);
+    console.error(`   - targetFrameIds: ${CONFIG.targetFrameIds.join(', ') || '(전체)'}`);
+    console.error('   → File Key와 Frame ID가 서로 맞는지 확인하세요.');
+    console.error('     (다른 파일의 Frame ID를 지정하면 0개가 됩니다)');
+    process.exitCode = 1;
+    return;
+  }
+
   // Step 2: 문맥 분석
   console.log('🔍 Step 2: UX 흐름 문맥 분석...');
   const frameContexts = analyzeContext(textNodes);
@@ -786,6 +814,11 @@ export async function runPipeline(fileKey?: string): Promise<void> {
 
   // Step 5: Locale JSON 출력
   console.log('💾 Step 5: Locale JSON 출력...');
+  if (translated.length === 0) {
+    console.error('❌ 번역 결과가 0개입니다. 산출물을 덮어쓰지 않고 중단합니다.');
+    process.exitCode = 1;
+    return;
+  }
   const locales = generateLocaleFiles(translated);
   writeLocaleFiles(locales);
 
