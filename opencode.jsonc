@@ -1,0 +1,81 @@
+
+{
+    "$schema": "https://opencode.ai/config.json",
+    "permission": {
+      "*": "ask",
+      "read": "allow",
+      "glob": "allow",
+      "grep": "allow",
+      "todowrite": "allow",
+      "todoread": "allow",
+      "bash": {
+        "*": "ask",
+        "ls *": "allow",
+        "tail *": "allow",
+        "head *": "allow",
+        "wc *": "allow",
+        "grep *": "allow"
+      }
+    },
+    "model": "lgairesearch/chatexaone-code-cli-claude-compatible-thinking",
+    "small_model": "lgairesearch/chatexaone-code-cli-claude-compatible-instant",
+    "share": "disabled",
+    "disabled_providers": [],
+    "compaction": {
+      "reserved": 20000
+    },
+    "provider": {
+      "lgairesearch": {
+        "npm": "@ai-sdk/openai-compatible",
+        "name": "lgairesearch",
+        "options": {
+          "baseURL": "https://api.lgresearch.ai/v1/code-cli",
+          "apiKey": "MWJjODg5MzI4MDQ5NGFjZGIzYjQwNGZmYjI1ZmMxMTFAbGdlLmNvbQ",
+          "headers": {
+            "x-api-key": "MWJjODg5MzI4MDQ5NGFjZGIzYjQwNGZmYjI1ZmMxMTFAbGdlLmNvbQ"
+          }
+        },
+        "models": {
+          "chatexaone-code-cli-claude-compatible-thinking": {
+            "name": "chatexaone-code-cli-thinking",
+            "options": {
+              "temperature": 0.6,
+              "top_p": 0.8,
+              "top_k": 20,
+              "min_p": 0.0,
+              "presence_penalty": 1.5,
+              "repetition_penalty": 1.0,
+              "chat_template_kwargs": {
+                "enable_thinking": true
+              }
+            },
+            "limit": {
+              "context": 131072,
+              "input": 111072,
+              "output": 20000
+            }
+          },
+          "chatexaone-code-cli-claude-compatible-instant": {
+            "name": "chatexaone-code-cli-instant",
+            "options": {
+              "temperature": 0.0,
+              "top_p": 0.8,
+              "top_k": 20,
+              "min_p": 0.0,
+              "presence_penalty": 1.5,
+              "repetition_penalty": 1.0,
+              "chat_template_kwargs": {
+                "enable_thinking": false
+              }
+            },
+            "limit": {
+              "context": 131072,
+              "input": 111072,
+              "output": 20000
+            }
+          }
+        }
+      }
+    }
+  }
+

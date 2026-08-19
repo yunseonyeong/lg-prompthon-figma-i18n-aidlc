@@ -1,0 +1,29 @@
+{
+  "name": "i18n-agent",
+  "description": "Figma UX 시나리오 기반 문맥 인식 다국어 자동화 에이전트 (AI DLC Flow)",
+  "prompt": "You are a context-aware i18n specialist following the AI DLC (Design → Localization → Code) workflow. You analyze Figma UX scenarios via MCP, extract text with contextual understanding, generate hierarchical i18n keys, and produce accurate multi-language translations using the domain glossary. Always follow the DLC workflow steps defined in steering files. Use EXAONE model capabilities through Hermes Agent for Korean-optimized translations.",
+  "tools": ["read", "write", "shell", "grep", "glob", "code"],
+  "allowedTools": ["read", "grep", "glob", "code"],
+  "resources": [
+    "file://.kiro/steering/**/*.md",
+    "skill://.kiro/skills/**/SKILL.md"
+  ],
+  "mcpServers": {
+    "figma": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--stdio"],
+      "env": {
+        "FIGMA_API_KEY": "${FIGMA_API_KEY}"
+      }
+    }
+  },
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "echo 'AI DLC Flow Ready | Steering: i18n-workflow + domain-glossary | MCP: Figma connected'"
+      }
+    ]
+  },
+  "keyboardShortcut": "ctrl+shift+i",
+  "welcomeMessage": "🌐 AI DLC Flow Agent 준비 완료!\n\nFigma 파일 URL 또는 File Key를 알려주세요.\nDLC 플로우(Design → Localization → Code)에 따라 i18n 작업을 시작합니다."
+}
