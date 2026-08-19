@@ -37,33 +37,48 @@ Figma MCP의 `get_file` 도구를 사용하여:
 ### Step 3: i18n Key 생성
 
 규칙:
-- `{domain}.{page}.{component}.{element}` 형식
+- `{domain}.{feature}.{role}.{identifier}` 형식
+- `domain`은 파이프라인의 `CONFIG.keyPrefix` 값 (현재 `console`)
+- `role`은 title / label / button / status / placeholder / description / message
 - 영문 소문자 + dot 구분자만 사용
 - 의미 있는 네이밍 (텍스트 내용이 아닌 역할 기반)
 
-예시:
+예시 (실제 생성값):
 ```
-signage.player.management.title → "Player Management"
-signage.player.status.offline → "Player is offline"
-signage.player.action.restart → "Restart"
+console.setting.group.title.console                    → "Console"
+console.setting.group.label.business_site_information  → "Business Site Information"
+console.setting.group.button.publish                   → "Publish"
+console.doc.title.status.modified                      → "Modified"
 ```
 
 ### Step 4: 문맥 기반 번역
 
-- domain-glossary.md의 용어를 우선 적용
+- `requirements/domain-glossary.md`의 용어를 우선 적용
+- **복합어 내부에도 용어집을 적용한다.**
+  `Workspace/Group Settings` → `워크스페이스/그룹 설정` (`작업 공간...`은 위반)
 - UX 흐름의 전후 맥락을 참고하여 번역
 - 같은 단어도 화면/기능에 따라 다르게 번역 가능
+
+문맥 오역 주의 예시 (실제 발견 사례):
+```
+Vertical Type → "세로 유형" ❌  /  "산업 분야" ✅   (B2B 업종 분류)
+Extend        → "확장"     ❌  /  "연장"     ✅   (라이선스 기간)
+Withdraw      → "탈퇴"     ❌  /  "회수"     ✅   (라이선스 회수)
+```
+→ 단독 판단으로는 오역이 난다. **같은 프레임의 주변 필드를 함께 봐야 한다.**
 
 ### Step 5: 출력 생성
 
 ```json
 // src/locales/en.json
 {
-  "signage": {
-    "player": {
-      "management": { "title": "Player Management" },
-      "status": { "offline": "Player is offline" },
-      "action": { "restart": "Restart" }
+  "console": {
+    "setting": {
+      "group": {
+        "title": { "console": "Console" },
+        "label": { "business_site_information": "Business Site Information" },
+        "button": { "publish": "Publish" }
+      }
     }
   }
 }
@@ -71,11 +86,31 @@ signage.player.action.restart → "Restart"
 
 ## 출력 형식
 
-1. `src/locales/{lang}.json` — 언어별 i18n 파일
-2. `i18n-report.md` — 추출 결과 요약 (key 목록, 용어집 적용 내역, 신규 용어 제안)
+파이프라인(`npm run pipeline`)이 생성하는 산출물:
+
+1. `src/locales/{en,ko,ja,zh-CN}.json` — 언어별 i18n 파일
+2. `src/components-map.json` — 프레임별 key 매핑 (**Dev-C 컴포넌트 생성용**)
+3. `glossary-proposal.md` — 용어집 등록 제안 (**Dev-B 검토용**)
+
+검증 리포트(`i18n-report.md`)는 Dev-B가 생성한다.
+검증 규칙은 `aidlc-docs/construction/build-and-test/i18n-verification-spec.md` 참조.
 
 ## 주의사항
 
-- 디자인에 placeholder 텍스트(Lorem ipsum 등)가 있으면 무시
-- 숫자만으로 구성된 텍스트는 번역 대상에서 제외
-- 아이콘 레이블과 실제 UI 텍스트를 구분
+### 번역 대상에서 제외할 것
+
+- **UX 시나리오 설명 테이블**: No / Classification / Description 3열 테이블 전체
+- **더미 텍스트**: `Text Text`, `Description Description`, `supporting text`, `Label`, `Button`
+- **샘플 데이터**: `Business A`, `Workspace A1`, `Device N`, `workspace 1-1-1`
+- **샘플 주소·파일명**: `MagokJungang 10-ro...`, `FileName_sample_00123.jpg`
+- **변수 placeholder**: `{Company name}`, `{{userName}}` — 런타임 주입값이므로 원문 유지
+- **코드·포맷 값**: `LGEBN`, `YYYY.MM.DD`, `N.N.N`, `1 / 100`
+- 숫자·기호만으로 구성된 텍스트
+
+전체 목록은 `requirements/domain-glossary.md` 9절 참조.
+
+### 기타
+
+- 아이콘 레이블과 실제 UI 텍스트를 구분한다
+- 약어(SSO, API, SAML, OAuth)는 풀어서 번역하지 않는다
+- 제품명(Art Lounge, Hotel Mobile App 등)은 번역하지 않는다

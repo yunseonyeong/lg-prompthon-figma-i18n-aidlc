@@ -218,3 +218,75 @@ Dev-B가 번역을 수정해서 해결하면 근본 원인이 남는다.
   파서에서 실제 용어(`NewTerm`)로 읽힘 → 템플릿 행 분리 필요
 
 ---
+
+## 용어집 도메인 교체 (Signage → Console)
+**Timestamp**: 2026-08-19T16:50:00+09:00
+**User Input**: "domain-glossary.md 파일에 틀린 번역이 있으면 내가 고쳐야 해?" → 진단 후 "A로 교체할게"
+**AI Response**: 도메인 불일치 진단, Console 도메인 용어집(48개)으로 교체
+**Context**: Construction Phase - 번역 품질 근본 원인 수정
+
+### 진단: 번역이 틀린 게 아니라 도메인이 달랐음
+
+기존 용어집은 Signage 재생 장치 도메인(Player, Playlist, Channel 등)으로 작성되었으나
+실제 작업 대상은 `Consol_Settings` (LG Business Cloud 콘솔 설정)이었다.
+
+| 항목 | 값 |
+|------|-----|
+| 용어집 적중률 | 4/12 (Schedule, Group, Content, Publish만 등장) |
+| 미등장 용어 | Player, Channel, Display, Layout, Playlist, Template, Widget, Tag |
+| 필요한데 없던 용어 | Business Site(6), Workspace(4), Device(2), End Customer(2), Vertical |
+
+`Player → 재생 장치`는 사이니지 맥락에서 옳은 번역이지만, 대상 파일에 `Player`가 없었다.
+이것이 문맥 오역이 그대로 통과한 근본 원인.
+
+### 발견한 문맥 오역 3건 (모두 같은 유형)
+
+주변 필드를 근거로 판정. 단독으로는 검출 불가한 사례들.
+
+| 용어 | 오역 | 정정 | 판정 근거 (같은 프레임 주변 텍스트) |
+|------|------|------|-----------------------------------|
+| Vertical Type | 세로 유형 | 산업 분야 | Business Site ID, Subsidiary, License Policy, Region/Country → B2B 분류 |
+| Extend | 확장 | 연장 | Licensed Product, Period, Assignable Days → 라이선스 기간 |
+| Withdraw | (탈퇴) | 회수 | Assign to Workspace, Withdrawable days → 라이선스 회수 |
+
+`Player=재생장치`와 동일 유형이며, 실제 현업 파일에서 발견되었다는 점에서
+데모 사례로서 설득력이 더 크다.
+
+### 교체 내용
+
+- 근거: Scenario 페이지 UI 텍스트 7,830건 빈도 분석
+- 48개 용어, 6개 카테고리 (엔티티 계층 / 권한·역할 / 라이선스 / 인증 / 비즈니스 분류 / 메뉴)
+- 제품명 번역 금지 목록 분리 (Art Lounge, Hotel Mobile App 등)
+- ON/OFF 규칙 명문화: 상태 `켜짐/꺼짐`, 동작 `켜기/끄기`
+- 9절에 번역 제외 대상 명시 (검증 명세 Layer 4 참조용)
+- 용어 추가 요청 템플릿을 표 형식에서 제거 (`NewTerm` 오파싱 문제 해결)
+
+### 재생성 후 검증 (실측)
+
+| 항목 | 결과 |
+|------|------|
+| key 수 / 구조 일치 | 110개, 4개 언어 완전 일치 |
+| 오역 3건 수정 | 산업 분야 / 연장 / 회수 확인 |
+| 용어집 준수 위반 | 0건 (false positive 1건 제외) |
+| ON/OFF 일관성 | 해소 (이전: 켜짐·끄기·끔 혼용) |
+
+### Dev-B 전달 사항
+
+1. **소유권 위반 고지**: `requirements/domain-glossary.md`는 Dev-B 소유 파일이나,
+   번역 품질을 직접 가로막고 있어 Dev-A가 교체했다. 검토 후 이견 시 조정 필요.
+2. **검증 규칙 보완 필요 (false positive)**:
+   약어와 풀네임 병기 시 어느 한 쪽만 있어도 통과시켜야 한다.
+   `Set Single Sign-On (SSO) to ON...` → `SSO를 켜고...` 는 규칙 5(약어 유지)에 부합하나
+   단순 부분문자열 검사로는 "싱글 사인온 누락"으로 오판된다.
+3. 9절 번역 제외 목록을 Layer 4 검출 규칙의 기준으로 사용할 수 있다.
+
+### 미결 사항
+
+`CONFIG.domain`이 여전히 `'signage'`이다. 두 곳에 영향:
+- i18n key prefix (`signage.setting.group...`)
+- 번역 프롬프트의 도메인 서술
+
+key prefix를 바꾸면 Dev-C의 `components-map.json` 참조와 어긋나므로,
+Dev-C 착수 전에 결정해야 한다.
+
+---

@@ -1,5 +1,5 @@
 {
-  "signage": {
+  "console": {
     "setting": {
       "group": {
         "label": {
@@ -8,7 +8,7 @@
           "device": "デバイス",
           "settings": "設定",
           "signage": "サイネージ",
-          "is_required": "必須項目です",
+          "is_required": "必須です",
           "calendar": "カレンダー",
           "list": "リスト",
           "last_update_time": "最終更新時間",
@@ -24,12 +24,12 @@
           "period": "期間",
           "business_site_name": "ビジネスサイト名",
           "region_country": "地域 / 国 *",
-          "asia_pacific": "アジア & 太平洋",
+          "asia_pacific": "アジア＆太平洋",
           "label": "ラベル",
           "korea": "韓国",
           "time_zone": "タイムゾーン",
           "utc0900_asiaseoul": "(UTC+09:00) アジア/ソウル",
-          "vertical_type": "縦型 *",
+          "vertical_type": "業種 *",
           "system_integrator": "システムインテグレーター",
           "business_type": "ビジネスタイプ *",
           "end_customer": "エンドカスタマー",
@@ -76,7 +76,7 @@
           "floor_plan": "フロアプラン",
           "history": "履歴",
           "report": "レポート",
-          "analytics": "分析",
+          "analytics": "アナリティクス",
           "library": "ライブラリ",
           "videowall": "ビデオウォール",
           "content_schedule": "コンテンツスケジュール",
@@ -107,12 +107,12 @@
           "off": "オフ",
           "edit": "編集",
           "delete": "削除",
-          "add_workspace": "ワークスペースを追加",
+          "add_workspace": "ワークスペース追加",
           "user_search": "ユーザー検索",
-          "about_role": "役割情報",
+          "about_role": "ロール情報",
           "change_business_site": "ビジネスサイト変更",
           "filter": "フィルター",
-          "extend": "拡張"
+          "extend": "延長"
         },
         "placeholder": {
           "lg_electronics": "LG Electronics"

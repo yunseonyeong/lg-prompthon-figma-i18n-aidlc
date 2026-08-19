@@ -92,15 +92,18 @@
 
 ### Role 정의
 
-| Role | 용도 | 예시 |
-|------|------|------|
-| `title` | 화면/섹션 제목 | `signage.player.title.management` |
-| `status` | 상태 텍스트 | `signage.player.status.offline` |
-| `button` | 버튼 텍스트 | `signage.player.button.restart` |
-| `label` | 입력 라벨 | `signage.channel.label.name` |
-| `description` | 설명 텍스트 | `signage.schedule.description.set` |
-| `placeholder` | 입력 힌트 | `signage.player.placeholder.search` |
-| `message` | 알림/에러 메시지 | `signage.player.message.error` |
+| Role | 용도 | 실제 생성 예시 |
+|------|------|---------------|
+| `title` | 화면/섹션 제목 | `console.setting.group.title.console` |
+| `status` | 상태 텍스트 | `console.doc.title.status.modified` |
+| `button` | 버튼 텍스트 | `console.setting.group.button.publish` |
+| `label` | 입력 라벨 | `console.setting.group.label.business_site_information` |
+| `placeholder` | 입력 힌트 | `console.setting.group.placeholder.lg_electronics` |
+| `description` | 설명 텍스트 | 예약 (현재 프레임 미생성) |
+| `message` | 알림/에러 메시지 | 예약 (현재 프레임 미생성) |
+
+> `{domain}` 값은 `CONFIG.keyPrefix`로 제어한다.
+> 초기 `signage`에서 `console`로 변경되었다 (대상 파일이 LG Business Cloud 콘솔).
 
 ### 규칙 세부
 

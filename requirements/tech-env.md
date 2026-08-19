@@ -95,7 +95,7 @@ src/
 
 - 컴포넌트: 함수형 컴포넌트 + hooks
 - 네이밍: PascalCase (컴포넌트), camelCase (함수/변수), kebab-case (파일)
-- i18n key: 영문 소문자 + dot 구분자 (`signage.player.status.offline`)
+- i18n key: 영문 소문자 + dot 구분자 (`console.setting.group.button.publish`)
 - export: barrel export (index.ts)
 - 텍스트: 절대 하드코딩 금지 → 반드시 `useTranslation()` 사용
 
@@ -173,42 +173,53 @@ export default i18n;
 ```typescript
 import { useTranslation } from 'react-i18next';
 
-interface PlayerStatusProps {
-  isOnline: boolean;
+interface BusinessSiteInfoProps {
+  isModified: boolean;
 }
 
-export const PlayerStatus = ({ isOnline }: PlayerStatusProps) => {
+export const BusinessSiteInfo = ({ isModified }: BusinessSiteInfoProps) => {
   const { t } = useTranslation();
 
   return (
     <div>
-      <h2>{t('signage.player.management.title')}</h2>
-      <p>
-        {isOnline
-          ? t('signage.player.status.online')
-          : t('signage.player.status.offline')}
-      </p>
+      <h2>{t('console.setting.group.title.console')}</h2>
+      <label>{t('console.setting.group.label.business_site_information')}</label>
+      <button>{t('console.setting.group.button.publish')}</button>
+      {isModified && <span>{t('console.doc.title.status.modified')}</span>}
     </div>
   );
 };
 ```
 
+> key는 `src/components-map.json`에서 프레임별로 확인한다.
+> 원문 텍스트를 직접 쓰지 않고 반드시 key를 참조한다.
+
 ### locale JSON 패턴 (en.json)
+
+실제 생성되는 구조입니다.
 
 ```json
 {
-  "signage": {
-    "player": {
-      "management": {
-        "title": "Player Management"
-      },
-      "status": {
-        "online": "Player is online",
-        "offline": "Player is offline"
-      },
-      "action": {
-        "restart": "Restart",
-        "shutdown": "Shutdown"
+  "console": {
+    "setting": {
+      "group": {
+        "title": {
+          "console": "Console",
+          "workspacegroup_settings": "Workspace/Group Settings"
+        },
+        "label": {
+          "business_site_information": "Business Site Information",
+          "vertical_type": "Vertical Type *"
+        },
+        "button": {
+          "publish": "Publish",
+          "assign_device": "Assign Device"
+        }
+      }
+    },
+    "doc": {
+      "title": {
+        "status": { "modified": "Modified" }
       }
     }
   }
@@ -224,12 +235,12 @@ import { generateI18nKey } from './key-generator';
 describe('generateI18nKey', () => {
   it('should generate hierarchical key from context', () => {
     const result = generateI18nKey({
-      domain: 'signage',
-      page: 'player',
-      component: 'status',
-      element: 'offline',
+      domain: 'console',
+      feature: 'setting.group',
+      role: 'button',
+      identifier: 'publish',
     });
-    expect(result).toBe('signage.player.status.offline');
+    expect(result).toBe('console.setting.group.button.publish');
   });
 });
 ```
