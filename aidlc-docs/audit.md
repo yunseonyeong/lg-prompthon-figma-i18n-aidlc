@@ -166,3 +166,55 @@ node src/pipeline/figma-i18n-pipeline.ts
 ```
 
 ---
+
+## 검증 체계 명세 전달 (Dev-A → Dev-B)
+**Timestamp**: 2026-08-19T15:49:00+09:00
+**User Input**: "근데 너가 번역한 부분에 대해서 devB가 어떻게 검증하면 되는거야? 제대로 안된 부분들이 많아." / "DEV B가 검증체계를 만들고 DEV B의 역할이 아닌건 DEV A 가 참고할 수 있도록 문서를 만드는 식으로 해줘"
+**AI Response**: 번역 결과 자체 점검 후 4계층 검증 체계 명세 작성, 반송 프로토콜 정의
+**Context**: Construction Phase - 품질 검증 체계 설계 (Unit 1 → Unit 2 인계)
+
+### 자체 점검으로 확인된 결함 (18건)
+
+| 계층 | 건수 | 내용 |
+|------|------|------|
+| Layer 1 | 0 | key 구조 일치 110개, 공백 0건, placeholder 보존 |
+| Layer 2 | 1 | `Settings`/`Setting` 둘 다 "설정" (구분 소실) |
+| Layer 3 | 1 | `Vertical Type` → "세로 유형" **오역** |
+| Layer 4 | 12 | 샘플 주소 2, 파일명 1, 더미 텍스트 4, 샘플 데이터 5 |
+| 원문 문제 | 4 | `Thema` 오타 2, `detailes` 오타 1, `is required` 문장 조각 1 |
+
+### Layer 3 오역 상세 (프로젝트 핵심 사례)
+
+```
+en: Vertical Type *
+ko: 세로 유형   ← 오역
+```
+같은 프레임 주변 필드: System Integrator, Business Type, End Customer
+→ B2B 파트너 분류 화면이므로 Vertical = 산업 분야(vertical market)
+→ 화면 방향이 아님. "Player=재생장치"와 동일 유형의 문맥 오역.
+→ 단건 질의로는 검출 불가. 주변 필드를 함께 제공해야 판정 가능.
+
+### 설계 핵심: 계층별 책임자 라우팅
+
+문제 유형별로 고칠 사람이 다르다는 점을 명시했다.
+특히 Layer 4는 번역 품질 문제가 아니라 **Dev-A의 추출 필터 결함**이므로
+Dev-B가 번역을 수정해서 해결하면 근본 원인이 남는다.
+
+### 산출물
+- `aidlc-docs/construction/build-and-test/i18n-verification-spec.md` (신규)
+  - Layer 1~4 규칙 정의 (규칙 ID 부여)
+  - `i18n-report.md` / `extraction-issues.md` 출력 포맷 정의
+  - 피드백 루프 및 재시도 상한(3회) 정의
+  - 확인된 결함 18건을 검증 체계 테스트 케이스로 제공
+- `PROJECT_GUIDE.md` 업데이트 (Dev-B 산출물, 계층 표, 소통 포인트 반송 흐름)
+
+### 결정
+- Layer 4 12건은 Dev-A가 선제 수정하지 않고, Dev-B 검증 체계를 통해
+  `extraction-issues.md`로 정식 반송받는 흐름으로 진행 (사용자 지시)
+- Layer 1/2/4는 API 없이 동작해야 함 (CI 실행 및 API 장애 대비)
+
+### Dev-B 전달 사항
+- `requirements/domain-glossary.md` 하단 "용어 추가 요청 형식" 예시 행이
+  파서에서 실제 용어(`NewTerm`)로 읽힘 → 템플릿 행 분리 필요
+
+---

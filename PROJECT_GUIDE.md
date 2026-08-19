@@ -72,9 +72,26 @@ kiro-cli chat --agent glossary-agent   # Ctrl+Shift+G
 #### 산출물
 
 - 확장된 `requirements/domain-glossary.md`
-- `i18n-report.md` (검증 리포트)
+- `i18n-report.md` (전체 검증 리포트)
+- `extraction-issues.md` (**Dev-A 반송 문서** — Layer 4 + 원문 문제)
 - `data/translation-memory/` (Vectra 인덱스)
 - `data/glossary-index/` (Vectra 인덱스)
+
+#### 검증 체계 명세
+
+구현 대상은 `aidlc-docs/construction/build-and-test/i18n-verification-spec.md` 참조.
+4계층으로 나누고, 계층별로 **책임자에게 라우팅**하는 것이 핵심입니다.
+
+| 계층 | 검출 대상 | 고칠 사람 |
+|------|-----------|-----------|
+| Layer 1 | 구조적 결함 (key 불일치, placeholder 손실) | Dev-A |
+| Layer 2 | 용어집 위반 (복합어 내부까지 검사) | Dev-A / Dev-B |
+| Layer 3 | 문맥 오역 (주변 필드 함께 판정) | Dev-B → Dev-A |
+| Layer 4 | **번역 대상이 아닌 텍스트** | **Dev-A (추출 필터)** |
+| 부가 | 원문 오타/문장 조각 | 디자이너 |
+
+> ⚠️ Layer 4는 번역을 고쳐서 해결하면 안 됩니다. 애초에 추출되면 안 됐던 항목이므로
+> `extraction-issues.md`로 Dev-A에게 반송하세요.
 
 ---
 
@@ -231,9 +248,11 @@ kiro-cli chat --agent code-gen-agent
 | 시점 | 누가→누구 | 내용 |
 |------|-----------|------|
 | locale JSON 첫 생성 | A→B, A→C | "locale JSON 올렸어, 검증/코드생성 시작해" |
-| 검증 FAIL | B→A | "Player가 플레이어로 번역됨, 재번역 필요" |
+| 검증 FAIL (Layer 1~3) | B→A | `i18n-report.md` 전달 → 재번역 |
+| 검증 FAIL (Layer 4) | B→A | `extraction-issues.md` 전달 → **추출 필터 수정** |
+| 원문 문제 | B→디자이너 | 오타/문장 조각 피드백 |
 | 검증 PASS | B→C | "검증 통과, 최종 JSON이야" |
-| 새 용어 발견 | B→전원 | "Schedule을 '스케줄'로 등록할까요?" |
+| 새 용어 발견 | B→전원 | "Vertical을 '산업 분야'로 등록할까요?" |
 | 컴포넌트 완성 | C→전원 | "데모 서버 올렸어, 확인해줘" |
 
 ---
