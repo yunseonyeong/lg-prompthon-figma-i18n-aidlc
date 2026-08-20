@@ -15,6 +15,11 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 // Dev-B 검증 루프가 축적한 컨텍스트를 번역 직전에 주입한다 (docs/retriever-integration.md)
 import { initRetriever, retrieveForBatch, retrieverStatus } from '../retrieval/index.js';
+// key 재사용 시 확정 번역이 살아있는 key를 우선 선택하기 위해 참조한다.
+import { loadConfirmed } from '../retrieval/feedback-store.js';
+// 용어집 §9(번역 제외 대상)을 추출 필터에서 재사용한다.
+// ⚠️ 이 파일 하단에 동명의 지역 loadGlossary()가 있어 별칭을 쓴다.
+import { loadGlossary as loadGlossaryData } from '../retrieval/glossary-loader.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -283,12 +288,82 @@ function inferFeature(frameName: string): string {
 }
 
 /**
+ * 용어집 §9 제외 대상 판정
+ *
+ * 두 가지를 분리한다.
+ *
+ *  ① 완전 일치 — 용어집 §9에 열거된 더미/샘플 값이 유일한 기준이다.
+ *     "Label", "Button", "Modified" 처럼 평범한 영어 단어는 정규식으로
+ *     구분할 방법이 없고, 부분 일치를 쓰면 "Last Modified Date" 같은
+ *     정상 UI 텍스트까지 함께 걸린다. 그래서 완전 일치만 본다.
+ *
+ *  ② 구조 패턴 — §9에 열거되지 않은 변형을 잡는다.
+ *     샘플은 "Device N" 하나만 적혀 있어도 실제로는 "Device 1",
+ *     "Device 42" 가 온다. 목록만으로는 부족하다.
+ *
+ * §9 목록을 코드에 복사하지 않는 것이 요점이다. 목록이 두 곳에 있으면
+ * 반드시 어긋나고, 지금 FAIL 12건이 정확히 그 틈에서 나왔다.
+ */
+let excludeExactCache: Set<string> | null = null;
+
+function getExcludeExactSet(): Set<string> {
+  if (excludeExactCache) return excludeExactCache;
+  let patterns: string[] = [];
+  try {
+    patterns = loadGlossaryData().excludePatterns;
+  } catch (e) {
+    console.warn(`⚠️  용어집 §9 로드 실패 — 구조 패턴만으로 필터링합니다: ${(e as Error).message}`);
+  }
+  excludeExactCache = new Set(patterns.map((p) => p.trim().toLowerCase()));
+  return excludeExactCache;
+}
+
+/** 공백을 정규화한 소문자 키 (개행/연속공백 차이를 흡수) */
+function normalizeForCompare(text: string): string {
+  return text.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function isExcludedByGlossary(text: string): boolean {
+  return getExcludeExactSet().has(normalizeForCompare(text));
+}
+
+/**
+ * §9 유형의 구조 패턴. 목록에 없는 변형을 잡는다.
+ */
+function isExcludedByShape(text: string): boolean {
+  const t = text.trim();
+
+  // 샘플 데이터: "<엔티티> <영문/숫자 식별자>"  (Business A, Workspace A1, Device N, User 3)
+  if (/^(business|workspace|group|device|user|site|company)\s+[a-z]?\d*[a-z]?\d*$/i.test(t)) {
+    return true;
+  }
+
+  // 샘플 파일명 (FileName_sample_00123.jpg)
+  if (/\.(jpe?g|png|gif|svg|webp|pdf|mp4|mov)$/i.test(t)) return true;
+
+  // 샘플 주소: 한국 도로명/행정구역 로마자 표기, 건물 표기
+  if (/\d+-(ro|gil)\b/i.test(t)) return true;              // 10-ro, 3-gil
+  if (/\b[a-z]+-(gu|dong|si|eup|myeon)\b/i.test(t)) return true; // Gangseo-gu
+  if (/\bbldg\.?$/i.test(t)) return true;                  // 30, A101 bldg.
+
+  // 같은 단어 반복 (Description Description, Title Title)
+  const words = t.split(/\s+/).filter(Boolean);
+  if (words.length >= 2 && new Set(words.map((w) => w.toLowerCase())).size === 1) return true;
+
+  return false;
+}
+
+/**
  * 텍스트가 UI 번역 대상인지 판별
  * 
  * 한글로 된 UX 시나리오 설명은 번역 대상이 아님.
  * UI에 표시되는 영어 텍스트만 번역 대상.
  */
 function isTranslatableUIText(text: string): boolean {
+  // 용어집 §9 제외 대상 (완전 일치 + 구조 패턴)
+  if (isExcludedByGlossary(text)) return false;
+  if (isExcludedByShape(text)) return false;
+
   // 순수 한글 텍스트 (UI가 아닌 시나리오 설명)
   const koreanRatio = (text.match(/[\uAC00-\uD7A3]/g) || []).length / text.length;
   if (koreanRatio > 0.5) return false;
@@ -390,6 +465,188 @@ function generateIdentifier(text: string): string {
     .join('');
 }
 
+// ===== US-1.3-b: 원문 텍스트 기준 key 재사용 =====
+
+/**
+ * 원문 비교용 정규화.
+ *
+ * 앞뒤 공백과 연속 공백만 정리한다. 대소문자는 구분한다.
+ * en.json의 값이 곧 화면에 나가는 문자열이므로 "Group Name"과 "group name"에
+ * 같은 key를 주면 한쪽 원문이 사라진다.
+ */
+function normalizeSourceForKey(text: string): string {
+  return text.trim().replace(/\s+/g, ' ');
+}
+
+/** 중첩 locale JSON을 `a.b.c` 평면 맵으로 변환 */
+function flattenLocaleJson(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    const full = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      Object.assign(out, flattenLocaleJson(v as Record<string, unknown>, full));
+    } else if (typeof v === 'string') {
+      out[full] = v;
+    }
+  }
+  return out;
+}
+
+/**
+ * 이미 등록된 원문 → key 레지스트리 (src/locales/en.json 기준).
+ *
+ * 재실행할 때 같은 영문 텍스트에 새 key를 만들면 confirmed 저장소가
+ * `key::locale`로 정확 조회하기 때문에 미스가 되고, 검증을 통과한 확정 번역을
+ * 잃는다. 그래서 기존 key를 최우선으로 재사용한다.
+ *
+ * 같은 원문에 key가 여럿 달려 있는 경우(과거 프레임별로 따로 생성된 흔적)에는
+ * 확정된 로케일이 가장 많은 key를 고른다. 파일 순서대로 고르면 확정 이력이 없는
+ * key가 뽑혀서 확정 번역을 버리는 일이 생긴다.
+ */
+export function loadRegisteredKeyRegistry(): Map<string, string> {
+  const registry = new Map<string, string>();
+  const enPath = path.join(CONFIG.outputDir, 'en.json');
+  if (!fs.existsSync(enPath)) return registry;
+
+  let flat: Record<string, string>;
+  try {
+    flat = flattenLocaleJson(JSON.parse(fs.readFileSync(enPath, 'utf-8')));
+  } catch (e) {
+    console.warn(`   ⚠️  기존 en.json 파싱 실패 → key 재사용 없이 진행: ${(e as Error).message}`);
+    return registry;
+  }
+
+  // key별 확정 로케일 수
+  const confirmedCount = new Map<string, number>();
+  try {
+    for (const entry of Object.values(loadConfirmed())) {
+      confirmedCount.set(entry.key, (confirmedCount.get(entry.key) ?? 0) + 1);
+    }
+  } catch {
+    // 확정 저장소가 없어도 재사용 자체는 동작해야 한다
+  }
+
+  for (const [key, source] of Object.entries(flat)) {
+    const norm = normalizeSourceForKey(source);
+    if (!norm) continue;
+    const prev = registry.get(norm);
+    if (!prev) {
+      registry.set(norm, key);
+      continue;
+    }
+    // 동일 원문에 key가 둘 이상 — 확정 이력이 많은 쪽을 남긴다
+    if ((confirmedCount.get(key) ?? 0) > (confirmedCount.get(prev) ?? 0)) {
+      registry.set(norm, key);
+    }
+  }
+
+  return registry;
+}
+
+export interface KeyAssignment {
+  /** key 기준 유일 항목. 번역/locale 출력 대상 */
+  entries: I18nEntry[];
+  /** textNodes와 인덱스가 1:1로 대응하는 key 배열 (components-map 해석용) */
+  keyByNode: string[];
+  stats: {
+    nodes: number;
+    unique: number;
+    /** 기존 en.json의 key를 재사용한 건수 */
+    reusedRegistered: number;
+    /** 같은 실행 안에서 앞선 노드의 key를 재사용한 건수 */
+    reusedInRun: number;
+    /** 원문이 다른데 key가 겹쳐 접미사를 붙인 건수 */
+    disambiguated: number;
+  };
+}
+
+/**
+ * 텍스트 노드에 i18n key를 배정한다.
+ *
+ * 핵심 규칙: **원문(영문)이 같으면 프레임/role이 달라도 같은 key를 쓴다.**
+ * 프레임마다 key를 새로 만들면 같은 문장을 여러 번 번역하게 되고(비용),
+ * 번역이 프레임마다 갈릴 수 있고(일관성), 확정 번역 재사용이 깨진다(회귀).
+ *
+ * 우선순위:
+ *   1. 기존 en.json에 등록된 key (재실행 시 확정 번역 유지)
+ *   2. 같은 실행에서 앞선 노드가 만든 key
+ *   3. 새로 생성 (`generateI18nKey`)
+ *
+ * 새로 만든 key가 이미 다른 원문에 쓰이고 있으면 접미사(2, 3, …)를 붙인다.
+ * 접미사가 없으면 서로 다른 문장이 같은 key를 공유해 locale JSON에서 한쪽이
+ * 조용히 덮어써진다.
+ */
+export function assignI18nKeys(
+  textNodes: TextNode[],
+  frameContexts: Map<string, string>,
+  options: { registry?: Map<string, string> } = {}
+): KeyAssignment {
+  const registered = options.registry ?? loadRegisteredKeyRegistry();
+
+  /** 정규화 원문 → 배정된 key */
+  const keyBySource = new Map<string, string>();
+  /** key → 정규화 원문 (충돌 판정용) */
+  const sourceByKey = new Map<string, string>();
+  const entryByKey = new Map<string, I18nEntry>();
+
+  const keyByNode: string[] = [];
+  let reusedRegistered = 0;
+  let reusedInRun = 0;
+  let disambiguated = 0;
+
+  for (const node of textNodes) {
+    const norm = normalizeSourceForKey(node.text);
+
+    // ① 같은 실행에서 이미 배정됨
+    let key = keyBySource.get(norm);
+    if (key) {
+      reusedInRun++;
+    } else {
+      // ② 기존 en.json에 등록된 key
+      const fromRegistry = registered.get(norm);
+      if (fromRegistry && !sourceByKey.has(fromRegistry)) {
+        key = fromRegistry;
+        reusedRegistered++;
+      } else {
+        // ③ 새로 생성 + 충돌 시 접미사
+        const base = generateI18nKey(node, frameContexts);
+        key = base;
+        if (sourceByKey.has(key)) {
+          let n = 2;
+          while (sourceByKey.has(`${base}${n}`)) n++;
+          key = `${base}${n}`;
+          disambiguated++;
+        }
+      }
+
+      keyBySource.set(norm, key);
+      sourceByKey.set(key, norm);
+      entryByKey.set(key, {
+        key,
+        source: node.text,
+        context: `${node.frameName} > ${node.role}`,
+        role: node.role,
+        translations: { en: node.text },
+        contextOnly: false, // 테이블 필터링은 추출 단계에서 이미 처리됨
+      });
+    }
+
+    keyByNode.push(key);
+  }
+
+  return {
+    entries: [...entryByKey.values()],
+    keyByNode,
+    stats: {
+      nodes: textNodes.length,
+      unique: entryByKey.size,
+      reusedRegistered,
+      reusedInRun,
+      disambiguated,
+    },
+  };
+}
+
 // ===== US-1.4: EXAONE 문맥 기반 번역 =====
 
 /**
@@ -484,18 +741,23 @@ async function translateBatch(
   );
 
   // 이미 검증을 통과한 항목은 재번역하지 않는다 (회귀 원천 차단 + API 비용 절감)
+  // ⚠️ 확정은 key 단위가 아니라 key+locale 단위다. ko/ja만 확정되고 zh-CN은
+  //    미확정인 부분 확정 상태가 흔하므로, 로케일별로 따져야 한다.
+  const LOCALES = ['ko', 'ja', 'zh-CN'] as const;
   for (const e of entries) {
     const c = ctx.confirmed[e.key];
-    if (c) {
-      e.translations = {
-        en: e.source.trim(),
-        ko: c.ko ?? '',
-        ja: c.ja ?? '',
-        'zh-CN': c['zh-CN'] ?? '',
-      };
+    if (!c) continue;
+    e.translations.en = e.source.trim();
+    for (const l of LOCALES) {
+      const t = c[l];
+      if (t) e.translations[l] = t;
     }
   }
-  const targets = entries.filter((e) => !ctx.confirmed[e.key]);
+  // 미확정 로케일이 하나라도 있으면 번역 대상이다
+  const targets = entries.filter((e) => {
+    const c = ctx.confirmed[e.key];
+    return !c || LOCALES.some((l) => !c[l]);
+  });
   if (targets.length === 0) {
     console.log(`      ↳ 전량 확정 재사용 (${entries.length}건) — API 호출 생략`);
     return entries;
@@ -581,18 +843,19 @@ Respond ONLY with a JSON array, no explanation:
 
     const translations = JSON.parse(jsonMatch[0]);
 
-    // 인덱스는 targets 기준이다 (확정 재사용 항목은 요청에서 제외됨)
+    // 인덱스는 targets 기준이다 (전량 확정된 항목은 요청에서 제외됨)
     targets.forEach((entry, idx) => {
       const t = translations.find((tr: any) => tr.index === idx + 1);
-      if (t) {
-        // 모델 응답에 선행/후행 공백이 섞이는 경우가 있어 정규화한다.
-        const clean = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
-        entry.translations = {
-          en: entry.source.trim(),
-          ko: clean(t.ko),
-          ja: clean(t.ja),
-          'zh-CN': clean(t['zh-CN']),
-        };
+      if (!t) return;
+      // 모델 응답에 선행/후행 공백이 섞이는 경우가 있어 정규화한다.
+      const clean = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+      const c = ctx.confirmed[entry.key];
+      entry.translations.en = entry.source.trim();
+      for (const l of LOCALES) {
+        // 확정된 로케일은 덮어쓰지 않는다 — 덮어쓰면 회귀가 된다
+        if (c?.[l]) continue;
+        const v = clean(t[l]);
+        if (v) entry.translations[l] = v;
       }
     });
     return entries;
@@ -660,20 +923,28 @@ interface ComponentMapFrame {
  */
 export function generateComponentsMap(
   textNodes: TextNode[],
-  entries: I18nEntry[]
+  entries: I18nEntry[],
+  keyByNode?: string[]
 ): ComponentMapFrame[] {
-  // source + context → entry 매핑
-  const entryMap = new Map<string, I18nEntry>();
+  // key → entry (원문 텍스트 기준 key 재사용으로 entries는 노드 수보다 적을 수 있다)
+  const byKey = new Map<string, I18nEntry>();
+  for (const entry of entries) byKey.set(entry.key, entry);
+
+  // 하위 호환: keyByNode가 없으면 기존 방식(source + context)으로 해석한다
+  const bySourceContext = new Map<string, I18nEntry>();
   for (const entry of entries) {
-    entryMap.set(`${entry.source}|||${entry.context}`, entry);
+    bySourceContext.set(`${entry.source}|||${entry.context}`, entry);
   }
 
   // 프레임별 그룹핑
   const frameMap = new Map<string, { frameId: string; children: ComponentMapEntry[] }>();
 
-  for (const node of textNodes) {
-    const lookupKey = `${node.text}|||${node.frameName} > ${node.role}`;
-    const entry = entryMap.get(lookupKey);
+  for (let i = 0; i < textNodes.length; i++) {
+    const node = textNodes[i];
+    const key = keyByNode?.[i];
+    const entry = key
+      ? byKey.get(key)
+      : bySourceContext.get(`${node.text}|||${node.frameName} > ${node.role}`);
     if (!entry) continue;
 
     if (!frameMap.has(node.frameName)) {
@@ -860,17 +1131,20 @@ export async function runPipeline(fileKey?: string): Promise<void> {
 
   // Step 3: i18n Key 생성
   console.log('🔑 Step 3: i18n Key 생성...');
-  const entries: I18nEntry[] = textNodes.map((node) => ({
-    key: generateI18nKey(node, frameContexts),
-    source: node.text,
-    context: `${node.frameName} > ${node.role}`,
-    role: node.role,
-    translations: { en: node.text },
-    contextOnly: false, // 테이블 필터링은 추출 단계에서 이미 처리됨
-  }));
+  // 원문(영문)이 같으면 프레임/role이 달라도 같은 key를 재사용한다.
+  const assignment = assignI18nKeys(textNodes, frameContexts);
+  const entries: I18nEntry[] = assignment.entries;
 
   const translationTargets = entries;
-  console.log(`   생성된 Key: ${entries.length}개 (번역 대상: ${translationTargets.length}개)`);
+  console.log(
+    `   생성된 Key: ${entries.length}개 (노드 ${assignment.stats.nodes}개 → 원문 중복 제거)`
+  );
+  console.log(
+    `   key 재사용: 기존 en.json ${assignment.stats.reusedRegistered}건 / 이번 실행 내 ${assignment.stats.reusedInRun}건` +
+      (assignment.stats.disambiguated > 0
+        ? ` / key 충돌 접미사 ${assignment.stats.disambiguated}건`
+        : '')
+  );
 
   // Step 4: EXAONE 번역
   console.log('🌐 Step 4: EXAONE 문맥 기반 번역...');
@@ -897,7 +1171,7 @@ export async function runPipeline(fileKey?: string): Promise<void> {
 
   // Step 6: Components Map 출력 (Dev-C 연동용)
   console.log('🗺️  Step 6: Components Map 생성...');
-  const componentsMap = generateComponentsMap(textNodes, translated);
+  const componentsMap = generateComponentsMap(textNodes, translated, assignment.keyByNode);
   writeComponentsMap(componentsMap);
   console.log(`   프레임 수: ${componentsMap.length}개`);
 

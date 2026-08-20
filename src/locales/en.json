@@ -13,19 +13,15 @@
           "list": "List",
           "lastUpdateTime": "Last Update Time",
           "search": "Search",
-          "businessA": "Business A",
-          "workspaceA1": "Workspace A1",
           "groupAutoUpdateOn": "Group Auto Update : On",
           "businessSiteInformation": "Business Site Information",
           "businessSiteId": "Business Site ID *",
-          "supportingText": "supporting text",
           "subsidiary": "Subsidiary",
           "licensePolicy": "License Policy",
           "period": "Period",
           "businessSiteName": "Business Site Name",
           "regionCountry": "Region / Country *",
           "asiaPacific": "Asia & Pacific",
-          "label": "Label",
           "korea": "Korea",
           "timeZone": "Time Zone",
           "utc0900AsiaSeoul": "(UTC+09:00) Asia/Seoul",
@@ -40,7 +36,6 @@
           "businessSiteLogo": "Business Site Logo",
           "image": "Image *",
           "unit": "unit",
-          "filenameSample00123Jpg": "FileName_sample_00123.jpg",
           "altText": "Alt Text",
           "lgLogoImage": "LG logo image",
           "themeColor": "Theme Color",
@@ -49,17 +44,12 @@
           "thema03": "Thema 03",
           "thema04": "Thema 04",
           "businessSiteAddress": "Business Site Address",
-          "magokjungang10RoGangseoGu": "MagokJungang 10-ro, Gangseo-gu, Seoul",
           "addressDetails": "Address Details",
-          "30A101Bldg": "30, A101 bldg.",
           "addressMemo": "Address Memo",
           "setSingleSignOn": "Set Single Sign-On (SSO) to ON and set the detailes for the selected authentication type.",
           "sortBy": "Sort by",
           "lastUpdated": "Last Updated",
           "total": "Total",
-          "workspaceN": "Workspace N",
-          "deviceN": "Device N",
-          "userN": "User N",
           "searchForWorkspace": "Search for Workspace",
           "workspaceName": "Workspace Name",
           "deviceCount": "Device Count",
@@ -101,7 +91,6 @@
           "save": "Save",
           "assignDevice": "Assign Device",
           "editGroup": "Edit Group",
-          "button": "Button",
           "createBusinessSite": "Create Business Site",
           "turnOff": "Turn Off",
           "off": "Off",
@@ -123,12 +112,6 @@
       "title": {
         "title": {
           "settings": "Settings"
-        },
-        "status": {
-          "modified": "Modified"
-        },
-        "label": {
-          "descriptionDescriptionDescriptionDescription": "Description Description \nDescription Description"
         }
       }
     }
