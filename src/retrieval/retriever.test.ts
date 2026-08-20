@@ -9,8 +9,6 @@
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import {
   initRetriever,
   retrieveForBatch,
@@ -28,9 +26,6 @@ import {
   type ConfirmedEntry,
   type RejectedEntry,
 } from './feedback-store.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '../..');
 
 // 테스트가 실제 피드백 파일을 훼손하지 않도록 백업/복원
 let backup: { confirmed?: string; rejected?: string } = {};
