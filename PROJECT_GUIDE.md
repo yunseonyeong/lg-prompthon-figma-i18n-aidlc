@@ -74,8 +74,35 @@ kiro-cli chat --agent glossary-agent   # Ctrl+Shift+G
 - 확장된 `requirements/domain-glossary.md`
 - `i18n-report.md` (전체 검증 리포트)
 - `extraction-issues.md` (**Dev-A 반송 문서** — Layer 4 + 원문 문제)
+- `evolution-report.md` (자가발전 추이)
 - `data/translation-memory/` (Vectra 인덱스)
 - `data/glossary-index/` (Vectra 인덱스)
+- `data/feedback/` (확정/거부/제외 누적 — 자가발전 상태)
+- `src/retrieval/` (**Dev-A용 리트리버 함수**)
+
+#### 스크립트
+
+```bash
+# 초기 세팅 (클론 직후 1회)
+npm run init:vectra && npm run reindex
+
+# 무상태 검증
+npm run validate:i18n        # 4계층 검증
+npm run glossary:audit       # 용어집 위반만
+
+# 자가발전 루프
+npm run round:check          # 사전차단 + 검증 + 기록 (한 라운드)
+npm run glossary:approve     # 용어 제안 승인 (사람 게이트)
+npm run report:evolution     # 라운드 추이
+npm run round:simulate       # 루프 동작 검증 (5라운드)
+
+# 번역 메모리
+npm run memory:search -- "텍스트" --locale ko
+npm run retriever:demo       # Dev-A용 리트리버 확인
+```
+
+관련 문서: `docs/self-improving-loop.md`, `docs/retriever-integration.md`
+
 
 #### 검증 체계 명세
 
