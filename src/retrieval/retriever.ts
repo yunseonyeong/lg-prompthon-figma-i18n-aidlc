@@ -28,6 +28,7 @@ import { LocalIndex } from 'vectra';
 import { embedQuery, activeBackend, DEFAULT_MIN_SCORE } from './embedder.js';
 import { readIndexMeta } from './index-meta.js';
 import { loadGlossary, type GlossaryEntry } from './glossary-loader.js';
+import { containsTerm } from './text-match.js';
 import {
   loadConfirmed,
   loadRejected,
@@ -183,30 +184,6 @@ export async function initRetriever(options: RetrieverOptions = {}): Promise<voi
   }
 
   state = { glossary, confirmed, rejected, tmIndex, vectorReady, notes, options: opts };
-}
-
-/** 정규식 특수문자 이스케이프 */
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
- * 용어가 원문에 단어 단위로 등장하는지 확인.
- *
- * 단순 includes()를 쓰면 "Workspace"에서 "Space"가 잡혀
- * EXAONE에 "Space→공간"을 지시하게 되고 "워크공간" 같은 결과가 나옵니다.
- * 단어 경계(\b)로 부분문자열 오탐을 막습니다.
- *
- * 복합어 내부 적용(glossary §8-2)은 여전히 동작합니다.
- * "Workspace/Group Settings" → Workspace ✓, Group ✓, Space ✗
- */
-function containsTerm(source: string, term: string): boolean {
-  if (!term) return false;
-  try {
-    return new RegExp(`\\b${escapeRegExp(term)}\\b`, 'i').test(source);
-  } catch {
-    return source.toLowerCase().includes(term.toLowerCase());
-  }
 }
 
 /** 원문에 등장하는 용어집 항목 수집 (복합어 내부까지 — glossary §8-2) */

@@ -24,7 +24,11 @@
     "bench:embed": "tsx scripts/bench/embed-bench.ts",
     "reindex": "npm run glossary:index && npm run memory:index",
     "bench:threshold": "tsx scripts/bench/threshold.ts",
-    "retriever:demo": "tsx scripts/retriever-demo.ts"
+    "retriever:demo": "tsx scripts/retriever-demo.ts",
+    "round:check": "tsx scripts/round-check.ts",
+    "glossary:approve": "tsx scripts/glossary-approve.ts",
+    "report:evolution": "tsx scripts/report-evolution.ts",
+    "round:simulate": "tsx scripts/round-simulate.ts"
   },
   "dependencies": {
     "i18next": "23.16.8",
