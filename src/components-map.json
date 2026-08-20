@@ -59,29 +59,9 @@
         "originalText": "Last Update Time"
       },
       {
-        "type": "button",
-        "key": "console.setting.group.button.button",
-        "originalText": "Button"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.button",
-        "originalText": "Button"
-      },
-      {
         "type": "label",
         "key": "console.setting.group.label.search",
         "originalText": "Search"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.businessA",
-        "originalText": "Business A"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.workspaceA1",
-        "originalText": "Workspace A1"
       },
       {
         "type": "button",
@@ -135,11 +115,6 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.supportingText",
-        "originalText": "supporting text"
-      },
-      {
-        "type": "label",
         "key": "console.setting.group.label.subsidiary",
         "originalText": "Subsidiary"
       },
@@ -165,11 +140,6 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.supportingText",
-        "originalText": "supporting text"
-      },
-      {
-        "type": "label",
         "key": "console.setting.group.label.regionCountry",
         "originalText": "Region / Country *"
       },
@@ -177,11 +147,6 @@
         "type": "label",
         "key": "console.setting.group.label.asiaPacific",
         "originalText": "Asia & Pacific"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.label",
-        "originalText": "Label"
       },
       {
         "type": "label",
@@ -244,11 +209,6 @@
         "originalText": "Memo"
       },
       {
-        "type": "label",
-        "key": "console.setting.group.label.supportingText",
-        "originalText": "supporting text"
-      },
-      {
         "type": "title",
         "key": "console.setting.group.title.apiAccess",
         "originalText": "API Access"
@@ -290,18 +250,8 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.supportingText",
-        "originalText": "supporting text"
-      },
-      {
-        "type": "label",
         "key": "console.setting.group.label.unit",
         "originalText": "unit"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.filenameSample00123Jpg",
-        "originalText": "FileName_sample_00123.jpg"
       },
       {
         "type": "label",
@@ -345,18 +295,8 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.supportingText",
-        "originalText": "supporting text"
-      },
-      {
-        "type": "label",
         "key": "console.setting.group.label.businessSiteAddress",
         "originalText": "Business Site Address"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.magokjungang10RoGangseoGu",
-        "originalText": "MagokJungang 10-ro, Gangseo-gu, Seoul"
       },
       {
         "type": "label",
@@ -365,18 +305,8 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.30A101Bldg",
-        "originalText": "30, A101 bldg."
-      },
-      {
-        "type": "label",
         "key": "console.setting.group.label.addressMemo",
         "originalText": "Address Memo"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.supportingText",
-        "originalText": "supporting text"
       },
       {
         "type": "title",
@@ -432,21 +362,6 @@
         "type": "label",
         "key": "console.setting.group.label.total",
         "originalText": "Total"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.workspaceN",
-        "originalText": "Workspace N"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.deviceN",
-        "originalText": "Device N"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.userN",
-        "originalText": "User N"
       },
       {
         "type": "label",
@@ -693,16 +608,6 @@
         "type": "title",
         "key": "console.doc.title.title.settings",
         "originalText": "Settings"
-      },
-      {
-        "type": "status",
-        "key": "console.doc.title.status.modified",
-        "originalText": "Modified"
-      },
-      {
-        "type": "label",
-        "key": "console.doc.title.label.descriptionDescriptionDescriptionDescription",
-        "originalText": "Description Description \nDescription Description"
       }
     ]
   }
