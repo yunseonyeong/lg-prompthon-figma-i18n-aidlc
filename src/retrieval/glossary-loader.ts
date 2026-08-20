@@ -42,7 +42,12 @@ export function loadGlossary(glossaryPath?: string): GlossaryData {
   let currentCategory = '';
 
   // 섹션별 파싱
-  const lines = content.split('\n');
+  //
+  // \r?\n 으로 분리해야 한다. '\n'만으로 자르면 CRLF 파일에서 각 줄 끝에 \r이 남고,
+  // 구분선 정규식(/^\|[\s-|]+\|$/)의 $ 앵커가 매치되지 않아 headerSkipped가
+  // 영원히 false로 남는다 → 테이블 행이 0건 파싱된다.
+  // (git core.autocrlf 환경에서 체크아웃하면 이 파일이 CRLF가 된다)
+  const lines = content.split(/\r?\n/);
   let inTable = false;
   let headerSkipped = false;
 

@@ -25,7 +25,18 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
 dotenv.config({ path: path.join(os.homedir(), '.hermes', '.env'), quiet: true });
 
 // ===== 설정 =====
-const CONFIG = {
+const CONFIG: {
+  figmaApiKey: string;
+  figmaFileKey: string;
+  friendliApiUrl: string;
+  friendliApiKey: string;
+  friendliModel: string;
+  outputDir: string;
+  languages: string[];
+  keyPrefix: string;
+  domainDescription: string;
+  targetFrameIds: string[];
+} = {
   figmaApiKey: process.env.FIGMA_API_KEY || '',
   // 기본값은 실제 작업 대상 파일. targetFrameIds와 짝을 맞춰야 한다.
   figmaFileKey: process.env.FIGMA_FILE_KEY || 'zdG3CHXVU6TzD4cc28o5Yb',
@@ -59,9 +70,46 @@ interface TextNode {
     fontWeight: number | null;
   };
   role: TextRole;
+  // 레이아웃 정보 (컴포넌트 생성용)
+  layout?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  parentType?: string; // 부모 노드 타입 (FRAME, GROUP, COMPONENT 등)
+  parentName?: string; // 부모 노드 이름
 }
 
 type TextRole = 'title' | 'button' | 'label' | 'description' | 'status' | 'placeholder' | 'message';
+
+// Figma 프레임 전체 구조 (컴포넌트 생성용)
+interface FigmaFrameStructure {
+  id: string;
+  name: string;
+  type: string;
+  layout: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  // Auto Layout 정보
+  layoutMode?: 'HORIZONTAL' | 'VERTICAL' | 'NONE';
+  itemSpacing?: number;
+  padding?: { top: number; right: number; bottom: number; left: number };
+  // 스타일 정보
+  fills?: { type: string; color?: { r: number; g: number; b: number; a: number } }[];
+  cornerRadius?: number;
+  // 텍스트 정보 (TEXT 노드일 때)
+  text?: string;
+  fontSize?: number;
+  fontWeight?: number;
+  // i18n 매핑 (번역 후 채워짐)
+  i18nKey?: string;
+  // 자식 노드
+  children?: FigmaFrameStructure[];
+}
 
 interface I18nEntry {
   key: string;
@@ -82,9 +130,37 @@ interface FigmaNode {
     fontSize?: number;
     fontWeight?: number;
   };
+  // 레이아웃 정보
+  absoluteBoundingBox?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  // 컴포넌트 정보
+  componentId?: string;
+  layoutMode?: string; // HORIZONTAL, VERTICAL
+  primaryAxisAlignItems?: string; // MIN, CENTER, MAX, SPACE_BETWEEN
+  counterAxisAlignItems?: string;
+  paddingLeft?: number;
+  paddingRight?: number;
+  paddingTop?: number;
+  paddingBottom?: number;
+  itemSpacing?: number;
+  fills?: any[];
+  strokes?: any[];
+  cornerRadius?: number;
 }
 
 // ===== US-1.1: Figma 텍스트 추출 =====
+
+// 전역 변수로 프레임 구조 저장 (컴포넌트 생성에서 사용)
+let cachedFrameStructures: FigmaFrameStructure[] = [];
+
+export function getCachedFrameStructures(): FigmaFrameStructure[] {
+  return cachedFrameStructures;
+}
+
 export async function extractTextsFromFigma(fileKey: string): Promise<TextNode[]> {
   const response = await fetch(
     `https://api.figma.com/v1/files/${fileKey}`,
@@ -111,6 +187,10 @@ export async function extractTextsFromFigma(fileKey: string): Promise<TextNode[]
   } else {
     targetNodes = [targetPage];
   }
+
+  // 프레임 전체 구조도 추출 (컴포넌트 생성용)
+  cachedFrameStructures = targetNodes.map(node => extractFrameStructure(node));
+  console.log(`   프레임 구조 추출 완료: ${cachedFrameStructures.length}개`);
 
   const textNodes: TextNode[] = [];
   for (const node of targetNodes) {
@@ -151,7 +231,7 @@ function isScenarioDescriptionTable(node: TextNode): boolean {
   return false;
 }
 
-function traverseNodes(node: FigmaNode, parentPath: string, results: TextNode[]): void {
+function traverseNodes(node: FigmaNode, parentPath: string, results: TextNode[], parentNode?: FigmaNode): void {
   const currentPath = parentPath ? `${parentPath}/${node.name}` : node.name;
 
   if (node.type === 'TEXT' && node.characters) {
@@ -168,12 +248,21 @@ function traverseNodes(node: FigmaNode, parentPath: string, results: TextNode[])
         fontWeight: node.style?.fontWeight || null,
       },
       role: inferRole(node),
+      // 레이아웃 정보 추가
+      layout: node.absoluteBoundingBox ? {
+        x: Math.round(node.absoluteBoundingBox.x),
+        y: Math.round(node.absoluteBoundingBox.y),
+        width: Math.round(node.absoluteBoundingBox.width),
+        height: Math.round(node.absoluteBoundingBox.height),
+      } : undefined,
+      parentType: parentNode?.type,
+      parentName: parentNode?.name,
     });
   }
 
   if (node.children) {
     for (const child of node.children) {
-      traverseNodes(child, currentPath, results);
+      traverseNodes(child, currentPath, results, node);
     }
   }
 }
@@ -182,6 +271,90 @@ function extractFrameName(path: string): string {
   const parts = path.split('/');
   // 페이지 다음의 첫 번째 프레임 이름
   return parts.length > 1 ? parts[1] : parts[0];
+}
+
+/**
+ * Figma 프레임의 전체 구조를 추출 (컴포넌트 생성용)
+ * 텍스트뿐 아니라 레이아웃, 컨테이너 구조까지 모두 포함
+ */
+export function extractFrameStructure(node: FigmaNode): FigmaFrameStructure {
+  const structure: FigmaFrameStructure = {
+    id: node.id,
+    name: node.name,
+    type: node.type,
+    layout: {
+      x: Math.round(node.absoluteBoundingBox?.x || 0),
+      y: Math.round(node.absoluteBoundingBox?.y || 0),
+      width: Math.round(node.absoluteBoundingBox?.width || 0),
+      height: Math.round(node.absoluteBoundingBox?.height || 0),
+    },
+  };
+
+  // Auto Layout 정보
+  if (node.layoutMode) {
+    structure.layoutMode = node.layoutMode as 'HORIZONTAL' | 'VERTICAL';
+    structure.itemSpacing = node.itemSpacing;
+    structure.padding = {
+      top: node.paddingTop || 0,
+      right: node.paddingRight || 0,
+      bottom: node.paddingBottom || 0,
+      left: node.paddingLeft || 0,
+    };
+  }
+
+  // 스타일 정보
+  if (node.fills && node.fills.length > 0) {
+    structure.fills = node.fills.map((f: any) => ({
+      type: f.type,
+      color: f.color,
+    }));
+  }
+  if (node.cornerRadius) {
+    structure.cornerRadius = node.cornerRadius;
+  }
+
+  // 텍스트 정보
+  if (node.type === 'TEXT' && node.characters) {
+    structure.text = node.characters.trim();
+    structure.fontSize = node.style?.fontSize;
+    structure.fontWeight = node.style?.fontWeight;
+  }
+
+  // 자식 노드 재귀 처리
+  if (node.children && node.children.length > 0) {
+    structure.children = node.children.map(child => extractFrameStructure(child));
+  }
+
+  return structure;
+}
+
+/**
+ * FigmaFrameStructure에 i18n 키 매핑
+ */
+export function mapI18nKeysToStructure(
+  structure: FigmaFrameStructure,
+  textToKeyMap: Map<string, string>
+): void {
+  if (structure.text) {
+    const key = textToKeyMap.get(structure.text);
+    if (key) {
+      structure.i18nKey = key;
+    }
+  }
+  if (structure.children) {
+    for (const child of structure.children) {
+      mapI18nKeysToStructure(child, textToKeyMap);
+    }
+  }
+}
+
+/**
+ * FigmaFrameStructure를 JSON으로 저장
+ */
+export function writeFrameStructure(frameStructures: FigmaFrameStructure[]): void {
+  const outputPath = path.resolve(CONFIG.outputDir, '..', 'figma-structure.json');
+  fs.writeFileSync(outputPath, JSON.stringify(frameStructures, null, 2), 'utf-8');
+  console.log(`✅ Generated: ${outputPath}`);
 }
 
 /**
@@ -547,6 +720,11 @@ Respond ONLY with a JSON array, no explanation:
 ]`;
 
   try {
+    console.log(`   🤖 EXAONE 번역 API 호출 (${entries.length}개 텍스트)`);
+    console.log(`      → POST ${CONFIG.friendliApiUrl}`);
+    console.log(`      → Model: ${CONFIG.friendliModel}`);
+    const startTime = Date.now();
+
     const response = await fetch(CONFIG.friendliApiUrl, {
       method: 'POST',
       headers: {
@@ -556,20 +734,23 @@ Respond ONLY with a JSON array, no explanation:
       body: JSON.stringify({
         model: CONFIG.friendliModel,
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2, // 번역은 일관성이 중요하므로 낮게
+        temperature: 0.2,
         top_p: 0.95,
         presence_penalty: 0.0,
         chat_template_kwargs: {
-          enable_thinking: false, // 번역 작업에는 thinking 불필요 (응답 속도 우선)
+          enable_thinking: false,
           preserve_thinking: false,
         },
       }),
     });
 
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`      ✅ 응답 수신 (${elapsed}s, status: ${response.status})`);
+
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error(`EXAONE API error: ${response.status} - ${errorBody.slice(0, 200)}`);
-      return entries; // 실패 시 원본 반환
+      console.error(`      ❌ EXAONE API error: ${response.status} - ${errorBody.slice(0, 200)}`);
+      return entries;
     }
 
     const data = await response.json();
@@ -644,6 +825,15 @@ interface ComponentMapEntry {
   type: TextRole;
   key: string;
   originalText: string;
+  // 레이아웃 정보 추가
+  layout?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  parentName?: string;
+  fontSize?: number | null;
 }
 
 interface ComponentMapFrame {
@@ -668,6 +858,12 @@ export function generateComponentsMap(
     entryMap.set(`${entry.source}|||${entry.context}`, entry);
   }
 
+  // textNodes를 Map으로 변환 (레이아웃 정보 조회용)
+  const nodeMap = new Map<string, TextNode>();
+  for (const node of textNodes) {
+    nodeMap.set(`${node.text}|||${node.frameName}`, node);
+  }
+
   // 프레임별 그룹핑
   const frameMap = new Map<string, { frameId: string; children: ComponentMapEntry[] }>();
 
@@ -684,11 +880,22 @@ export function generateComponentsMap(
       type: node.role,
       key: entry.key,
       originalText: node.text,
+      // 레이아웃 정보 추가
+      layout: node.layout,
+      parentName: node.parentName,
+      fontSize: node.style?.fontSize,
     });
   }
 
   const result: ComponentMapFrame[] = [];
   for (const [frameName, data] of frameMap) {
+    // children을 Y좌표 기준으로 정렬 (위에서 아래로)
+    data.children.sort((a, b) => {
+      const ay = a.layout?.y ?? 0;
+      const by = b.layout?.y ?? 0;
+      return ay - by;
+    });
+
     result.push({
       frame: frameName,
       frameId: data.frameId,
@@ -824,6 +1031,232 @@ export function writeGlossaryProposal(content: string): void {
   console.log(`✅ Generated: ${outputPath}`);
 }
 
+// ===== US-1.6: EXAONE React 컴포넌트 코드 생성 =====
+
+interface GeneratedComponent {
+  name: string;
+  fileName: string;
+  code: string;
+  frame: string;
+}
+
+/**
+ * Figma 구조를 JSON 문자열로 변환 (EXAONE 프롬프트용)
+ * 불필요한 정보는 제거하고 핵심만 남김
+ */
+function simplifyStructureForPrompt(structure: FigmaFrameStructure, depth = 0): string {
+  const indent = '  '.repeat(depth);
+  const lines: string[] = [];
+  
+  const typeEmoji: Record<string, string> = {
+    'FRAME': '📦',
+    'GROUP': '📁',
+    'COMPONENT': '🧩',
+    'INSTANCE': '🔗',
+    'TEXT': '📝',
+    'RECTANGLE': '⬜',
+    'VECTOR': '🔷',
+  };
+  
+  const emoji = typeEmoji[structure.type] || '•';
+  
+  if (structure.type === 'TEXT' && structure.text) {
+    const i18nPart = structure.i18nKey ? `t('${structure.i18nKey}')` : `"${structure.text}"`;
+    const stylePart = structure.fontSize ? ` [${structure.fontSize}px]` : '';
+    lines.push(`${indent}${emoji} TEXT: ${i18nPart}${stylePart}`);
+  } else {
+    const layoutInfo = structure.layoutMode 
+      ? ` (${structure.layoutMode}, gap:${structure.itemSpacing || 0})`
+      : '';
+    const sizeInfo = structure.layout.width > 0 
+      ? ` [${structure.layout.width}x${structure.layout.height}]`
+      : '';
+    lines.push(`${indent}${emoji} ${structure.type}: "${structure.name}"${layoutInfo}${sizeInfo}`);
+  }
+  
+  if (structure.children && structure.children.length > 0) {
+    for (const child of structure.children) {
+      lines.push(simplifyStructureForPrompt(child, depth + 1));
+    }
+  }
+  
+  return lines.join('\n');
+}
+
+/**
+ * EXAONE을 사용하여 Figma 구조 기반 React 컴포넌트 코드 생성
+ */
+export async function generateComponentsWithExaone(
+  componentsMap: ComponentMapFrame[]
+): Promise<GeneratedComponent[]> {
+  const results: GeneratedComponent[] = [];
+  
+  // 캐시된 Figma 프레임 구조 가져오기
+  const frameStructures = getCachedFrameStructures();
+  
+  // i18n 키 매핑 생성
+  const textToKeyMap = new Map<string, string>();
+  for (const frame of componentsMap) {
+    for (const child of frame.children) {
+      textToKeyMap.set(child.originalText, child.key);
+    }
+  }
+  
+  // 프레임 구조에 i18n 키 매핑
+  for (const structure of frameStructures) {
+    mapI18nKeysToStructure(structure, textToKeyMap);
+  }
+  
+  // 각 프레임에 대해 컴포넌트 생성
+  for (const structure of frameStructures) {
+    const component = await generateComponentFromStructure(structure);
+    if (component) {
+      results.push(component);
+    }
+  }
+
+  return results;
+}
+
+async function generateComponentFromStructure(
+  structure: FigmaFrameStructure
+): Promise<GeneratedComponent | null> {
+  const componentName = toPascalCase(structure.name);
+  const fileName = `${componentName}.tsx`;
+  
+  // Figma 구조를 읽기 쉬운 형태로 변환
+  const structureText = simplifyStructureForPrompt(structure);
+
+  const prompt = `You are an expert React developer. Generate a React component that EXACTLY matches this Figma design structure.
+
+## FIGMA FRAME STRUCTURE
+\`\`\`
+${structureText}
+\`\`\`
+
+## STRUCTURE LEGEND
+- 📦 FRAME: Container with optional Auto Layout (HORIZONTAL/VERTICAL)
+- 📁 GROUP: Grouped elements
+- 🧩 COMPONENT: Reusable component
+- 📝 TEXT: Text element - use t('key') for i18n, or the quoted text if no key
+- ⬜ RECTANGLE: Background or decorative element
+- [WxH]: Width x Height in pixels
+- (HORIZONTAL/VERTICAL, gap:N): Auto Layout direction and spacing
+
+## REQUIREMENTS
+
+### 1. MATCH THE FIGMA STRUCTURE EXACTLY
+- Preserve the EXACT hierarchy of containers
+- FRAME with VERTICAL layout → use flex-column or Stack with vertical direction
+- FRAME with HORIZONTAL layout → use d-flex or Row
+- Respect gap/itemSpacing values (convert to Bootstrap spacing: 8px=2, 16px=3, 24px=4)
+- Match container sizes approximately using Bootstrap's width utilities
+
+### 2. TEXT HANDLING
+- If text has t('key') → use that i18n key
+- If text is quoted "like this" → also use t() with a reasonable key, or show as placeholder
+- NEVER hardcode visible text strings
+
+### 3. COMPONENT MAPPING
+- FRAME with rounded corners + background → Card
+- FRAME with items in a list → ListGroup
+- TEXT with large fontSize (>18px) → h4, h5, or Card.Header
+- TEXT that looks like a button label inside a clickable frame → Button
+- RECTANGLE with fill → background div or Card
+
+### 4. TECHNICAL
+- Use React Bootstrap components
+- Use react-i18next useTranslation hook
+- TypeScript functional component
+- Export as default
+- Add reasonable padding/margin based on Figma spacing
+
+## OUTPUT
+Return ONLY the code. Start with imports. No explanations.
+
+\`\`\`tsx
+import { useTranslation } from 'react-i18next';
+import { Card, Row, Col, Button, ... } from 'react-bootstrap';
+...
+\`\`\``;
+
+  try {
+    console.log(`   🤖 EXAONE 컴포넌트 생성 API 호출 (Figma 구조 기반)`);
+    console.log(`      → POST ${CONFIG.friendliApiUrl}`);
+    console.log(`      → Model: ${CONFIG.friendliModel}`);
+    console.log(`      → Component: ${componentName}`);
+    const startTime = Date.now();
+
+    const response = await fetch(CONFIG.friendliApiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${CONFIG.friendliApiKey}`,
+      },
+      body: JSON.stringify({
+        model: CONFIG.friendliModel,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        top_p: 0.95,
+        max_tokens: 4000,
+      }),
+    });
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`      ✅ 응답 수신 (${elapsed}s, status: ${response.status})`);
+
+    if (!response.ok) {
+      console.error(`      ❌ EXAONE 컴포넌트 생성 실패: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    let code = data.choices?.[0]?.message?.content || '';
+
+    // 코드 블록 마커 제거
+    code = code.replace(/^```(?:tsx|typescript|jsx|javascript)?\n?/gm, '').replace(/```$/gm, '').trim();
+
+    return {
+      name: componentName,
+      fileName,
+      code,
+      frame: structure.name,
+    };
+  } catch (error) {
+    console.error(`컴포넌트 생성 오류 (${componentName}):`, error);
+    return null;
+  }
+}
+
+function toPascalCase(str: string): string {
+  return str
+    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join('');
+}
+
+export function writeGeneratedComponents(components: GeneratedComponent[]): void {
+  const outputDir = path.resolve(CONFIG.outputDir, '..', 'components', 'generated');
+  
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  for (const component of components) {
+    const filePath = path.join(outputDir, component.fileName);
+    fs.writeFileSync(filePath, component.code, 'utf-8');
+    console.log(`✅ Generated: ${filePath}`);
+  }
+
+  const indexContent = components
+    .map((c) => `export { default as ${c.name} } from './${c.name}';`)
+    .join('\n');
+  fs.writeFileSync(path.join(outputDir, 'index.ts'), indexContent, 'utf-8');
+  console.log(`✅ Generated: ${path.join(outputDir, 'index.ts')}`);
+}
+
 // ===== 메인 파이프라인 =====
 export async function runPipeline(fileKey?: string): Promise<void> {
   const targetFileKey = fileKey || CONFIG.figmaFileKey;
@@ -895,23 +1328,42 @@ export async function runPipeline(fileKey?: string): Promise<void> {
   const locales = generateLocaleFiles(translated);
   writeLocaleFiles(locales);
 
-  // Step 6: Components Map 출력 (Dev-C 연동용)
+  // Step 6: Components Map 및 Figma 구조 출력
   console.log('🗺️  Step 6: Components Map 생성...');
   const componentsMap = generateComponentsMap(textNodes, translated);
   writeComponentsMap(componentsMap);
   console.log(`   프레임 수: ${componentsMap.length}개`);
+  
+  // Figma 구조도 저장 (컴포넌트 생성에서 활용)
+  const frameStructures = getCachedFrameStructures();
+  if (frameStructures.length > 0) {
+    writeFrameStructure(frameStructures);
+    console.log(`   Figma 구조 저장: ${frameStructures.length}개 프레임`);
+  }
 
   // Step 7: 용어집 등록 제안 (Dev-B 연동용)
   console.log('📖 Step 7: 용어집 등록 제안 생성...');
   const proposal = generateGlossaryProposal(translated, glossary);
   writeGlossaryProposal(proposal);
 
+  // Step 8: EXAONE React 컴포넌트 코드 생성 (Figma 구조 기반)
+  console.log('⚛️  Step 8: EXAONE React 컴포넌트 생성 (Figma 구조 기반)...');
+  const generatedComponents = await generateComponentsWithExaone(componentsMap);
+  if (generatedComponents.length > 0) {
+    writeGeneratedComponents(generatedComponents);
+    console.log(`   생성된 컴포넌트: ${generatedComponents.length}개`);
+  } else {
+    console.log('   ⚠️ 생성된 컴포넌트 없음');
+  }
+
   console.log('');
   console.log('✅ Pipeline 완료!');
   console.log('');
   console.log('📦 산출물:');
   console.log(`   - src/locales/{en,ko,ja,zh-CN}.json (다국어 번역)`);
-  console.log(`   - src/components-map.json (Dev-C 컴포넌트 생성용)`);
+  console.log(`   - src/figma-structure.json (Figma 프레임 구조)`);
+  console.log(`   - src/components-map.json (i18n 키 매핑)`);
+  console.log(`   - src/components/generated/*.tsx (EXAONE 생성 컴포넌트)`);
   console.log(`   - glossary-proposal.md (Dev-B 용어집 검토용)`);
 }
 
@@ -949,5 +1401,13 @@ function loadGlossary(): Record<string, Record<string, string>> {
 const isMainModule = process.argv[1]?.endsWith('figma-i18n-pipeline.ts');
 if (isMainModule) {
   const fileKey = process.argv[2] || CONFIG.figmaFileKey;
+  const frameIds = process.argv[3] || '';  // 쉼표로 구분된 프레임 ID들
+  
+  // 프레임 ID가 CLI로 전달되면 CONFIG 업데이트
+  if (frameIds) {
+    CONFIG.targetFrameIds = frameIds.split(',').map(id => id.trim()).filter(Boolean);
+    console.log(`   CLI 프레임 ID 설정: ${CONFIG.targetFrameIds.join(', ')}`);
+  }
+  
   runPipeline(fileKey).catch(console.error);
 }

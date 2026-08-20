@@ -1,29 +1,28 @@
 import { useTranslation } from 'react-i18next';
+import { ButtonGroup, Button } from 'react-bootstrap';
 
-const languages = [
-  { code: 'en', label: 'English', flag: '🇺🇸' },
-  { code: 'ko', label: '한국어', flag: '🇰🇷' },
-  { code: 'ja', label: '日本語', flag: '🇯🇵' },
-  { code: 'zh-CN', label: '中文', flag: '🇨🇳' },
+const langs = [
+  { code: 'en', label: '🇺🇸' },
+  { code: 'ko', label: '🇰🇷' },
+  { code: 'ja', label: '🇯🇵' },
+  { code: 'zh-CN', label: '🇨🇳' },
 ];
 
 function LanguageSwitcher() {
   const { i18n } = useTranslation();
 
   return (
-    <div className="language-switcher">
-      {languages.map((lang) => (
-        <button
+    <ButtonGroup size="sm">
+      {langs.map((lang) => (
+        <Button
           key={lang.code}
-          className={`lang-btn ${i18n.language === lang.code ? 'active' : ''}`}
+          variant={i18n.language === lang.code ? 'primary' : 'outline-secondary'}
           onClick={() => i18n.changeLanguage(lang.code)}
-          aria-label={`Switch to ${lang.label}`}
         >
-          <span className="lang-flag">{lang.flag}</span>
-          <span className="lang-label">{lang.label}</span>
-        </button>
+          {lang.label}
+        </Button>
       ))}
-    </div>
+    </ButtonGroup>
   );
 }
 
