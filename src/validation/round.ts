@@ -40,6 +40,7 @@ import {
   type TermConflict,
 } from './glossary-growth.js';
 import type { Issue, LocaleBundle } from './types.js';
+import { findEscalations, escalationsToIssues, type Escalation } from './escalation.js';
 
 export interface RoundResult {
   round: number;
@@ -51,6 +52,8 @@ export interface RoundResult {
   newlyConfirmed: number;
   /** 기존 용어와 충돌해 제안되지 않은 후보 (US-2.2 충돌 알림) */
   conflicts: TermConflict[];
+  /** 재시도 상한 초과 항목 (US-2.4) */
+  escalations: Escalation[];
 }
 
 export interface RoundOptions {
@@ -78,6 +81,7 @@ export function evaluateRound(
   nextExclusions: FeedbackState['exclusions'];
   metrics: RoundMetrics;
   repeatedViolations: ReturnType<typeof findRepeatedViolations>;
+  escalations: Escalation[];
 } {
   // ① 사전 차단
   const pre = checkPreBlock(bundle, feedback);
@@ -85,7 +89,10 @@ export function evaluateRound(
   // ② 4계층 검증 — 확정본과 동일한 항목은 건너뜀
   const layerIssues = runAllLayers(bundle, glossary, { skipKeys: pre.skipIds });
 
-  const issues = [...pre.issues, ...layerIssues];
+  // 재시도 상한 초과 항목 (US-2.4). 기존 거부 이력 기준으로 판정한다.
+  const escalations = findEscalations(bundle, feedback.rejected);
+
+  const issues = [...pre.issues, ...escalationsToIssues(escalations), ...layerIssues];
 
   // ③ 판정
   const nextConfirmed = selectConfirmable(bundle, issues, round, feedback.confirmed);
@@ -111,6 +118,7 @@ export function evaluateRound(
     recurrences: pre.counts.recurrences,
     confirmedTotal: Object.keys(nextConfirmed).length,
     glossaryTerms: glossary.entries.length,
+    escalations: escalations.length,
   };
 
   return {
@@ -120,6 +128,7 @@ export function evaluateRound(
     nextExclusions,
     metrics,
     repeatedViolations: findRepeatedViolations(issues),
+    escalations,
   };
 }
 
@@ -163,5 +172,6 @@ export function runRound(bundle: LocaleBundle, options: RoundOptions = {}): Roun
     newProposals,
     newlyConfirmed: Math.max(0, result.metrics.confirmedTotal - prevConfirmedCount),
     conflicts: findTermConflicts(bundle, glossary),
+    escalations: result.escalations,
   };
 }

@@ -36,6 +36,14 @@ export {
   type TermConflict,
 } from './glossary-growth.js';
 export {
+  findEscalations,
+  escalationsToIssues,
+  escalatedIds,
+  renderEscalationReport,
+  MAX_RETRIES,
+  type Escalation,
+} from './escalation.js';
+export {
   runRound,
   evaluateRound,
   type RoundResult,

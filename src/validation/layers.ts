@@ -35,6 +35,21 @@ export function flattenJson(
 // 용어 매칭은 리트리버와 규칙을 공유한다 (src/retrieval/text-match.ts)
 export { containsTerm, translationContains } from '../retrieval/text-match.js';
 
+/**
+ * 단수/복수 판정용 정규화.
+ * 용어집 §7("단수/복수는 한국어에서 구분하지 않는다")에 따라
+ * Device / Devices 를 같은 것으로 본다.
+ */
+export function normalizeForNumber(text: string): string {
+  return text
+    .trim()
+    .replace(/\s*\*\s*$/, '')
+    .toLowerCase()
+    .replace(/(ies)$/, 'y')
+    .replace(/(ses|xes|zes|ches|shes)$/, '')
+    .replace(/s$/, '');
+}
+
 /** placeholder 추출 ({0}, {{name}}, %s 등) */
 export function extractPlaceholders(text: string): string[] {
   return text.match(/\{\{?[\w\s]+\}?\}|%[sd]|%\d+\$[sd]/g) ?? [];
@@ -190,7 +205,10 @@ export function checkLayer2(bundle: LocaleBundle, glossary: GlossaryData): Issue
 
   // L2-03: 서로 다른 원문이 같은 번역으로 매핑됨
   // 검증 명세의 알려진 결함: Settings / Setting 둘 다 "설정"
-  // 한국어에서 자연스러운 경우도 있어 WARN. 사람이 판단한다.
+  //
+  // ⚠️ 용어집 §7과 충돌하지 않도록 단수/복수 변형은 제외한다.
+  //    "단수/복수는 한국어에서 구분하지 않는다. Device/Devices 모두 장치."
+  //    즉 Device/Devices → 장치 는 규정된 동작이며 결함이 아니다.
   for (const locale of targets) {
     const byTranslation = new Map<string, Array<{ key: string; source: string }>>();
     for (const [key, enValue] of Object.entries(en)) {
@@ -205,6 +223,18 @@ export function checkLayer2(bundle: LocaleBundle, glossary: GlossaryData): Issue
     for (const [translation, items] of byTranslation) {
       const distinctSources = [...new Set(items.map((i) => i.source))];
       if (distinctSources.length < 2) continue;
+      // 용어집 §7 예외: 등재된 용어의 단수/복수 변형은 같은 번역이 규정된 동작이다.
+      //   "단수/복수는 한국어에서 구분하지 않는다. Device/Devices 모두 장치."
+      // 단, 등재되지 않은 표현(Settings/Setting)은 서로 다른 의미일 수 있어
+      // 검증 명세가 L2-03 결함으로 지목한다. 등재 여부로 구분한다.
+      const bases = new Set(distinctSources.map(normalizeForNumber));
+      if (bases.size === 1) {
+        const base = [...bases][0];
+        const isRegisteredEntity = glossary.entries.some(
+          (e) => e.english && normalizeForNumber(e.english) === base
+        );
+        if (isRegisteredEntity) continue;
+      }
       // 첫 항목에만 보고 (같은 내용을 N번 반복하지 않는다)
       issues.push({
         layer: 2,

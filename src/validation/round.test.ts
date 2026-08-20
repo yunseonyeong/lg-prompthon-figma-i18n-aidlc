@@ -226,6 +226,30 @@ describe('mergeRejected', () => {
     expect(mergeRejected(existing, incoming)['a::ko']).toHaveLength(1);
   });
 
+  it('중복 시 occurrences 를 올린다 (재시도 횟수 보존)', () => {
+    const existing = {
+      'a::ko': [{ key: 'a', locale: 'ko', wrong: 'X', reason: 'r', layer: 2, round: 1, occurrences: 1 }],
+    };
+    const incoming = {
+      'a::ko': [{ key: 'a', locale: 'ko', wrong: 'X', reason: 'r', layer: 2, round: 2 }],
+    };
+    const m = mergeRejected(existing, incoming);
+    expect(m['a::ko']).toHaveLength(1);
+    expect(m['a::ko'][0].occurrences).toBe(2);
+    expect(m['a::ko'][0].lastRound).toBe(2);
+  });
+
+  it('기존 이력을 변형하지 않는다 (불변성)', () => {
+    const existing = {
+      'a::ko': [{ key: 'a', locale: 'ko', wrong: 'X', reason: 'r', layer: 2, round: 1, occurrences: 1 }],
+    };
+    const incoming = {
+      'a::ko': [{ key: 'a', locale: 'ko', wrong: 'X', reason: 'r', layer: 2, round: 2 }],
+    };
+    mergeRejected(existing, incoming);
+    expect(existing['a::ko'][0].occurrences).toBe(1);
+  });
+
   it('다른 번역문은 추가한다', () => {
     const existing = {
       'a::ko': [{ key: 'a', locale: 'ko', wrong: 'X', reason: 'r', layer: 2, round: 1 }],

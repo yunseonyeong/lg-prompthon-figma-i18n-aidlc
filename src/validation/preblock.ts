@@ -260,11 +260,18 @@ export function mergeRejected(
   const merged: Record<string, RejectedEntry[]> = { ...existing };
 
   for (const [id, entries] of Object.entries(incoming)) {
-    const list = merged[id] ? [...merged[id]] : [];
+    const list = merged[id] ? merged[id].map((x) => ({ ...x })) : [];
     for (const e of entries) {
-      // 같은 번역문 + 같은 계층은 중복으로 보고 쌓지 않는다
-      const dup = list.some((x) => x.wrong === e.wrong && x.layer === e.layer);
-      if (!dup) list.push(e);
+      // 같은 번역문 + 같은 계층은 이력을 새로 쌓지 않고 횟수만 올린다.
+      // 파일이 무한히 커지는 것을 막으면서 재시도 횟수(US-2.4)는 보존한다.
+      const dup = list.find((x) => x.wrong === e.wrong && x.layer === e.layer);
+      if (dup) {
+        dup.occurrences = (dup.occurrences ?? 1) + 1;
+        dup.lastRound = e.round;
+        if (!dup.correct && e.correct) dup.correct = e.correct;
+      } else {
+        list.push({ ...e, occurrences: 1, lastRound: e.round });
+      }
     }
     merged[id] = list;
   }

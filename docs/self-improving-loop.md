@@ -75,6 +75,9 @@ Dev-A locale JSON 도착
 | `npm run report:evolution` | 라운드 추이 리포트 |
 | `npm run report:evolution -- --md` | evolution-report.md 생성 |
 | `npm run round:simulate` | 루프 동작 검증 (5라운드 시뮬레이션) |
+| `npm run retranslate` | FAIL 항목 EXAONE 재번역 → 패치 산출 (US-2.4) |
+| `npm run retranslate -- --dry-run` | 파일 생성 없이 결과만 |
+| `npm run validate:layer3` | 문맥 적합성 EXAONE 역검증 |
 
 `validate:layer3`은 루프에 포함되지 않습니다. LLM 판정이 확정 번역을 흔들면
 라운드 지표가 오염되므로, 사람이 검토하는 별도 자료로 둡니다.
@@ -105,6 +108,29 @@ R5  재발 (거부번역 재제출)   검증   3 / 건너뜀 327 / FAIL  3 / WAR
 R4/R5는 의도적으로 문제를 주입한 라운드입니다. 확정본을 바꾸면 회귀 2건,
 거부된 번역을 재제출하면 재발 1건이 잡히는 것을 확인했습니다.
 이 두 검출이 없으면 라운드를 반복해도 품질이 우연에 좌우됩니다.
+
+## 재번역과 에스컬레이션 (US-2.4)
+
+```
+FAIL 항목 수집 (Layer 2/3만)
+   ↓  Layer 1은 구조 문제, Layer 4는 추출 문제 — 번역으로 해결 안 됨
+EXAONE 재번역 (용어집 + 거부 이력 금지목록 + 형제 문맥 주입)
+   ↓
+메모리에서 재검증
+   ↓
+통과 → retranslation-patch.json 에 포함
+실패 → 사유 누적해 재시도 (최대 3회)
+   ↓
+3회 초과 → escalations.md (사람 검토)
+```
+
+**`src/locales`를 수정하지 않습니다.** Dev-A의 산출물이고, 검증자가 대상을 직접
+고치면 스스로 만든 답을 스스로 통과시키는 셈입니다. 또 Dev-A가 파이프라인을
+다시 돌리면 덮어써집니다. 그래서 패치를 산출하고 적용은 Dev-A가 합니다.
+
+재시도 횟수는 `rejected[id]`의 `occurrences` 합입니다. 같은 오역이 반복 제출되면
+이력을 새로 쌓지 않고 카운터만 올리므로, 파일이 커지지 않으면서 상한 판정은
+정확합니다. 이 처리를 빼먹으면 상한에 영원히 도달하지 않습니다.
 
 ## Dev-A 연동
 

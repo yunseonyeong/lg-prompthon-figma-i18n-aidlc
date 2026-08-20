@@ -31,7 +31,8 @@
     "round:simulate": "tsx scripts/round-simulate.ts",
     "stats": "tsx scripts/stats.ts",
     "validate:layer3": "tsx scripts/validate-layer3.ts",
-    "validate:layer3:selftest": "tsx scripts/layer3-selftest.ts"
+    "validate:layer3:selftest": "tsx scripts/layer3-selftest.ts",
+    "retranslate": "tsx scripts/retranslate.ts"
   },
   "dependencies": {
     "i18next": "23.16.8",

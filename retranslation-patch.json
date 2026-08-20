@@ -1,0 +1,95 @@
+{
+  "generatedAt": "2026-08-20T05:43:44.158Z",
+  "note": "Dev-B 재번역 제안입니다. src/locales 를 직접 수정하지 않았습니다. 아래 값은 4계층 재검증을 통과한 번역만 담고 있습니다.",
+  "attempts": 2,
+  "patchCount": 4,
+  "unresolvedCount": 4,
+  "patch": {
+    "ja": {
+      "console.setting.group.label.set_single_signon": "シングルサインオン(SSO)をオンにし、選択した認証タイプの詳細を設定してください。"
+    },
+    "ko": {
+      "console.setting.group.label.set_single_signon": "싱글 사인온(SSO)을 켜고 선택한 인증 유형의 세부 정보를 설정하세요.",
+      "console.setting.group.button.off": "꺼짐"
+    },
+    "zh-CN": {
+      "console.setting.group.label.set_single_signon": "将单点登录(SSO)开启，并设置所选认证类型的详细信息。"
+    }
+  },
+  "details": [
+    {
+      "key": "console.setting.group.label.set_single_signon",
+      "locale": "ja",
+      "before": "SSOをオンにし、選択した認証タイプの詳細を設定してください。",
+      "after": "シングルサインオン(SSO)をオンにし、選択した認証タイプの詳細を設定してください。",
+      "attempt": 1,
+      "reason": "용어 불일치: \"Single Sign-On\" → 기대 \"シングルサインオン\" (기대: シングルサインオン)"
+    },
+    {
+      "key": "console.setting.group.label.set_single_signon",
+      "locale": "ko",
+      "before": "SSO를 켜고 선택한 인증 유형의 세부 정보를 설정하세요.",
+      "after": "싱글 사인온(SSO)을 켜고 선택한 인증 유형의 세부 정보를 설정하세요.",
+      "attempt": 1,
+      "reason": "용어 불일치: \"Single Sign-On\" → 기대 \"싱글 사인온\" (기대: 싱글 사인온)"
+    },
+    {
+      "key": "console.setting.group.label.set_single_signon",
+      "locale": "zh-CN",
+      "before": "将 SSO 开启，并设置所选认证类型的详细信息。",
+      "after": "将单点登录(SSO)开启，并设置所选认证类型的详细信息。",
+      "attempt": 1,
+      "reason": "용어 불일치: \"Single Sign-On\" → 기대 \"单点登录\" (기대: 单点登录)"
+    },
+    {
+      "key": "console.setting.group.button.off",
+      "locale": "ko",
+      "before": "끔",
+      "after": "꺼짐",
+      "attempt": 1,
+      "reason": "ON/OFF 표기 위반: 버튼은 \"끄기\", 상태는 \"꺼짐\" (기대: 끄기)"
+    }
+  ],
+  "unresolved": [
+    {
+      "key": "console.setting.group.label.settings",
+      "locale": "ja",
+      "sourceText": "Settings",
+      "attempts": 2,
+      "lastTried": "設定",
+      "remainingIssues": [
+        "동일 번역 중복: 서로 다른 원문 \"Settings\", \"Setting\" 이 모두 \"設定\" 으로 번역됨"
+      ]
+    },
+    {
+      "key": "console.setting.group.label.settings",
+      "locale": "ko",
+      "sourceText": "Settings",
+      "attempts": 2,
+      "lastTried": "설정",
+      "remainingIssues": [
+        "동일 번역 중복: 서로 다른 원문 \"Settings\", \"Setting\" 이 모두 \"설정\" 으로 번역됨"
+      ]
+    },
+    {
+      "key": "console.setting.group.label.settings",
+      "locale": "zh-CN",
+      "sourceText": "Settings",
+      "attempts": 2,
+      "lastTried": "设置",
+      "remainingIssues": [
+        "동일 번역 중복: 서로 다른 원문 \"Settings\", \"Setting\" 이 모두 \"设置\" 으로 번역됨"
+      ]
+    },
+    {
+      "key": "console.setting.group.button.turn_off",
+      "locale": "ja",
+      "sourceText": "Turn Off",
+      "attempts": 2,
+      "lastTried": "オフ",
+      "remainingIssues": [
+        "동일 번역 중복: 서로 다른 원문 \"Turn Off\", \"Off\" 이 모두 \"オフ\" 으로 번역됨"
+      ]
+    }
+  ]
+}

@@ -16,6 +16,7 @@ import { fileURLToPath } from 'url';
 import { flattenJson, LAYER_NAMES, runRound, type Issue, type Layer, type LocaleBundle } from '../src/validation/index.js';
 import { FEEDBACK_PATHS, loadRounds } from '../src/retrieval/feedback-store.js';
 import { PROPOSAL_PATH } from '../src/validation/glossary-growth.js';
+import { renderEscalationReport, MAX_RETRIES } from '../src/validation/escalation.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -195,6 +196,7 @@ function main(): void {
   console.log(`  재발          : ${m.recurrences}건`);
   console.log(`  확정 누적     : ${m.confirmedTotal}건 (이번 라운드 신규 ${result.newlyConfirmed}건)`);
   console.log(`  용어집        : ${m.glossaryTerms}개`);
+  console.log(`  에스컬레이션  : ${m.escalations}건 (재시도 ${MAX_RETRIES}회 초과)`);
 
   // 기존 용어와 충돌한 후보 (US-2.2: 충돌 시 알림)
   const mismatches = result.conflicts.filter((c) => c.mismatch);
@@ -222,8 +224,23 @@ function main(): void {
     console.log(`\n▶ 신규 용어 제안 ${result.newProposals}건 — npm run glossary:approve 로 검토`);
   }
 
+  if (result.escalations.length > 0) {
+    console.log(`\n▶ 에스컬레이션 — 사람 검토 필요 ${result.escalations.length}건`);
+    for (const e of result.escalations.slice(0, 5)) {
+      console.log(`  [${e.locale}] ${e.key} — ${e.attempts}회 시도 (R${e.firstRound}~R${e.lastRound})`);
+      console.log(`     원문 "${e.sourceText}" / 시도: ${e.attemptedTranslations.map((t) => `"${t}"`).join(', ')}`);
+    }
+    if (result.escalations.length > 5) console.log(`  ... 외 ${result.escalations.length - 5}건`);
+  }
+
   if (!args.dryRun) {
     writeReports(result.round, result.issues, bundle);
+    fs.writeFileSync(
+      path.join(ROOT, 'escalations.md'),
+      renderEscalationReport(result.escalations),
+      'utf-8'
+    );
+    if (result.escalations.length > 0) console.log('📄 escalations.md 갱신 (사람 검토)');
     console.log('\n📄 i18n-report.md 갱신');
     if (result.issues.some((i) => i.layer === 4 || i.blockKind === 'unfixed-exclusion')) {
       console.log('📄 extraction-issues.md 갱신 (Dev-A 반송)');

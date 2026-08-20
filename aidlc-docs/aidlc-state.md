@@ -66,10 +66,10 @@ Acceptance Criteria 원문입니다 (US-2.1 5개 / US-2.2 4개 / US-2.3 4개 / U
   - [x] 유사 문맥 검색 — `multilingual-e5-small` 384d, 임계값 0.84 (R@1 76%)
   - [x] 승인된 번역을 확정 데이터로 마킹 — `data/feedback/confirmed.json`
   - [x] 확정 데이터 우선 참조 — 리트리버가 `ctx.confirmed`로 제공. ⚠️ Dev-A 파이프라인 연동은 대기 중이라 E2E 미검증
-- [ ] **US-2.4 리뷰 피드백 루프** (1/3) — 미완
+- [x] **US-2.4 리뷰 피드백 루프** (3/3) — `src/validation/retranslate.ts`, `escalation.ts`
   - [x] FAIL 사유를 구체적으로 전달 — `rejected.json` + 리트리버 `ctx.forbidden` + `i18n-report.md` / `extraction-issues.md`
-  - [ ] **i18n-agent가 피드백 반영해 재번역 — 트리거 없음**. 파이프라인 실행 주체가 없어 Dev-A 협의 필요
-  - [ ] **최대 3회 재시도 후 에스컬레이션 — 미구현**. `rejected[id].length`로 계산 가능하나 판정 코드 없음
+  - [x] 피드백 반영 재번역 — `npm run retranslate`. 용어집 + 거부 이력(금지 목록) + 형제 문맥을 EXAONE에 주입해 재번역하고 메모리에서 재검증. 통과분만 `retranslation-patch.json`으로 산출. ⚠️ `src/locales`는 수정하지 않음 — Dev-A 산출물이고 검증자가 대상을 고치면 검증 의미가 없어짐
+  - [x] 최대 3회 재시도 후 에스컬레이션 — `src/validation/escalation.ts`. 거부 발생 횟수(`occurrences`) 합산으로 판정. 초과 항목은 자동 재번역에서 제외하고 `escalations.md`로 사람에게 넘김
 
 **검증 명세의 스크립트 배치 충족**
 
@@ -132,8 +132,7 @@ Acceptance Criteria 원문입니다 (US-2.1 5개 / US-2.2 4개 / US-2.3 4개 / U
 | 항목 | 근거 | 필요 조치 |
 |------|------|-----------|
 | US-2.1 용어 불일치 등급 | 명세는 FAIL, 구현은 WARN (문장 내 약어 축약 오탐 회피) | 등급 정책 확정 |
-| US-2.4 재번역 트리거 | 파이프라인 실행 주체 없음 | Dev-A 협의 |
-| US-2.4 3회 에스컬레이션 | `rejected[id].length`로 계산 가능, 판정 코드 없음 | 구현 (약 60줄) |
+| 재번역 패치 적용 | Dev-B는 패치만 산출. `src/locales` 반영은 Dev-A 영역 | Dev-A가 `retranslation-patch.json` 적용 |
 | US-2.3 확정 데이터 우선 참조 | 리트리버가 제공하나 Dev-A 연동 대기 | Dev-A가 `ctx.confirmed` 반영 후 E2E 확인 |
 | NFR-02 문맥 오역률 3% 이하 | 측정 코드 없음 | 정답 라벨셋 필요. 측정 방법 합의 |
 | S5 인덱스 갱신 시점 | locale 변경 후 `reindex` 수동. 누락 시 리트리버가 낡은 유사 사례 제공 | `npm run qa` 체인 도입 (1줄) |
