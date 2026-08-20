@@ -50,11 +50,11 @@ Acceptance Criteria 원문입니다 (US-2.1 5개 / US-2.2 4개 / US-2.3 4개 / U
 
 수용 기준 단위로 대조했습니다. 미충족 항목은 근거를 남겼습니다.
 
-- [x] **US-2.1 번역 품질 자동 검증** (4/5) — `src/validation/layers.ts`
+- [x] **US-2.1 번역 품질 자동 검증** (5/5) — `src/validation/layers.ts`, `layer3-exaone.ts`
   - [x] 용어집 준수 여부 체크 — `checkLayer2`. ⚠️ 등급이 기준과 다름: 명세는 "다르면 FAIL"이나 구현은 제품명 위반만 FAIL, 등록 용어 불일치는 WARN. 문장 안에서 약어(SSO)로 축약되는 정상 케이스를 FAIL로 잡으면 노이즈가 커서 낮췄음. 등급 정책 확정 필요
   - [x] 모든 locale key 구조 일치 체크 — `checkLayer1` (누락/초과 key)
   - [x] placeholder 포맷 보존 체크 — `checkLayer1` + `extractPlaceholders`
-  - [ ] **문맥 적합성 EXAONE 재검증 — 미구현**. Layer 3는 규칙 기반 트랩(Extend/Withdraw/Vertical/Player)만 검사. EXAONE API 호출 없음. review-agent의 LLM 판단으로 부분 대체되나 자동 검증은 아님
+  - [x] 문맥 적합성 EXAONE 재검증 — `npm run validate:layer3`. 명세가 "(신규 필요)"로 지정한 스크립트. components-map.json에서 같은 프레임의 형제 텍스트를 뽑아 함께 전달(명세: "단건으로 물으면 못 잡는다"). 결함 주입 셀프테스트로 문맥 오역 2/2 검출 확인. ⚠️ LLM 판정이라 WARN이며 확정 판정에서 제외 — 비결정성이 라운드 지표를 오염시키지 않도록
   - [x] PASS/FAIL 판정 + `i18n-report.md` 생성
 - [x] **US-2.2 도메인 용어 자동 발견** (4/4) — `src/validation/glossary-growth.ts`
   - [x] 새 도메인 용어 자동 감지 — `discoverTermCandidates` (2회 이상 반복 등장 기준)
@@ -71,12 +71,20 @@ Acceptance Criteria 원문입니다 (US-2.1 5개 / US-2.2 4개 / US-2.3 4개 / U
   - [ ] **i18n-agent가 피드백 반영해 재번역 — 트리거 없음**. 파이프라인 실행 주체가 없어 Dev-A 협의 필요
   - [ ] **최대 3회 재시도 후 에스컬레이션 — 미구현**. `rejected[id].length`로 계산 가능하나 판정 코드 없음
 
+**검증 명세의 스크립트 배치 충족**
+
+| 명세 지정 | 담당 계층 | 구현 |
+|-----------|-----------|------|
+| `npm run validate:i18n` | Layer 1, 2, 4 (API 불필요) | ✅ API 의존 없음 유지 |
+| `npm run glossary:audit` | Layer 2 심화 + 용어 제안 | ✅ |
+| (신규 필요) | Layer 3 (EXAONE 호출) | ✅ `npm run validate:layer3` |
+
 **검증 명세의 알려진 결함 대조** (`i18n-verification-spec.md` 참고 절)
 
 | 계층 | 명세 건수 | 검출 | 비고 |
 |------|----------|------|------|
 | Layer 2 (L2-03) `Settings`/`Setting` 둘 다 "설정" | 1 | ✅ | 동일 번역 중복 검출 규칙 신규 추가 |
-| Layer 3 `Vertical Type` → "세로 유형" | 1 | ✅ | 규칙 보유. 현재 데이터는 이미 "산업 분야"로 수정된 상태 |
+| Layer 3 `Vertical Type` → "세로 유형" | 1 | ✅ | 규칙 트랩 + EXAONE 역검증 둘 다 보유. 주입 테스트로 검출 확인 |
 | Layer 4 | 12 | ✅ 12 key | 번역되지 않은 제외 대상도 검출하도록 규칙 수정 |
 | 원문 문제 (`Thema` 2, `detailes` 1, `is required` 1) | 4 | ✅ 4 | `Thema` 오타·문장 조각 검출 신규 추가 |
 | Layer 1 | 0 | ✅ 0 | 명세와 일치 |
@@ -123,7 +131,6 @@ Acceptance Criteria 원문입니다 (US-2.1 5개 / US-2.2 4개 / US-2.3 4개 / U
 
 | 항목 | 근거 | 필요 조치 |
 |------|------|-----------|
-| US-2.1 문맥 적합성 EXAONE 재검증 | Layer 3가 규칙 기반 트랩만 검사, API 호출 없음 | EXAONE 호출 검증 단계 추가 여부 결정 |
 | US-2.1 용어 불일치 등급 | 명세는 FAIL, 구현은 WARN (문장 내 약어 축약 오탐 회피) | 등급 정책 확정 |
 | US-2.4 재번역 트리거 | 파이프라인 실행 주체 없음 | Dev-A 협의 |
 | US-2.4 3회 에스컬레이션 | `rejected[id].length`로 계산 가능, 판정 코드 없음 | 구현 (약 60줄) |

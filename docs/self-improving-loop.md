@@ -76,6 +76,9 @@ Dev-A locale JSON 도착
 | `npm run report:evolution -- --md` | evolution-report.md 생성 |
 | `npm run round:simulate` | 루프 동작 검증 (5라운드 시뮬레이션) |
 
+`validate:layer3`은 루프에 포함되지 않습니다. LLM 판정이 확정 번역을 흔들면
+라운드 지표가 오염되므로, 사람이 검토하는 별도 자료로 둡니다.
+
 `validate:i18n`은 무상태 검증으로 남겨뒀습니다. 축적 없이 현재 상태만 볼 때 씁니다.
 검증 규칙은 `src/validation/layers.ts`를 공유하므로 두 경로의 판정이 어긋나지 않습니다.
 

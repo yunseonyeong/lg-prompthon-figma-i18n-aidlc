@@ -322,7 +322,36 @@ rm -rf data && npm run init:vectra && npm run reindex
 
 ---
 
-## 8. 에이전트로 실행 (Dev-B 본래 워크플로)
+## 8. Layer 3 EXAONE 역검증 (API 필요)
+
+**필요한 것**: `FRIENDLI_API_KEY` (`~/.hermes/.env`에 이미 발급됨), `src/components-map.json`
+
+```bash
+npm run validate:layer3              # 문맥 적합성 검증
+npm run validate:layer3 -- --md      # layer3-report.md 생성
+npm run validate:layer3:selftest     # 결함 주입해 검출력 확인
+```
+
+`validate:i18n`과 분리된 이유는 검증 명세의 요구입니다 — Layer 1/2/4는 API 없이
+동작해야 하고, API 장애 시에도 기본 검증은 되어야 합니다.
+
+기대 결과 (셀프테스트):
+
+```
+호출 16회 / ~17k tokens / 검출 2건 / 용어집 우선 억제 3건
+✅ 명세 지목 결함: Vertical Type → 세로 유형
+✅ 도메인 트랩: 라이선스 연장을 화면 확장으로 오역
+✅ (미검출 = 정상) 문체 문제: 시간대 → 시간 지역
+문맥 오역 검출률: 2/2
+```
+
+> LLM 판정이라 실행마다 결과가 조금씩 다릅니다. WARN으로만 보고하고
+> 확정(confirmed) 판정에는 반영하지 않습니다 — 비결정성이 라운드 지표를
+> 오염시키지 않게 하기 위함입니다.
+
+---
+
+## 9. 에이전트로 실행 (Dev-B 본래 워크플로)
 
 npm 스크립트는 계산기이고, 에이전트는 그것을 돌려서 판단하는 주체입니다.
 
