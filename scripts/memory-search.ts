@@ -12,8 +12,8 @@
 import { LocalIndex } from 'vectra';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { embedQuery, activeBackend, describeBackend } from './lib/embedder.js';
-import { assertCompatible } from './lib/index-meta.js';
+import { embedQuery, activeBackend, describeBackend } from '../src/retrieval/embedder.js';
+import { assertCompatible } from '../src/retrieval/index-meta.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');

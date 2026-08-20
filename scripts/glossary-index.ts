@@ -10,9 +10,9 @@
 import { LocalIndex } from 'vectra';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { embedDocuments, activeBackend, describeBackend, EMBED_MODEL_ID, EMBED_DIM } from './lib/embedder.js';
-import { writeIndexMeta } from './lib/index-meta.js';
-import { loadGlossary } from './lib/glossary-loader.js';
+import { embedDocuments, activeBackend, describeBackend, EMBED_MODEL_ID, EMBED_DIM } from '../src/retrieval/embedder.js';
+import { writeIndexMeta } from '../src/retrieval/index-meta.js';
+import { loadGlossary } from '../src/retrieval/glossary-loader.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');

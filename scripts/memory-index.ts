@@ -11,8 +11,8 @@ import { LocalIndex } from 'vectra';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { embedDocuments, activeBackend, describeBackend, EMBED_MODEL_ID, EMBED_DIM } from './lib/embedder.js';
-import { writeIndexMeta } from './lib/index-meta.js';
+import { embedDocuments, activeBackend, describeBackend, EMBED_MODEL_ID, EMBED_DIM } from '../src/retrieval/embedder.js';
+import { writeIndexMeta } from '../src/retrieval/index-meta.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');

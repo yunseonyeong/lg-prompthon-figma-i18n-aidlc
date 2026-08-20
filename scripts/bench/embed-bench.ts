@@ -12,7 +12,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { TEST_CASES, type TestCase } from './testset.js';
-import { textToVector as hashVector, cosineSimilarity } from '../lib/embeddings.js';
+import { textToVector as hashVector, cosineSimilarity } from '../../src/retrieval/embeddings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');

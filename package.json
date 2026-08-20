@@ -23,7 +23,8 @@
     "init:vectra": "tsx scripts/init-vectra.ts",
     "bench:embed": "tsx scripts/bench/embed-bench.ts",
     "reindex": "npm run glossary:index && npm run memory:index",
-    "bench:threshold": "tsx scripts/bench/threshold.ts"
+    "bench:threshold": "tsx scripts/bench/threshold.ts",
+    "retriever:demo": "tsx scripts/retriever-demo.ts"
   },
   "dependencies": {
     "i18next": "23.16.8",

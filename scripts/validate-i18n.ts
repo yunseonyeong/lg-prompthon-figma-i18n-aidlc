@@ -10,7 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { loadGlossary, buildGlossaryMap } from './lib/glossary-loader.js';
+import { loadGlossary, buildGlossaryMap } from '../src/retrieval/glossary-loader.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
