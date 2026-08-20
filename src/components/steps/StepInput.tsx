@@ -1,10 +1,27 @@
 import { useState, useEffect } from 'react';
-import { Card, Form, Button, Row, Col, ListGroup, Badge, Tab, Nav, Alert, Table, Spinner } from 'react-bootstrap';
-import { API_BASE } from '../../api/client';
+import { Card, Form, Button, Row, Col, ListGroup, Badge, Tab, Nav, Alert, Table, Spinner, Modal } from 'react-bootstrap';
+import {
+  API_BASE,
+  DOWNLOADABLE_FILES,
+  downloadUrl,
+  fetchProjectConfig,
+  fetchTranslationSnapshot,
+  saveProjectConfig,
+  translationsCsvUrl,
+  type TranslationSnapshot,
+} from '../../api/client';
 import { useFigmaMcpStatus } from '../../hooks/useFigmaData';
+import {
+  SkeletonList,
+  SkeletonRegion,
+  SkeletonStatCards,
+  SkeletonTable,
+} from '../Skeleton';
 
 interface StepInputProps {
   onNext: () => void;
+  /** 산출물이 없으면 Step 2(에러 화면) 대신 파이프라인 실행 화면으로 보낸다 */
+  onGoToPipeline: () => void;
 }
 
 interface PipelineHistory {
@@ -16,6 +33,9 @@ interface PipelineHistory {
   translatedCount: number;
   componentsCount: number;
   languages: string[];
+  /** 실행 시점 번역 스냅샷 보유 여부 (구버전 히스토리에는 없음) */
+  hasTranslations?: boolean;
+  keyCount?: number;
 }
 
 interface ProjectConfig {
@@ -27,7 +47,7 @@ interface ProjectConfig {
   glossaryTermCount: number;
 }
 
-function StepInput({ onNext }: StepInputProps) {
+function StepInput({ onNext, onGoToPipeline }: StepInputProps) {
   const mcp = useFigmaMcpStatus();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [config, setConfig] = useState<ProjectConfig>({
@@ -41,18 +61,45 @@ function StepInput({ onNext }: StepInputProps) {
   const [history, setHistory] = useState<PipelineHistory[]>([]);
   const [existingFiles, setExistingFiles] = useState<any[]>([]);
   const [hasExistingData, setHasExistingData] = useState(false);
+  // API 응답 전/후를 구분해야 '데이터 없음'을 성급하게 렌더하지 않는다
+  const [statusLoading, setStatusLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
+
+  // 실행별 번역 결과(다국어 테이블) 조회 상태
+  const [snapshot, setSnapshot] = useState<TranslationSnapshot | null>(null);
+  const [snapshotRunId, setSnapshotRunId] = useState<string | null>(null);
+  const [snapshotError, setSnapshotError] = useState<string | null>(null);
+  const [snapshotLoading, setSnapshotLoading] = useState(false);
+  const [snapshotFilter, setSnapshotFilter] = useState('');
+
+  const [configSaving, setConfigSaving] = useState(false);
+  const [configSaveMsg, setConfigSaveMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     loadExistingData();
     loadHistory();
-    // 저장된 설정 불러오기
-    const saved = localStorage.getItem('ux-dlc-config');
-    if (saved) {
+
+    // 설정 로드: 서버가 기준이다. localStorage는 서버 응답 전/실패 시 폴백.
+    // (파이프라인은 서버에 저장된 값을 읽으므로 화면도 같은 값을 보여줘야 한다)
+    const cached = localStorage.getItem('ux-dlc-config');
+    if (cached) {
       try {
-        const parsed = JSON.parse(saved);
-        setConfig(prev => ({ ...prev, ...parsed }));
-      } catch {}
+        setConfig((prev) => ({ ...prev, ...JSON.parse(cached) }));
+      } catch {
+        /* 캐시가 깨졌으면 무시 */
+      }
     }
+    void fetchProjectConfig()
+      .then((server) => {
+        // 서버에 없는 필드는 화면 기본값을 유지한다
+        setConfig((prev) => ({
+          ...prev,
+          ...Object.fromEntries(Object.entries(server).filter(([, v]) => v !== undefined && v !== '')),
+        }));
+      })
+      .catch(() => {
+        /* 서버가 꺼져 있으면 캐시/기본값으로 진행 */
+      });
   }, []);
 
   const loadExistingData = async () => {
@@ -65,6 +112,9 @@ function StepInput({ onNext }: StepInputProps) {
       }
     } catch (error) {
       console.error('기존 데이터 로드 실패:', error);
+    } finally {
+      // 응답 전에는 '데이터 없음' 빈 상태를 보여주면 안 된다 (false negative 깜빡임)
+      setStatusLoading(false);
     }
   };
 
@@ -78,6 +128,8 @@ function StepInput({ onNext }: StepInputProps) {
     } catch {
       const saved = localStorage.getItem('pipeline-history');
       if (saved) setHistory(JSON.parse(saved));
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -89,10 +141,62 @@ function StepInput({ onNext }: StepInputProps) {
     }
   };
 
-  const saveConfig = () => {
-    localStorage.setItem('ux-dlc-config', JSON.stringify(config));
-    alert('설정이 저장되었습니다.');
+  /**
+   * 설정 저장.
+   *
+   * 이전에는 localStorage에만 썼다. 파이프라인은 별도 프로세스라 브라우저
+   * localStorage를 읽을 수 없으므로 도메인 설명·언어 설정이 번역에 반영되지 않았다.
+   * 서버에 저장해야 spawn 시 env로 전달된다. localStorage는 캐시로만 유지한다.
+   */
+  const saveConfig = async () => {
+    setConfigSaving(true);
+    setConfigSaveMsg(null);
+    try {
+      await saveProjectConfig(config);
+      localStorage.setItem('ux-dlc-config', JSON.stringify(config));
+      setConfigSaveMsg({ ok: true, text: '설정을 서버에 저장했습니다. 다음 파이프라인 실행에 반영됩니다.' });
+    } catch (e: any) {
+      setConfigSaveMsg({
+        ok: false,
+        text: `저장 실패: ${e?.message ?? String(e)} — API 서버 확인 (npm run dev:all)`,
+      });
+    } finally {
+      setConfigSaving(false);
+    }
   };
+
+  const openSnapshot = async (runId: string) => {
+    setSnapshotRunId(runId);
+    setSnapshotLoading(true);
+    setSnapshotError(null);
+    setSnapshot(null);
+    setSnapshotFilter('');
+    try {
+      setSnapshot(await fetchTranslationSnapshot(runId));
+    } catch (e: any) {
+      setSnapshotError(e?.message ?? String(e));
+    } finally {
+      setSnapshotLoading(false);
+    }
+  };
+
+  const closeSnapshot = () => {
+    setSnapshotRunId(null);
+    setSnapshot(null);
+    setSnapshotError(null);
+  };
+
+  const filteredRows = (snapshot?.rows ?? []).filter((r) => {
+    if (!snapshotFilter.trim()) return true;
+    const q = snapshotFilter.toLowerCase();
+    return (
+      r.key.toLowerCase().includes(q) ||
+      r.en.toLowerCase().includes(q) ||
+      r.ko.toLowerCase().includes(q) ||
+      r.ja.toLowerCase().includes(q) ||
+      r['zh-CN'].toLowerCase().includes(q)
+    );
+  });
 
   const localeFiles = existingFiles.filter((f) => f.path.includes('locales'));
   const componentFiles = existingFiles.filter((f) => f.path.includes('generated'));
@@ -174,7 +278,20 @@ function StepInput({ onNext }: StepInputProps) {
         <Tab.Content>
           {/* Dashboard Tab */}
           <Tab.Pane eventKey="dashboard">
-            {hasExistingData ? (
+            {statusLoading ? (
+              // 최종 레이아웃과 같은 골격(통계 4칸 + 파일 목록)을 미리 그려 레이아웃 이동을 없앤다
+              <SkeletonRegion label="생성된 파일 상태를 불러오는 중">
+                <div className="mb-4">
+                  <SkeletonStatCards count={4} />
+                </div>
+                <Card className="ux-card mb-4">
+                  <Card.Header className="ux-card-header d-flex align-items-center gap-2">
+                    <span>📁</span> 생성된 파일
+                  </Card.Header>
+                  <SkeletonList items={5} />
+                </Card>
+              </SkeletonRegion>
+            ) : hasExistingData ? (
               <div className="ux-stagger">
                 {/* Stats */}
                 <Row className="mb-4 g-3">
@@ -220,6 +337,21 @@ function StepInput({ onNext }: StepInputProps) {
                           {file.keys > 0 && (
                             <Badge className="ux-badge ux-badge-primary">{file.keys} keys</Badge>
                           )}
+                          {/* allowlist에 있는 파일만 다운로드 버튼을 노출한다 */}
+                          {(() => {
+                            const name = file.path.split('/').pop() ?? '';
+                            if (!(DOWNLOADABLE_FILES as readonly string[]).includes(name)) return null;
+                            return (
+                              <Button
+                                size="sm"
+                                variant="outline-secondary"
+                                href={downloadUrl(name)}
+                                title={`${name} 다운로드`}
+                              >
+                                ⬇
+                              </Button>
+                            );
+                          })()}
                         </div>
                       </ListGroup.Item>
                     ))}
@@ -239,10 +371,17 @@ function StepInput({ onNext }: StepInputProps) {
                 <Card.Body>
                   <div className="fs-1 mb-3">🚀</div>
                   <h5 className="fw-bold mb-2">아직 생성된 데이터가 없습니다</h5>
-                  <p className="text-muted mb-4">프로젝트 설정 후 파이프라인을 실행하세요.</p>
-                  <Button className="ux-btn-primary" onClick={() => setActiveTab('config')}>
-                    프로젝트 설정하기
-                  </Button>
+                  <p className="text-muted mb-4">
+                    Figma 설정을 확인한 뒤 파이프라인을 실행하면 번역·키 매핑·컴포넌트가 생성됩니다.
+                  </p>
+                  <div className="d-flex gap-2 justify-content-center">
+                    <Button className="ux-btn-primary" onClick={onGoToPipeline}>
+                      ⚡ 파이프라인 실행하기
+                    </Button>
+                    <Button className="ux-btn-secondary" onClick={() => setActiveTab('config')}>
+                      ⚙️ 프로젝트 설정
+                    </Button>
+                  </div>
                 </Card.Body>
               </Card>
             )}
@@ -412,14 +551,33 @@ function StepInput({ onNext }: StepInputProps) {
                   </Card.Body>
                 </Card>
 
-                <div className="d-flex gap-2">
-                  <Button className="ux-btn-primary" onClick={saveConfig}>
-                    💾 설정 저장
+                <div className="d-flex gap-2 align-items-center flex-wrap">
+                  <Button className="ux-btn-primary" onClick={() => void saveConfig()} disabled={configSaving}>
+                    {configSaving ? (
+                      <>
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        저장 중...
+                      </>
+                    ) : (
+                      '💾 설정 저장'
+                    )}
                   </Button>
                   <Button className="ux-btn-secondary" onClick={() => setActiveTab('dashboard')}>
                     취소
                   </Button>
                 </div>
+
+                {/* alert() 대신 인라인 피드백. 실패 사유가 보여야 한다. */}
+                {configSaveMsg && (
+                  <Alert
+                    variant={configSaveMsg.ok ? 'success' : 'danger'}
+                    className="mt-3 py-2 small"
+                    dismissible
+                    onClose={() => setConfigSaveMsg(null)}
+                  >
+                    {configSaveMsg.text}
+                  </Alert>
+                )}
               </Col>
 
               <Col lg={4}>
@@ -457,7 +615,17 @@ function StepInput({ onNext }: StepInputProps) {
 
           {/* History Tab */}
           <Tab.Pane eventKey="history">
-            {history.length > 0 ? (
+            {historyLoading ? (
+              <SkeletonRegion label="실행 히스토리를 불러오는 중">
+                <Card className="ux-card">
+                  <Card.Header className="ux-card-header d-flex align-items-center gap-2">
+                    <span>📜</span> 파이프라인 실행 히스토리
+                  </Card.Header>
+                  {/* 실제 표와 동일한 7열 */}
+                  <SkeletonTable rows={4} columns={7} />
+                </Card>
+              </SkeletonRegion>
+            ) : history.length > 0 ? (
               <Card className="ux-card">
                 <Card.Header className="ux-card-header d-flex align-items-center gap-2">
                   <span>📜</span> 파이프라인 실행 히스토리
@@ -472,6 +640,7 @@ function StepInput({ onNext }: StepInputProps) {
                         <th>번역</th>
                         <th>컴포넌트</th>
                         <th>언어</th>
+                        <th>번역 결과</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -499,6 +668,32 @@ function StepInput({ onNext }: StepInputProps) {
                               ))}
                             </div>
                           </td>
+                          <td>
+                            {/* 스냅샷은 이번 변경 이후 실행에만 존재한다. 구버전 항목은 비활성 처리 */}
+                            {item.hasTranslations === false || item.hasTranslations === undefined ? (
+                              <span className="text-muted small" title="이 실행에는 번역 스냅샷이 없습니다">
+                                —
+                              </span>
+                            ) : (
+                              <div className="d-flex gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline-primary"
+                                  onClick={() => void openSnapshot(item.id)}
+                                >
+                                  📋 보기
+                                  {item.keyCount ? ` (${item.keyCount})` : ''}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline-secondary"
+                                  href={translationsCsvUrl(item.id)}
+                                >
+                                  ⬇ CSV
+                                </Button>
+                              </div>
+                            )}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -518,6 +713,89 @@ function StepInput({ onNext }: StepInputProps) {
         </Tab.Content>
       </Tab.Container>
 
+      {/* 실행별 번역 결과 (다국어 테이블) */}
+      <Modal show={snapshotRunId !== null} onHide={closeSnapshot} size="xl" scrollable>
+        <Modal.Header closeButton>
+          <Modal.Title className="h6">
+            번역 결과 (다국어 테이블)
+            {snapshot && (
+              <span className="text-muted small ms-2">
+                {new Date(snapshot.at).toLocaleString()} · {snapshot.rowCount}건
+              </span>
+            )}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {snapshotLoading && (
+            <div className="text-center py-4">
+              <Spinner animation="border" className="mb-2" />
+              <div className="text-muted small">번역 결과를 불러오는 중...</div>
+            </div>
+          )}
+          {snapshotError && <Alert variant="danger">{snapshotError}</Alert>}
+          {snapshot && (
+            <>
+              <Form.Control
+                size="sm"
+                className="mb-3"
+                placeholder="키 또는 번역문으로 검색..."
+                value={snapshotFilter}
+                onChange={(e) => setSnapshotFilter(e.target.value)}
+              />
+              <div className="text-muted small mb-2">
+                {filteredRows.length}/{snapshot.rowCount}건 표시
+              </div>
+              <Table size="sm" striped hover responsive className="mb-0">
+                <thead>
+                  <tr>
+                    <th>i18n Key</th>
+                    <th>🇺🇸 en</th>
+                    <th>🇰🇷 ko</th>
+                    <th>🇯🇵 ja</th>
+                    <th>🇨🇳 zh-CN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRows.map((r) => (
+                    <tr key={r.key}>
+                      <td>
+                        <code className="small">{r.key}</code>
+                      </td>
+                      <td className="small">{r.en}</td>
+                      {/* 번역이 원문과 같으면 미번역 상태다. 회색으로 구분한다 */}
+                      <td className={`small ${r.ko === r.en ? 'text-muted' : ''}`}>{r.ko}</td>
+                      <td className={`small ${r.ja === r.en ? 'text-muted' : ''}`}>{r.ja}</td>
+                      <td className={`small ${r['zh-CN'] === r.en ? 'text-muted' : ''}`}>
+                        {r['zh-CN']}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="justify-content-between">
+          <span className="text-muted small">
+            회색 = 원문과 동일 (미번역)
+          </span>
+          <div className="d-flex gap-2">
+            {snapshotRunId && (
+              <Button
+                variant="outline-primary"
+                size="sm"
+                href={translationsCsvUrl(snapshotRunId)}
+              >
+                ⬇ CSV 다운로드
+              </Button>
+            )}
+            <Button variant="secondary" size="sm" onClick={closeSnapshot}>
+              닫기
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+
       {/* Next Button */}
       <div className="d-flex justify-content-end mt-4">
         {/*
@@ -527,10 +805,21 @@ function StepInput({ onNext }: StepInputProps) {
           라벨이 상태를 암시하지 않고 실제 동작(다음 단계 이동)을 설명하도록 바꿨다.
           기존 작업 유무는 위 대시보드 Alert와 파일 목록이 이미 보여준다.
         */}
-        <Button className="ux-btn-primary px-4 py-2" size="lg" onClick={onNext}>
-          텍스트 추출 결과 보기
-          <span className="ms-2">→</span>
-        </Button>
+        {/*
+          산출물이 없으면 Step 2로 보내면 안 된다. 거기서 에러 화면만 보고 막힌다.
+          바로 파이프라인 실행 화면(Step 5)으로 보낸다.
+        */}
+        {hasExistingData ? (
+          <Button className="ux-btn-primary px-4 py-2" size="lg" onClick={onNext}>
+            텍스트 추출 결과 보기
+            <span className="ms-2">→</span>
+          </Button>
+        ) : (
+          <Button className="ux-btn-primary px-4 py-2" size="lg" onClick={onGoToPipeline}>
+            ⚡ 파이프라인 실행하기
+            <span className="ms-2">→</span>
+          </Button>
+        )}
       </div>
     </div>
   );

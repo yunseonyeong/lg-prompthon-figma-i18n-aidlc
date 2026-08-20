@@ -1,13 +1,16 @@
-import { Alert, Card, Row, Col, Table, Badge, Button, ProgressBar, Spinner } from 'react-bootstrap';
+import { Alert, Card, Row, Col, Table, Badge, Button, ProgressBar } from 'react-bootstrap';
 import Pagination, { usePagination } from '../Pagination';
+import { SkeletonRegion, SkeletonStatCards, SkeletonTable } from '../Skeleton';
 import { useComponentsMap } from '../../hooks/useFigmaData';
 
 interface StepExtractionProps {
   onNext: () => void;
   onBack: () => void;
+  /** 산출물이 없을 때 파이프라인 실행 화면으로 보낸다 (데드락 방지) */
+  onGoToPipeline: () => void;
 }
 
-function StepExtraction({ onNext, onBack }: StepExtractionProps) {
+function StepExtraction({ onNext, onBack, onGoToPipeline }: StepExtractionProps) {
   // static import를 쓰면 파이프라인 재실행 결과가 재빌드 전까지 반영되지 않는다.
   const { data, loading, error } = useComponentsMap();
   const componentsMap = data ?? [];
@@ -46,27 +49,47 @@ function StepExtraction({ onNext, onBack }: StepExtractionProps) {
 
   if (loading) {
     return (
-      <div className="text-center py-5">
-        <Spinner animation="border" className="mb-3" />
-        <div className="text-muted small">추출 결과를 불러오는 중...</div>
-      </div>
+      <SkeletonRegion label="텍스트 추출 결과를 불러오는 중">
+        <h4 className="mb-4">Step 2. 텍스트 추출 결과</h4>
+        <div className="mb-4">
+          <SkeletonStatCards count={4} />
+        </div>
+        <Card>
+          {/* 실제 표와 동일한 4열 15행 → 완료 시 높이가 튀지 않는다 */}
+          <SkeletonTable rows={15} columns={4} columnWidths={['10%', '40%', '40%', '10%']} />
+        </Card>
+      </SkeletonRegion>
     );
   }
 
-  if (error) {
+  // 산출물이 없거나 불러오지 못한 상태. 여기서 반드시 파이프라인으로 갈 길을 열어둔다.
+  if (error || componentsMap.length === 0) {
     return (
       <>
         <h4 className="mb-4">Step 2. 텍스트 추출 결과</h4>
-        <Alert variant="danger">
-          <Alert.Heading className="h6">components-map.json을 불러올 수 없습니다</Alert.Heading>
-          <p className="small mb-2">{error}</p>
+        <Alert variant={error ? 'danger' : 'secondary'}>
+          <Alert.Heading className="h6">
+            {error ? 'components-map.json을 불러올 수 없습니다' : '추출된 텍스트가 없습니다'}
+          </Alert.Heading>
+          {error && <p className="small mb-2">{error}</p>}
           <div className="small mb-0">
-            API 서버를 실행하고(<code>npm run dev:all</code>) Step 5에서 파이프라인을 먼저 실행하세요.
+            파이프라인을 실행하면 Figma에서 텍스트를 추출해 i18n 키를 생성합니다.
+            {error && (
+              <>
+                <br />
+                API 서버가 꺼져 있는지도 확인하세요 — <code>npm run dev:all</code>
+              </>
+            )}
           </div>
         </Alert>
-        <Button variant="outline-secondary" onClick={onBack}>
-          ← 이전
-        </Button>
+        <div className="d-flex justify-content-between">
+          <Button variant="outline-secondary" onClick={onBack}>
+            ← 이전
+          </Button>
+          <Button variant="primary" onClick={onGoToPipeline}>
+            ⚡ 파이프라인 실행하러 가기
+          </Button>
+        </div>
       </>
     );
   }

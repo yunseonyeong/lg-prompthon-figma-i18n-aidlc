@@ -11,15 +11,15 @@
   --ux-success: #10b981;
   --ux-warning: #f59e0b;
   --ux-danger: #ef4444;
-  
+
   --ux-gradient: linear-gradient(135deg, var(--ux-primary) 0%, var(--ux-secondary) 100%);
   --ux-gradient-accent: linear-gradient(135deg, var(--ux-accent) 0%, var(--ux-primary) 100%);
-  
+
   --ux-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --ux-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --ux-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   --ux-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  
+
   --ux-radius: 12px;
   --ux-radius-lg: 16px;
 }
@@ -33,7 +33,8 @@ body {
   min-height: 100vh;
 }
 
-code, pre {
+code,
+pre {
   font-family: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Consolas', monospace;
 }
 
@@ -50,6 +51,14 @@ code, pre {
 .ux-navbar .navbar-brand {
   font-weight: 700;
   letter-spacing: -0.02em;
+  /* 짙은 남색 배경 위에 올라가므로 색을 명시한다.
+     Bootstrap 기본값(light 테마)은 rgba(0,0,0,.9)라서 글씨가 배경에 묻힌다. */
+  color: #ffffff;
+}
+
+.ux-navbar .navbar-brand:hover,
+.ux-navbar .navbar-brand:focus {
+  color: #ffffff;
 }
 
 .ux-navbar .brand-icon {
@@ -66,7 +75,10 @@ code, pre {
 
 .ux-navbar .brand-subtitle {
   font-size: 0.75rem;
-  opacity: 0.7;
+  /* opacity 0.7 + 어두운 기본 색이 겹쳐 거의 안 보였다.
+     밝은 색을 명시하고 대비를 확보한다. */
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
   letter-spacing: 0.05em;
 }
 
@@ -166,9 +178,12 @@ code, pre {
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
   }
+
   50% {
     box-shadow: 0 4px 20px rgba(99, 102, 241, 0.6);
   }
@@ -249,10 +264,21 @@ code, pre {
   height: 4px;
 }
 
-.ux-stat-card.primary::before { background: var(--ux-gradient); }
-.ux-stat-card.success::before { background: var(--ux-success); }
-.ux-stat-card.info::before { background: var(--ux-accent); }
-.ux-stat-card.secondary::before { background: #64748b; }
+.ux-stat-card.primary::before {
+  background: var(--ux-gradient);
+}
+
+.ux-stat-card.success::before {
+  background: var(--ux-success);
+}
+
+.ux-stat-card.info::before {
+  background: var(--ux-accent);
+}
+
+.ux-stat-card.secondary::before {
+  background: #64748b;
+}
 
 .ux-stat-value {
   font-size: 2.5rem;
@@ -362,10 +388,21 @@ code, pre {
   border-radius: 4px;
 }
 
-.ux-code-block .comment { color: #6b7280; }
-.ux-code-block .keyword { color: #c084fc; }
-.ux-code-block .string { color: #34d399; }
-.ux-code-block .number { color: #fbbf24; }
+.ux-code-block .comment {
+  color: #6b7280;
+}
+
+.ux-code-block .keyword {
+  color: #c084fc;
+}
+
+.ux-code-block .string {
+  color: #34d399;
+}
+
+.ux-code-block .number {
+  color: #fbbf24;
+}
 
 /* ===========================================
    Badges & Tags
@@ -380,19 +417,35 @@ code, pre {
   font-weight: 600;
 }
 
-.ux-badge-primary {
-  background: rgba(99, 102, 241, 0.1);
-  color: var(--ux-primary);
+/*
+  react-bootstrap <Badge>는 bg 기본값이 "primary"라서 .bg-primary 클래스가 함께 붙는다.
+  Bootstrap 5는 이를 !important로 선언한다.
+
+    .bg-primary { background-color: rgba(var(--bs-primary-rgb), 1) !important }
+
+  그래서 아래 연한 배경이 무시되고 진한 파랑(#0d6efd)이 깔린 위에
+  color만 적용되어 글자와 배경이 사실상 같은 색이 됐다.
+
+  대응: 클래스 2개로 특이도를 올리고(.ux-badge.ux-badge-*) !important로 되찾는다.
+  동일 특이도라면 나중에 로드되는 global.css가 이기지만, 특이도를 명시해 순서에 의존하지 않게 한다.
+
+  글자색은 원래 값(--ux-primary 등)을 그대로 쓰면 연한 배경 위 대비비가 2.3~4.6:1로
+  WCAG AA(4.5:1)에 미달하거나 간신히 걸친다. 한 단계 진한 색으로 내려 대비를 확보했다.
+  (계산값: primary 6.9:1 / success 5.1:1 / info 4.9:1)
+*/
+.ux-badge.ux-badge-primary {
+  background: rgba(99, 102, 241, 0.12) !important;
+  color: #4338ca;
 }
 
-.ux-badge-success {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--ux-success);
+.ux-badge.ux-badge-success {
+  background: rgba(16, 185, 129, 0.12) !important;
+  color: #047857;
 }
 
-.ux-badge-info {
-  background: rgba(6, 182, 212, 0.1);
-  color: var(--ux-accent);
+.ux-badge.ux-badge-info {
+  background: rgba(6, 182, 212, 0.12) !important;
+  color: #0e7490;
 }
 
 /* ===========================================
@@ -496,42 +549,63 @@ code, pre {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { 
+  from {
     opacity: 0;
     transform: translateY(20px);
   }
-  to { 
+
+  to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
 @keyframes scaleIn {
-  from { 
+  from {
     opacity: 0;
     transform: scale(0.95);
   }
-  to { 
+
+  to {
     opacity: 1;
     transform: scale(1);
   }
 }
 
 /* Stagger children animation */
-.ux-stagger > * {
+.ux-stagger>* {
   animation: slideUp 0.4s ease-out both;
 }
 
-.ux-stagger > *:nth-child(1) { animation-delay: 0ms; }
-.ux-stagger > *:nth-child(2) { animation-delay: 50ms; }
-.ux-stagger > *:nth-child(3) { animation-delay: 100ms; }
-.ux-stagger > *:nth-child(4) { animation-delay: 150ms; }
-.ux-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.ux-stagger>*:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.ux-stagger>*:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.ux-stagger>*:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.ux-stagger>*:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+.ux-stagger>*:nth-child(5) {
+  animation-delay: 200ms;
+}
 
 /* ===========================================
    Loading States
@@ -544,8 +618,13 @@ code, pre {
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ===========================================
@@ -592,13 +671,13 @@ code, pre {
   .ux-step-label {
     display: none;
   }
-  
+
   .ux-step-circle {
     width: 32px;
     height: 32px;
     font-size: 12px;
   }
-  
+
   .ux-stat-value {
     font-size: 1.75rem;
   }
@@ -607,11 +686,70 @@ code, pre {
 /* ===========================================
    Utility Classes
    =========================================== */
-.cursor-pointer { cursor: pointer; }
-.transition-all { transition: all 0.3s ease; }
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.transition-all {
+  transition: all 0.3s ease;
+}
+
 .text-gradient {
   background: var(--ux-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* ===========================================
+   Skeleton (src/components/Skeleton.tsx)
+   =========================================== */
+
+/*
+  Bootstrap의 .placeholder 대신 자체 구현을 쓴다.
+  .placeholder 는 currentColor + opacity 기반이라 배경 대비 제어가 어렵고,
+  .placeholder-glow 가 요소 전체 투명도를 흔들어 주변 텍스트와 섞이면 산만하다.
+*/
+.ux-skeleton {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  vertical-align: middle;
+  border-radius: 4px;
+  background-color: #e9edf3;
+  /* 기본 폭. 호출부에서 width를 주면 덮인다 */
+  min-width: 1rem;
+}
+
+/* shimmer는 ::after로 얹어 배경색과 분리한다 (요소 자체 opacity를 건드리지 않음) */
+.ux-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.65) 50%,
+      rgba(255, 255, 255, 0) 100%);
+  animation: ux-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.ux-skeleton-circle {
+  border-radius: 50%;
+}
+
+@keyframes ux-skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/*
+  접근성: 모션 감소를 선호하는 사용자에게는 shimmer를 끈다.
+  애니메이션만 제거하고 회색 블록은 남겨 로딩 중임은 여전히 전달된다.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .ux-skeleton::after {
+    animation: none;
+  }
 }

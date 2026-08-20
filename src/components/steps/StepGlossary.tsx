@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, Row, Col, Table, Badge, Button, Form, ButtonGroup, Alert, Modal, Spinner, Toast, ToastContainer } from 'react-bootstrap';
 import { API_BASE } from '../../api/client';
+import { SkeletonRegion, Skeleton, SkeletonStatCards, SkeletonTable } from '../Skeleton';
 
 interface GlossaryTerm {
   id: string;
@@ -140,10 +141,31 @@ function StepGlossary({ onBack, onNext }: StepGlossaryProps) {
 
   if (loading) {
     return (
-      <div className="d-flex flex-column align-items-center justify-content-center py-5">
-        <div className="spinner-border text-primary mb-3" style={{ width: '3rem', height: '3rem' }} />
-        <p className="text-muted">용어집을 불러오는 중...</p>
-      </div>
+      <SkeletonRegion label="용어집을 불러오는 중" className="ux-slide-up">
+        {/* 헤더 */}
+        <div className="d-flex justify-content-between align-items-start mb-4">
+          <div>
+            <Skeleton width={220} height="1.5rem" className="mb-2" />
+            <Skeleton width={280} height="0.85rem" />
+          </div>
+          <div className="d-flex gap-2">
+            <Skeleton width={90} height="2rem" style={{ borderRadius: 6 }} />
+            <Skeleton width={80} height="2rem" style={{ borderRadius: 6 }} />
+          </div>
+        </div>
+        {/* 통계 카드 */}
+        <SkeletonStatCards count={4} />
+        {/* 카테고리 필터 */}
+        <div className="d-flex gap-2 my-4">
+          {[80, 70, 65, 75, 60, 70, 65, 80].map((w, i) => (
+            <Skeleton key={i} width={w} height="2rem" style={{ borderRadius: 6 }} />
+          ))}
+        </div>
+        {/* 테이블 */}
+        <div className="card">
+          <SkeletonTable rows={8} columns={7} columnWidths={['10%','14%','12%','12%','12%','28%','12%']} />
+        </div>
+      </SkeletonRegion>
     );
   }
 

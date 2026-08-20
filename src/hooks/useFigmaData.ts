@@ -6,12 +6,10 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import i18n from '../i18n';
 import {
   fetchComponentsMap,
   fetchFigmaMcpStatus,
   fetchFigmaStructure,
-  fetchLocale,
 } from '../api/client';
 import type {
   ComponentMapFrame,
@@ -24,8 +22,6 @@ interface AsyncState<T> {
   loading: boolean;
   error: string | null;
 }
-
-const LANGUAGES = ['en', 'ko', 'ja', 'zh-CN'];
 
 /** Figma MCP 연결 상태. UI가 "연동됨"을 사실에 근거해 표시하기 위해 쓴다. */
 export function useFigmaMcpStatus() {
@@ -116,47 +112,8 @@ export function useComponentsMap() {
   return state;
 }
 
-/**
- * 파이프라인이 방금 쓴 locale JSON을 i18next에 주입한다.
- *
- * i18n.ts는 locale을 static import하므로 번들 시점 값이 고정된다.
- * 파이프라인을 재실행한 직후에도 최신 번역이 화면에 보이도록 런타임에 덮어쓴다.
- */
-export function useLiveLocales() {
-  const [synced, setSynced] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const results = await Promise.allSettled(
-        LANGUAGES.map(async (lang) => {
-          const resources = await fetchLocale(lang);
-          return { lang, resources };
-        })
-      );
-      if (cancelled) return;
-
-      let applied = 0;
-      for (const r of results) {
-        if (r.status === 'fulfilled') {
-          // deep=true, overwrite=true: 파이프라인 산출물이 항상 우선
-          i18n.addResourceBundle(r.value.lang, 'translation', r.value.resources, true, true);
-          applied += 1;
-        }
-      }
-      if (applied === 0) {
-        setError('API에서 locale을 불러오지 못했습니다. 번들에 포함된 번역을 사용합니다.');
-      } else {
-        // 이미 렌더된 트리에 새 리소스를 반영
-        void i18n.changeLanguage(i18n.language);
-      }
-      setSynced(true);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return { synced, error };
-}
+// locale 로딩은 여기 있던 useLiveLocales()에서 src/i18n.ts의 loadLocalesFromApi()로 옮겼다.
+// 3개 Step이 각자 훅을 호출해 4개 locale을 중복 fetch하고 있었고(총 12회),
+// 무엇보다 i18n.ts가 static import를 유지하는 한 "번들 값 → 런타임 덮어쓰기" 순서가
+// 항상 한 박자 늦어 초기 렌더에 옛 번역이 노출됐다.
+// 이제 App이 진입 시 1회 로드하고 i18n.ts는 빈 리소스로 시작한다.
