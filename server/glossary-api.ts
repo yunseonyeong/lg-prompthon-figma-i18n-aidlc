@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import { getFigmaStructure, getMcpStatus } from './figma-mcp.js';
+import { pipelineRouter } from './routes/pipeline.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -553,6 +554,10 @@ app.get('/api/figma/structure', async (req, res) => {
     });
   }
 });
+
+// Routes
+app.use('/api/pipeline', pipelineRouter);
+
 
 // 헬퍼 함수들
 async function saveHistory(entry: any) {
