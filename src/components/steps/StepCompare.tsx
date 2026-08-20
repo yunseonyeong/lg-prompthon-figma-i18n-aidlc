@@ -1,149 +1,198 @@
 import { useState } from 'react';
+import { Card, Row, Col, Badge, Button, Nav, Alert } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import componentsMap from '../../components-map.json';
-
-/**
- * US-3.4: Figma ↔ 코드 비교 화면
- *
- * 좌측: Figma 원본 텍스트 (English, design source)
- * 우측: 생성된 코드의 번역 결과 (현재 선택 언어)
- *
- * 프레임 단위로 비교 가능, 변경된 부분 하이라이트
- */
+import { useComponentsMap } from '../../hooks/useFigmaData';
 
 interface StepCompareProps {
   onBack: () => void;
+  /** 8단계 위저드 종료. Step 1(대시보드)로 복귀한다. */
+  onComplete: () => void;
 }
 
-function StepCompare({ onBack }: StepCompareProps) {
+function StepCompare({ onBack, onComplete }: StepCompareProps) {
   const { t, i18n } = useTranslation();
   const [selectedFrame, setSelectedFrame] = useState(0);
+  const { data, loading, error } = useComponentsMap();
+  const componentsMap = data ?? [];
 
   const frame = componentsMap[selectedFrame];
-  const uniqueChildren = frame.children.filter(
+  const uniqueChildren = (frame?.children ?? []).filter(
     (child, idx, arr) => arr.findIndex((x) => x.key === child.key) === idx
   );
 
-  // 번역이 원문과 다른지 체크
-  const isDifferent = (key: string, original: string): boolean => {
-    const translated = t(key);
-    return translated !== original;
-  };
-
-  const totalChanged = uniqueChildren.filter((child) =>
-    isDifferent(child.key, child.originalText)
+  const totalChanged = uniqueChildren.filter(
+    (child) => t(child.key) !== child.originalText
   ).length;
 
+  const getBadgeVariant = (type: string) => {
+    const variants: Record<string, string> = {
+      title: 'primary',
+      label: 'info',
+      button: 'success',
+      placeholder: 'warning',
+      status: 'secondary',
+    };
+    return variants[type] || 'secondary';
+  };
+
+  if (loading || error || !frame) {
+    return (
+      <>
+        <h4 className="mb-4">Step 8. Figma ↔ 코드 비교</h4>
+        <Alert variant={error ? 'danger' : 'secondary'}>
+          {loading
+            ? 'components-map.json을 불러오는 중...'
+            : error
+              ? `불러오기 실패: ${error}`
+              : '비교할 프레임이 없습니다. Step 5에서 파이프라인을 먼저 실행하세요.'}
+        </Alert>
+        <Button variant="outline-secondary" onClick={onBack}>
+          ← 이전
+        </Button>
+      </>
+    );
+  }
+
   return (
-    <div className="step-container">
-      <div className="step-header">
-        <h2>🔍 Figma ↔ 코드 비교</h2>
-        <p className="step-description">
-          Figma 원본 텍스트와 생성된 코드의 번역 결과를 나란히 비교합니다.<br />
-          디자이너가 의도한 내용이 정확하게 번역되었는지 확인할 수 있습니다.
-        </p>
-      </div>
+    <>
+      <h4 className="mb-4">Step 8. Figma ↔ 코드 비교</h4>
+      <p className="text-muted mb-4">
+        Figma 원본 텍스트와 생성된 코드의 번역 결과를 나란히 비교합니다.
+      </p>
 
       {/* Frame Selector */}
-      <div className="compare-frame-selector">
-        {componentsMap.map((f, idx) => (
-          <button
-            key={f.frameId}
-            className={`frame-tab ${selectedFrame === idx ? 'active' : ''}`}
-            onClick={() => setSelectedFrame(idx)}
-          >
-            {f.frame}
-          </button>
-        ))}
-      </div>
+      <Card className="mb-4">
+        <Card.Header className="p-2">
+          <Nav variant="pills" className="flex-nowrap overflow-auto">
+            {componentsMap.map((f, idx) => (
+              <Nav.Item key={f.frameId}>
+                <Nav.Link
+                  active={selectedFrame === idx}
+                  onClick={() => setSelectedFrame(idx)}
+                  className="small text-nowrap"
+                >
+                  {f.frame}
+                </Nav.Link>
+              </Nav.Item>
+            ))}
+          </Nav>
+        </Card.Header>
+      </Card>
 
       {/* Stats */}
-      <div className="compare-stats">
-        <span className="compare-stat">
-          📄 프레임: <strong>{frame.frame}</strong>
-        </span>
-        <span className="compare-stat">
-          🔑 Key 수: <strong>{uniqueChildren.length}</strong>
-        </span>
-        <span className="compare-stat">
-          🌐 비교 언어: <strong>{i18n.language}</strong>
-        </span>
-        <span className="compare-stat">
-          {i18n.language === 'en' ? (
-            <span className="compare-same">✅ 원문과 동일 (English)</span>
-          ) : (
-            <span className="compare-diff">🔄 변경됨: {totalChanged}/{uniqueChildren.length}</span>
-          )}
-        </span>
-      </div>
+      <Row className="mb-4">
+        <Col sm={6} md={3}>
+          <Card className="text-center">
+            <Card.Body className="py-2">
+              <div className="fw-bold text-primary">{frame.frame}</div>
+              <div className="small text-muted">프레임</div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col sm={6} md={3}>
+          <Card className="text-center">
+            <Card.Body className="py-2">
+              <div className="fw-bold">{uniqueChildren.length}</div>
+              <div className="small text-muted">Key 수</div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col sm={6} md={3}>
+          <Card className="text-center">
+            <Card.Body className="py-2">
+              <div className="fw-bold">{i18n.language}</div>
+              <div className="small text-muted">비교 언어</div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col sm={6} md={3}>
+          <Card className="text-center">
+            <Card.Body className="py-2">
+              {i18n.language === 'en' ? (
+                <div className="fw-bold text-success">원문과 동일</div>
+              ) : (
+                <div className="fw-bold text-info">변경 {totalChanged}건</div>
+              )}
+              <div className="small text-muted">상태</div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
-      {/* Comparison View */}
-      <div className="compare-view">
-        {/* Header */}
-        <div className="compare-row compare-header-row">
-          <div className="compare-col compare-left">
-            <span className="col-label">🎨 Figma 원본 (English)</span>
-          </div>
-          <div className="compare-col compare-right">
-            <span className="col-label">⚛️ 코드 출력 ({i18n.language})</span>
-          </div>
-        </div>
+      {/* Comparison */}
+      <Card className="mb-4">
+        <Card.Header>
+          <Row>
+            <Col className="text-center">
+              <strong>🎨 Figma 원본 (English)</strong>
+            </Col>
+            <Col className="text-center">
+              <strong>⚛️ 코드 출력 ({i18n.language})</strong>
+            </Col>
+          </Row>
+        </Card.Header>
+        <Card.Body className="p-0">
+          {uniqueChildren.map((child) => {
+            const translated = t(child.key);
+            const changed = translated !== child.originalText;
 
-        {/* Items */}
-        {uniqueChildren.map((child) => {
-          const translated = t(child.key);
-          const changed = translated !== child.originalText;
-
-          return (
-            <div
-              key={child.key}
-              className={`compare-row ${changed ? 'row-changed' : 'row-same'}`}
-            >
-              <div className="compare-col compare-left">
-                <span className={`badge badge-${child.type}`}>{child.type}</span>
-                <span className="compare-text">{child.originalText}</span>
-              </div>
-              <div className="compare-col compare-right">
-                <span className="compare-text translated">
-                  {translated}
-                </span>
-                {changed && <span className="change-indicator">●</span>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            return (
+              <Row
+                key={child.key}
+                className={`g-0 border-bottom align-items-center ${changed ? 'bg-info bg-opacity-10' : ''}`}
+              >
+                <Col className="p-3 border-end">
+                  <Badge bg={getBadgeVariant(child.type)} className="me-2 small">
+                    {child.type}
+                  </Badge>
+                  {child.originalText}
+                </Col>
+                <Col className="p-3 d-flex justify-content-between align-items-center">
+                  <span className={changed ? 'fw-semibold' : ''}>{translated}</span>
+                  {changed && <Badge bg="info">●</Badge>}
+                </Col>
+              </Row>
+            );
+          })}
+        </Card.Body>
+      </Card>
 
       {/* Legend */}
-      <div className="compare-legend">
-        <span className="legend-item">
-          <span className="legend-dot changed" /> 번역됨 (원문과 다름)
+      <Alert variant="light" className="border small">
+        <span className="me-4">
+          <Badge bg="info" className="me-1">●</Badge> 번역됨 (원문과 다름)
         </span>
-        <span className="legend-item">
-          <span className="legend-dot same" /> 동일 (영문 유지)
+        <span>
+          <Badge bg="secondary" className="me-1 opacity-50">●</Badge> 동일 (영문 유지)
         </span>
-      </div>
+      </Alert>
 
-      {/* Code mapping info */}
-      <div className="compare-code-info">
-        <h4>💡 코드에서의 사용</h4>
-        <div className="code-mapping-sample">
-          <code className="mapping-line">
+      {/* Code Info */}
+      <Card className="mb-4 bg-dark text-light">
+        <Card.Header className="small">💡 코드에서의 사용</Card.Header>
+        <Card.Body style={{ fontSize: 13 }}>
+          <code className="d-block text-warning">
             {`// Figma: "${uniqueChildren[0]?.originalText}"`}
           </code>
-          <code className="mapping-line">
+          <code className="d-block text-info">
             {`// Code:  {t('${uniqueChildren[0]?.key}')}`}
           </code>
-          <code className="mapping-line">
+          <code className="d-block text-success">
             {`// ${i18n.language}: "${t(uniqueChildren[0]?.key || '')}"`}
           </code>
-        </div>
-      </div>
+        </Card.Body>
+      </Card>
 
-      <div className="step-footer">
-        <button className="btn btn-secondary" onClick={onBack}>← 이전</button>
+      <div className="d-flex justify-content-between">
+        <Button variant="outline-secondary" onClick={onBack}>
+          ← 이전
+        </Button>
+        {/* 이전에는 disabled + onClick 없음이라 클릭이 아예 불가능했다 */}
+        <Button variant="success" size="lg" onClick={onComplete}>
+          ✅ 완료
+        </Button>
       </div>
-    </div>
+    </>
   );
 }
 

@@ -449,3 +449,108 @@ Dev-B 구현이 들어오는 순서대로 활성화되므로 서로 대기하지
 | 유사도 임계값 | Dev-B, 실측 후 |
 
 ---
+
+## Figma MCP 런타임 연동 점검 및 수정 요청 (Brownfield 수정)
+**Timestamp**: 2026-08-20T08:10:00Z
+**User Input**: "현재 프로젝트에서 Figma MCP를 연동해서 UI화면을 연동 하려고 하는데 지금은 그냥 코드에 생성된 내용만 화면에 동작하게 되어 있는거 같은데 확인하고 수정부탁ㄷ해"
+**AI Response**: 코드베이스 점검 결과 사용자 지적이 사실임을 확인.
+- MCP 설정(`.vscode/mcp.json`, `.kiro/agents/*.json`)은 IDE 에이전트 전용이며 앱 런타임에서 호출되는 지점이 없음
+- 파이프라인은 `api.figma.com` REST를 직접 호출 (MCP 경유 아님)
+- `@modelcontextprotocol/sdk`, `figma-developer-mcp` 미설치
+- `StepPreview.tsx`는 하드코딩 JSX + 하드코딩 t() 키로만 구성, Figma 구조 미참조
+- `src/components/generated/ConsoleSettingGroupUser.tsx` import 지점 0건 (화면 미노출)
+- `src/figma-structure.json` 미존재 + 소비 코드 없음
+- `App.tsx`의 setTimeout(1500) 가짜 진행 연출
+- `components-map.json` build-time static import로 파이프라인 재실행 미반영
+**Context**: Construction 단계 결함 수정. 서버측 MCP 클라이언트 계층 추가 + 화면을 Figma 실데이터 기반 렌더링으로 전환
+
+---
+
+## Figma MCP 런타임 연동 구현 완료
+**Timestamp**: 2026-08-20T08:55:00Z
+**User Input**: "그러면 신규로 토큰을 발급받으면돼나.." / ".env에 있는 figma key 사용하고 있는거 맞을까" / "key를 바꿧어"
+**AI Response**: 토큰 교체 후 429 해제 확인, MCP 실데이터 조회 성공.
+
+### 429 원인 규명 (실제 응답 헤더 기반)
+```
+x-figma-plan-tier       = enterprise
+x-figma-rate-limit-type = low        ← View/Collab seat 수준 quota
+retry-after             = 302780     ← 약 3.5일
+```
+Figma REST 한도는 토큰 문자열이 아니라 **계정 seat + 파일 소유 팀 플랜**으로 결정됨.
+따라서 동일 계정 재발급은 무효. Dev/Full seat 토큰이 필요.
+→ 사용자가 새 토큰으로 교체하여 해결 (신규 토큰은 scope 기반이라 /v1/me는 403, 파일 조회는 200).
+
+### 환경변수 출처 확인 (이전 진단 정정)
+- 프로젝트 `.env`의 `FIGMA_API_KEY`가 실제 사용되는 값 (45자)
+- `~/.hermes/.env`는 **존재하지 않음** → 폴백 미작동
+- 이전 감사 기록의 "「.env 비어 있음 / ~/.hermes에서 로드」"는 오독이었음
+
+### 구현 산출물
+| 파일 | 내용 |
+|------|------|
+| `server/figma-mcp.ts` (신규) | MCP 클라이언트 계층. stdio JSON-RPC로 figma-developer-mcp 기동, `get_figma_data` 호출. MCP→REST→캐시 3단 폴백, 출처(source) 항상 응답에 포함 |
+| `server/glossary-api.ts` | `GET /api/figma/status`, `GET /api/figma/structure` 추가 |
+| `src/types/figma.ts` (신규) | 정규화 타입 `FigmaNodeView` 등 |
+| `src/api/client.ts` (신규) | API 클라이언트 일원화 (하드코딩 API_BASE 3곳 제거) |
+| `src/hooks/useFigmaData.ts` (신규) | `useFigmaStructure` / `useComponentsMap` / `useFigmaMcpStatus` / `useLiveLocales` |
+| `src/components/FigmaFrameRenderer.tsx` (신규) | Figma 구조 재귀 렌더러. TEXT 노드만 `t(i18nKey)`로 치환 |
+| `src/components/steps/StepPreview.tsx` | 하드코딩 JSX 전면 제거 → Figma 실구조 렌더링 |
+| `src/App.tsx` | setTimeout(1500) 가짜 진행 연출 제거 |
+| `Step{Extraction,Translation,QAGuide,Compare}.tsx` | components-map.json static import → 런타임 API fetch |
+
+### 발견·수정한 결함
+1. **depth 기본값 8이 트리 84% 절단** — textNodes 21개만 반환. 제한 제거 후 130개 (totalNodes 134→857)
+2. **TEXT 노드에 display:flex 오적용** — `layoutMode !== 'none'` 판정 때문에 텍스트 렌더링 깨짐. `=== 'row' || === 'column'` + TEXT 제외로 수정
+3. **"미매핑" 오표기** — 파이프라인이 의도적으로 제외한 텍스트(시나리오 설명 테이블, 숫자/날짜)를 오류처럼 빨간색 표시하던 것을 중립 표기로 변경
+4. **StepQAGuide NaN%** — total 0일 때 진행률 NaN
+
+### 검증 결과
+- `GET /api/figma/status` → `connected:true`, tools `get_figma_data`/`download_figma_images`
+- `GET /api/figma/structure` → `source:mcp`, totalNodes 857 / textNodes 130 / mappedKeys 76
+- `npx tsc --noEmit` 통과 (`server/`를 typecheck 대상에 편입)
+- `npm run build` 통과
+- 신규 테스트 13/13 통과 (`server/figma-mcp.test.ts` 7건, `src/components/FigmaFrameRenderer.test.tsx` 6건)
+  - MCP simplified ↔ REST raw 정규화 결과 수렴, 언어 전환 시 텍스트 교체, 번역 제외 텍스트 원문 유지 검증
+
+### 미해결 (범위 외)
+- `src/retrieval/retriever.test.ts` 4건 실패 — `.vectra` 인덱스 미생성(`npm run reindex` 필요). Dev-B 영역, 본 작업과 무관 (해당 디렉터리 미변경)
+- MCP curl 폴백이 토큰을 로그에 평문 출력 → 토큰 폐기/재발급 권장 (보안 사안, 429와 별개)
+**Context**: Construction 단계 결함 수정 완료. Figma MCP가 런타임 데이터 소스로 실제 동작
+
+---
+
+## Step 8 완료 버튼 무반응 결함 수정
+**Timestamp**: 2026-08-20T09:05:00Z
+**User Input**: "Step 8. Figma ↔ 코드 비교 여기서 완료버튼이 안눈려"
+**AI Response**: 클릭 불가 원인 확인 및 수정. 동일 유형 결함 3건 추가 발견.
+
+### 원인
+`StepCompare.tsx`의 마지막 버튼에 `disabled`가 하드코딩되어 있고 `onClick`도 없었다.
+```tsx
+<Button variant="success" size="lg" disabled>✅ 완료</Button>
+```
+App.tsx도 `<StepCompare onBack={handleBack} />`만 넘겨 완료를 받을 콜백이 없었다.
+
+### 수정
+| 파일 | 내용 |
+|------|------|
+| `src/components/steps/StepCompare.tsx` | `onComplete` prop 추가, `disabled` 제거, `onClick={onComplete}` 연결 |
+| `src/App.tsx` | `handleComplete`(Step 1 복귀) 추가 후 StepCompare에 전달 |
+
+### 동일 유형 추가 발견 (StepQAGuide.tsx 내보내기 버튼 3개)
+onClick 없이 조용히 무반응하던 버튼들:
+- `📊 Excel (QA용)` → **CSV 내보내기로 실제 구현**. 4개 언어 번역 + QA/법인감수 체크 상태 포함,
+  RFC 4180 방식 이스케이프(번역문 내 쉼표/따옴표/개행 대응), UTF-8 BOM 부착(Excel 한중일 깨짐 방지)
+- `📄 PDF (법인 감수용)`, `📧 이메일 발송` → 미구현이므로 `disabled` + "준비 중" 명시.
+  조용한 무반응보다 명시적 비활성화가 정직하다는 판단
+
+### 검증
+- `npx tsc --noEmit` 통과 / `npm run build` 통과
+- `src/components/steps/StepCompare.test.tsx` 신규 3건 — 완료 버튼 활성 상태(disabled 회귀 방지),
+  클릭 시 onComplete 호출, 이전 버튼 onBack 호출
+- 관련 테스트 합계 16/16 통과
+
+**Context**: Construction 단계 UI 결함 수정. 죽은 버튼 제거
+
+---

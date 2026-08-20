@@ -1,59 +1,43 @@
 import { useState } from 'react';
+import { Card, Table, Badge, Button, Form, ProgressBar, Nav, Tab, Alert } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import componentsMap from '../../components-map.json';
-
-/**
- * QA 검증 가이드 자동 생성 화면
- *
- * Pain Point 해결:
- * - QA가 각 i18n key가 어디에 쓰이는지 일일이 개발자에게 물어봐야 했음
- * - components-map.json에서 frame + type 정보를 활용하여 자동으로 위치 가이드 생성
- */
+import { useComponentsMap, useLiveLocales } from '../../hooks/useFigmaData';
 
 interface QAGuideItem {
   key: string;
   type: string;
   originalText: string;
   frame: string;
-  frameId: string;
-  location: string;
 }
 
 function StepQAGuide({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
   const { t, i18n } = useTranslation();
-  const [filterType, setFilterType] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
   const [checkedKeys, setCheckedKeys] = useState<Set<string>>(new Set());
+  const [subsidiaryChecked, setSubsidiaryChecked] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState('qa');
+  const { data, loading, error } = useComponentsMap();
+  useLiveLocales();
+  const componentsMap = data ?? [];
 
-  // components-map에서 QA 가이드 데이터 생성
   const qaItems: QAGuideItem[] = componentsMap.flatMap((frame) =>
     frame.children.map((child) => ({
       key: child.key,
       type: child.type,
       originalText: child.originalText,
       frame: frame.frame,
-      frameId: frame.frameId,
-      location: getLocationDescription(frame.frame, child.type),
     }))
-  ).filter(
-    (item, idx, arr) => arr.findIndex((x) => x.key === item.key) === idx
-  );
+  ).filter((item, idx, arr) => arr.findIndex((x) => x.key === item.key) === idx);
 
-  const filteredItems = qaItems.filter((item) => {
-    const matchesType = filterType === 'all' || item.type === filterType;
-    const matchesSearch = searchQuery === '' ||
-      item.key.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.originalText.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t(item.key).toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesType && matchesSearch;
-  });
-
-  const progress = checkedKeys.size;
+  const qaProgress = checkedKeys.size;
+  const subsidiaryProgress = subsidiaryChecked.size;
   const total = qaItems.length;
-  const progressPercent = Math.round((progress / total) * 100);
+  // total이 0이면 NaN%가 표시된다 (파이프라인 미실행 상태)
+  const qaPercent = total > 0 ? Math.round((qaProgress / total) * 100) : 0;
+  const subsidiaryPercent = total > 0 ? Math.round((subsidiaryProgress / total) * 100) : 0;
 
-  const toggleCheck = (key: string) => {
-    setCheckedKeys((prev) => {
+  const toggleCheck = (key: string, isSubsidiary: boolean = false) => {
+    const setter = isSubsidiary ? setSubsidiaryChecked : setCheckedKeys;
+    setter((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -61,141 +45,217 @@ function StepQAGuide({ onBack, onNext }: { onBack: () => void; onNext: () => voi
     });
   };
 
+  const getBadgeVariant = (type: string) => {
+    const variants: Record<string, string> = {
+      title: 'primary',
+      label: 'info',
+      button: 'success',
+      placeholder: 'warning',
+      status: 'secondary',
+    };
+    return variants[type] || 'secondary';
+  };
+
+  const displayItems = qaItems.slice(0, 20);
+
+  /**
+   * QA 검토용 CSV 내보내기.
+   *
+   * 이전에는 이 버튼들이 onClick 없이 조용히 아무 일도 하지 않았다.
+   * CSV는 Excel에서 바로 열리므로 별도 의존성 없이 실제 동작하게 만든다.
+   */
+  const handleExportCsv = () => {
+    const langs = ['en', 'ko', 'ja', 'zh-CN'];
+    const header = ['frame', 'type', 'i18nKey', 'figmaOriginal', ...langs, 'qaChecked', 'subsidiaryChecked'];
+
+    // 쉼표/따옴표/개행이 든 번역문이 열을 깨뜨리지 않도록 RFC 4180 방식으로 감싼다.
+    const escape = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+
+    const rows = qaItems.map((item) =>
+      [
+        item.frame,
+        item.type,
+        item.key,
+        item.originalText,
+        ...langs.map((l) => i18n.getFixedT(l)(item.key)),
+        checkedKeys.has(item.key) ? 'Y' : 'N',
+        subsidiaryChecked.has(item.key) ? 'Y' : 'N',
+      ]
+        .map(escape)
+        .join(',')
+    );
+
+    // BOM을 붙이지 않으면 Excel이 UTF-8 한글/일본어/중국어를 깨뜨린다.
+    const csv = '\uFEFF' + [header.map(escape).join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `i18n-qa-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (loading || error) {
+    return (
+      <>
+        <h4 className="mb-4">Step 7. QA 검증 가이드 + 법인 감수</h4>
+        <Alert variant={error ? 'danger' : 'secondary'}>
+          {loading ? 'QA 항목을 불러오는 중...' : `불러오기 실패: ${error}`}
+        </Alert>
+        <Button variant="outline-secondary" onClick={onBack}>
+          ← 이전
+        </Button>
+      </>
+    );
+  }
+
   return (
-    <div className="step-container">
-      <div className="step-header">
-        <h2>📝 QA 검증 가이드</h2>
-        <p className="step-description">
-          각 i18n key가 UI의 어디에 표시되는지 자동으로 매핑되었습니다.<br />
-          QA 담당자는 이 가이드를 보고 각 번역의 위치를 바로 찾을 수 있습니다.
-        </p>
-      </div>
+    <>
+      <h4 className="mb-4">Step 7. QA 검증 가이드 + 법인 감수</h4>
+      <p className="text-muted mb-4">
+        각 i18n key가 UI의 어디에 표시되는지 자동으로 매핑되었습니다.
+      </p>
 
-      {/* Progress */}
-      <div className="qa-progress">
-        <div className="qa-progress-bar">
-          <div className="qa-progress-fill" style={{ width: `${progressPercent}%` }} />
-        </div>
-        <span className="qa-progress-text">
-          검증 완료: {progress} / {total} ({progressPercent}%)
-        </span>
-      </div>
+      {/* Tabs */}
+      <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k || 'qa')}>
+        <Card className="mb-4">
+          <Card.Header>
+            <Nav variant="tabs">
+              <Nav.Item>
+                <Nav.Link eventKey="qa">🔍 QA 검증 ({qaPercent}%)</Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link eventKey="subsidiary">🏢 법인 감수 ({subsidiaryPercent}%)</Nav.Link>
+              </Nav.Item>
+            </Nav>
+          </Card.Header>
+          <Card.Body>
+            {/* Progress */}
+            <div className="mb-4">
+              <div className="d-flex justify-content-between small mb-1">
+                <span>{activeTab === 'qa' ? 'QA 검증' : '법인 감수'} 진행률</span>
+                <span>
+                  {activeTab === 'qa' ? qaProgress : subsidiaryProgress} / {total}
+                </span>
+              </div>
+              <ProgressBar
+                now={activeTab === 'qa' ? qaPercent : subsidiaryPercent}
+                variant={activeTab === 'qa' ? 'primary' : 'success'}
+              />
+            </div>
 
-      {/* Pain Point Callout */}
-      <div className="qa-callout">
-        <div className="callout-icon">💡</div>
-        <div className="callout-content">
-          <strong>이전 방식:</strong> QA가 개발자에게 "이 key 어디에 있어요?" 일일이 질문 → 반나절 소요<br />
-          <strong>지금:</strong> components-map.json에서 <strong>프레임 + 위치가 자동 매핑</strong>되어 즉시 확인 가능
-        </div>
-      </div>
+            <Tab.Content>
+              <Tab.Pane eventKey="qa">
+                <Alert variant="info" className="small">
+                  <strong>💡 이전 방식:</strong> QA가 개발자에게 "이 key 어디에 있어요?" 질문 → 반나절 소요<br />
+                  <strong>지금:</strong> components-map.json에서 프레임 + 위치가 자동 매핑되어 즉시 확인 가능
+                </Alert>
+              </Tab.Pane>
+              <Tab.Pane eventKey="subsidiary">
+                <Alert variant="success" className="small">
+                  <strong>🏢 법인 감수 체크포인트:</strong>
+                  <ul className="mb-0 mt-2">
+                    <li>현지 언어 표현이 자연스러운가?</li>
+                    <li>법인 특화 용어가 올바르게 번역되었는가?</li>
+                    <li>문화적으로 부적절한 표현이 없는가?</li>
+                  </ul>
+                </Alert>
+              </Tab.Pane>
+            </Tab.Content>
 
-      {/* Filters */}
-      <div className="qa-filters">
-        <div className="qa-search">
-          <input
-            type="text"
-            placeholder="Key, 원문, 번역으로 검색..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-        </div>
-        <div className="qa-type-filter">
-          {['all', 'title', 'label', 'button', 'placeholder', 'status'].map((type) => (
-            <button
-              key={type}
-              className={`filter-btn ${filterType === type ? 'active' : ''}`}
-              onClick={() => setFilterType(type)}
-            >
-              {type === 'all' ? '전체' : type}
-            </button>
-          ))}
-        </div>
-        <div className="qa-lang-info">
-          현재 검증 언어: <strong>{i18n.language}</strong>
-        </div>
-      </div>
+            {/* EXAONE Info */}
+            <div className="d-flex align-items-center gap-2 mb-3 p-2 bg-light rounded small">
+              <Badge bg="info">🤖 EXAONE</Badge>
+              <span className="text-muted">
+                오역 주의 용어 3건이 문맥 기반으로 처리되었습니다.
+              </span>
+            </div>
 
-      {/* QA Table */}
-      <div className="qa-table-wrapper">
-        <table className="qa-table">
-          <thead>
-            <tr>
-              <th className="qa-check-col">✓</th>
-              <th>UI 위치</th>
-              <th>Type</th>
-              <th>원문 (EN)</th>
-              <th>번역 ({i18n.language})</th>
-              <th>i18n Key</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredItems.map((item) => (
-              <tr
-                key={item.key}
-                className={checkedKeys.has(item.key) ? 'row-checked' : ''}
-              >
-                <td className="qa-check-col">
-                  <input
-                    type="checkbox"
-                    checked={checkedKeys.has(item.key)}
-                    onChange={() => toggleCheck(item.key)}
-                  />
-                </td>
-                <td className="qa-location">
-                  <span className="location-frame">{item.frame}</span>
-                  <span className="location-desc">{item.location}</span>
-                </td>
-                <td><span className={`badge badge-${item.type}`}>{item.type}</span></td>
-                <td className="qa-original">{item.originalText}</td>
-                <td className="qa-translated">{t(item.key)}</td>
-                <td className="qa-key"><code>{item.key}</code></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            {/* Table */}
+            <Table striped hover responsive size="sm" className="align-middle">
+              <thead>
+                <tr>
+                  <th style={{ width: 50 }}>✓</th>
+                  <th>Frame</th>
+                  <th style={{ width: 80 }}>Type</th>
+                  <th>원문 (EN)</th>
+                  <th>번역 ({i18n.language})</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayItems.map((item) => {
+                  const isChecked = activeTab === 'qa'
+                    ? checkedKeys.has(item.key)
+                    : subsidiaryChecked.has(item.key);
 
-      <div className="qa-summary">
-        <span>총 {filteredItems.length}개 항목 표시</span>
-        {searchQuery && <span> (필터: "{searchQuery}")</span>}
-      </div>
+                  return (
+                    <tr key={item.key} className={isChecked ? 'table-success' : ''}>
+                      <td>
+                        <Form.Check
+                          checked={isChecked}
+                          onChange={() => toggleCheck(item.key, activeTab === 'subsidiary')}
+                        />
+                      </td>
+                      <td className="small text-muted">{item.frame}</td>
+                      <td>
+                        <Badge bg={getBadgeVariant(item.type)} className="small">
+                          {item.type}
+                        </Badge>
+                      </td>
+                      <td>{item.originalText}</td>
+                      <td className="fw-semibold">{t(item.key)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+            <div className="text-muted small">
+              총 {qaItems.length}개 항목 중 20개 표시
+            </div>
+          </Card.Body>
+        </Card>
+      </Tab.Container>
 
-      <div className="step-footer">
-        <button className="btn btn-secondary" onClick={onBack}>← 이전</button>
-        <button className="btn btn-outline" onClick={() => setCheckedKeys(new Set())}>
+      {/* Export */}
+      <Card className="mb-4 bg-light">
+        <Card.Body>
+          <h6 className="mb-3">📤 내보내기</h6>
+          <div className="d-flex gap-2 flex-wrap">
+            <Button variant="outline-secondary" size="sm" onClick={handleExportCsv}>
+              📊 CSV 내보내기 (Excel용)
+            </Button>
+            {/* 미구현 기능은 조용히 무반응하지 않도록 명시적으로 비활성화한다 */}
+            <Button variant="outline-secondary" size="sm" disabled title="아직 구현되지 않았습니다">
+              📄 PDF (법인 감수용) — 준비 중
+            </Button>
+            <Button variant="outline-secondary" size="sm" disabled title="아직 구현되지 않았습니다">
+              📧 이메일 발송 — 준비 중
+            </Button>
+          </div>
+        </Card.Body>
+      </Card>
+
+      <div className="d-flex justify-content-between">
+        <Button variant="outline-secondary" onClick={onBack}>
+          ← 이전
+        </Button>
+        <Button
+          variant="outline-danger"
+          size="sm"
+          onClick={() => {
+            setCheckedKeys(new Set());
+            setSubsidiaryChecked(new Set());
+          }}
+        >
           체크 초기화
-        </button>
-        <button className="btn btn-primary btn-large" onClick={onNext}>
+        </Button>
+        <Button variant="primary" size="lg" onClick={onNext}>
           🔍 Figma 비교
-        </button>
+        </Button>
       </div>
-    </div>
+    </>
   );
-}
-
-/** Frame 이름과 type으로 UI 위치 설명 자동 생성 */
-function getLocationDescription(frame: string, type: string): string {
-  if (frame.includes('Setting') || frame.includes('Console')) {
-    switch (type) {
-      case 'title': return '페이지/섹션 제목';
-      case 'button': return '액션 버튼 영역';
-      case 'label': return '폼 필드 또는 메뉴';
-      case 'placeholder': return '입력 필드 힌트';
-      case 'status': return '상태 표시 영역';
-      default: return '본문';
-    }
-  }
-  if (frame.includes('Doc')) {
-    switch (type) {
-      case 'title': return '문서 제목';
-      case 'status': return '문서 상태 뱃지';
-      case 'label': return '문서 설명';
-      default: return '문서 영역';
-    }
-  }
-  return '일반 영역';
 }
 
 export default StepQAGuide;

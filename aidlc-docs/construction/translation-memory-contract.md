@@ -329,7 +329,7 @@ Dev-A가 전달할 데이터 형태를 미리 알려둔다.
 ```json
 {
   "frame": "Console_Setting_Group@User",
-  "frameId": "I15682:100919",
+  "frameId": "15682-10150",
   "children": [
     { "type": "label", "key": "console.setting.group.label.subsidiary", "originalText": "Subsidiary" },
     { "type": "label", "key": "console.setting.group.label.licensePolicy", "originalText": "License Policy" }

@@ -1,187 +1,347 @@
+/**
+ * Step 6. 최종 미리보기
+ *
+ * 이전 구현은 사이드바/폼/테이블을 손으로 쓴 JSX였고 Figma 데이터를 전혀 참조하지 않았다.
+ * 지금은 서버가 Figma MCP로 가져온 프레임 구조를 그대로 렌더링하고,
+ * TEXT 노드만 i18n 키로 치환한다. 즉 화면에 보이는 레이아웃은 Figma에서 온 것이다.
+ */
+
+import { useMemo, useState } from 'react';
+import { Card, Row, Col, Table, Button, Badge, Alert, Spinner, Form } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../LanguageSwitcher';
+import FigmaFrameRenderer from '../FigmaFrameRenderer';
+import { useComponentsMap, useFigmaMcpStatus, useFigmaStructure, useLiveLocales } from '../../hooks/useFigmaData';
+import type { FigmaNodeView, FigmaSource } from '../../types/figma';
 
 interface StepPreviewProps {
   onBack: () => void;
   onNext: () => void;
 }
 
+const LANG_LABELS: Record<string, string> = {
+  en: '🇺🇸 English',
+  ko: '🇰🇷 한국어',
+  ja: '🇯🇵 日本語',
+  'zh-CN': '🇨🇳 中文',
+};
+
+const SOURCE_META: Record<FigmaSource, { label: string; variant: string; detail: string }> = {
+  mcp: {
+    label: 'Figma MCP (실시간)',
+    variant: 'success',
+    detail: 'figma-developer-mcp의 get_figma_data로 방금 조회한 구조입니다.',
+  },
+  rest: {
+    label: 'Figma REST (MCP 폴백)',
+    variant: 'warning',
+    detail: 'MCP 프로세스 기동에 실패해 REST API로 조회했습니다.',
+  },
+  cache: {
+    label: '캐시 (src/figma-structure.json)',
+    variant: 'secondary',
+    detail: '이전에 MCP로 가져와 저장한 구조입니다. 새로고침하면 MCP를 다시 호출합니다.',
+  },
+};
+
 function StepPreview({ onBack, onNext }: StepPreviewProps) {
   const { t, i18n } = useTranslation();
+  const mcp = useFigmaMcpStatus();
+  const structure = useFigmaStructure();
+  const componentsMap = useComponentsMap();
+  useLiveLocales();
+
+  const [selectedFrameIdx, setSelectedFrameIdx] = useState(0);
+  const [highlight, setHighlight] = useState(true);
+
+  const frames = structure.data?.frames ?? [];
+  const frame: FigmaNodeView | undefined = frames[selectedFrameIdx];
+  const stats = structure.data?.stats;
+
+  // 미리보기에 실제로 등장하는 키만 매핑 표에 보여준다 (하드코딩 5개 목록 대체)
+  const renderedKeys = useMemo(() => {
+    if (!frame) return [];
+    const acc: { key: string; source: string }[] = [];
+    const walk = (n: FigmaNodeView) => {
+      if (n.i18nKey && n.text) acc.push({ key: n.i18nKey, source: n.text });
+      for (const c of n.children ?? []) walk(c);
+    };
+    walk(frame);
+    const seen = new Set<string>();
+    return acc.filter((e) => (seen.has(e.key) ? false : (seen.add(e.key), true)));
+  }, [frame]);
+
+  const totalMappedKeys = useMemo(
+    () => (componentsMap.data ?? []).reduce((sum, f) => sum + f.children.length, 0),
+    [componentsMap.data]
+  );
+
+  const sourceMeta = structure.data ? SOURCE_META[structure.data.source] : null;
 
   return (
-    <div className="step-container">
-      <div className="step-header">
-        <h2>🖥️ Step 5. 최종 미리보기</h2>
-        <p className="step-description">
-          생성된 React 컴포넌트가 실제로 동작하는 모습입니다.<br />
-          언어를 전환하면 모든 UI 텍스트가 실시간으로 변경됩니다.
-        </p>
-      </div>
+    <>
+      <h4 className="mb-2">Step 6. 최종 미리보기</h4>
+      <p className="text-muted mb-4">
+        아래 화면은 <strong>Figma MCP로 조회한 프레임 구조를 그대로 렌더링</strong>한 것입니다.
+        레이아웃·색상·간격은 Figma에서 오고, 텍스트만 i18n 키로 치환됩니다.
+      </p>
 
-      {/* Language Switcher (prominent) */}
-      <div className="preview-lang-bar">
-        <span className="preview-lang-label">🌐 언어 전환:</span>
-        <LanguageSwitcher />
-        <span className="preview-lang-current">현재: <strong>{i18n.language}</strong></span>
-      </div>
+      {/* 연동 상태 — 사실만 표시한다 */}
+      <Card className="mb-4">
+        <Card.Header className="ux-card-header d-flex align-items-center gap-2">
+          <span>🔌</span> Figma MCP 연동 상태
+        </Card.Header>
+        <Card.Body>
+          <Row className="g-3 align-items-center">
+            <Col md={6}>
+              {mcp.loading ? (
+                <span className="text-muted small">
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  상태 확인 중...
+                </span>
+              ) : mcp.data?.connected ? (
+                <div>
+                  <Badge bg="success" className="me-2">
+                    MCP 연결됨
+                  </Badge>
+                  <code className="small">{mcp.data.serverCommand}</code>
+                  <div className="small text-muted mt-1">
+                    tools: {mcp.data.tools.join(', ') || '없음'}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <Badge bg="danger" className="me-2">
+                    MCP 미연결
+                  </Badge>
+                  <div className="small text-muted mt-1">
+                    {mcp.data?.lastError || mcp.error || 'API 서버(:3001)가 실행 중인지 확인하세요.'}
+                  </div>
+                </div>
+              )}
+            </Col>
+            <Col md={6} className="text-md-end">
+              {sourceMeta && (
+                <>
+                  <Badge bg={sourceMeta.variant} className="me-2">
+                    데이터 출처: {sourceMeta.label}
+                  </Badge>
+                  <div className="small text-muted mt-1">{sourceMeta.detail}</div>
+                </>
+              )}
+              <Button
+                size="sm"
+                variant="outline-primary"
+                className="mt-2"
+                disabled={structure.loading}
+                onClick={() => void structure.refresh()}
+              >
+                {structure.loading ? '조회 중...' : '🔄 MCP로 다시 가져오기'}
+              </Button>
+            </Col>
+          </Row>
+          {structure.data?.warning && (
+            <Alert variant="warning" className="mt-3 mb-0 py-2 small">
+              ⚠️ {structure.data.warning}
+            </Alert>
+          )}
+        </Card.Body>
+      </Card>
 
-      {/* Preview Frame */}
-      <div className="preview-frame">
-        <div className="preview-chrome">
-          <div className="chrome-dots">
-            <span className="dot red" /><span className="dot yellow" /><span className="dot green" />
-          </div>
-          <span className="chrome-url">localhost:5173 — LG Signage Console</span>
-        </div>
+      {/* 언어 전환 */}
+      <Card className="mb-4 bg-light">
+        <Card.Body className="d-flex align-items-center gap-3 flex-wrap">
+          <span>🌐 언어 전환:</span>
+          <LanguageSwitcher />
+          <Form.Check
+            type="switch"
+            id="highlight-mapped"
+            label="i18n 매핑 표시"
+            checked={highlight}
+            onChange={(e) => setHighlight(e.target.checked)}
+            className="ms-2"
+          />
+          <span className="text-muted ms-auto">
+            현재: <strong>{LANG_LABELS[i18n.language] || i18n.language}</strong>
+          </span>
+        </Card.Body>
+      </Card>
 
-        <div className="preview-body">
-          {/* Simulated Sidebar */}
-          <aside className="preview-sidebar">
-            <div className="preview-sidebar-title">{t('signage.setting.group.title.console')}</div>
-            <nav className="preview-nav">
-              <button className="preview-nav-item">{t('signage.setting.group.label.dashboard')}</button>
-              <button className="preview-nav-item">{t('signage.setting.group.label.content')}</button>
-              <button className="preview-nav-item">{t('signage.setting.group.label.schedule')}</button>
-              <button className="preview-nav-item">{t('signage.setting.group.label.devices')}</button>
-              <button className="preview-nav-item">{t('signage.setting.group.label.analytics')}</button>
-              <button className="preview-nav-item active">{t('signage.setting.group.label.settings')}</button>
-            </nav>
-          </aside>
-
-          {/* Simulated Main Content */}
-          <div className="preview-main">
-            <div className="preview-page-header">
-              <h2>{t('signage.setting.group.title.workspacegroup_settings')}</h2>
-              <div className="preview-actions">
-                <button className="btn btn-secondary btn-sm">{t('signage.setting.group.button.edit')}</button>
-                <button className="btn btn-primary btn-sm">{t('signage.setting.group.button.save')}</button>
-                <button className="btn btn-primary btn-sm">{t('signage.setting.group.button.publish')}</button>
-              </div>
+      {/* Figma 프레임 렌더링 */}
+      <Card className="mb-4">
+        <Card.Header className="bg-secondary text-white d-flex align-items-center gap-2 flex-wrap">
+          <span className="d-flex gap-1">
+            <span className="bg-danger rounded-circle" style={{ width: 10, height: 10 }} />
+            <span className="bg-warning rounded-circle" style={{ width: 10, height: 10 }} />
+            <span className="bg-success rounded-circle" style={{ width: 10, height: 10 }} />
+          </span>
+          <span className="small">
+            {frame ? `${frame.name} — ${frame.width}×${frame.height}` : 'Figma 프레임'}
+          </span>
+          {frames.length > 1 && (
+            <Form.Select
+              size="sm"
+              className="ms-auto"
+              style={{ width: 'auto' }}
+              value={selectedFrameIdx}
+              onChange={(e) => setSelectedFrameIdx(Number(e.target.value))}
+            >
+              {frames.map((f, i) => (
+                <option key={f.id} value={i}>
+                  {f.name}
+                </option>
+              ))}
+            </Form.Select>
+          )}
+        </Card.Header>
+        <Card.Body className="p-3 bg-white">
+          {structure.loading && (
+            <div className="text-center py-5">
+              <Spinner animation="border" className="mb-3" />
+              <div className="text-muted small">Figma 구조를 불러오는 중...</div>
             </div>
+          )}
 
-            {/* Business Site Info */}
-            <section className="preview-section">
-              <h3>{t('signage.setting.group.label.business_site_information')}</h3>
-              <div className="preview-form">
-                <div className="preview-field">
-                  <label>{t('signage.setting.group.label.business_site_id')}</label>
-                  <input type="text" placeholder={t('signage.setting.group.placeholder.lg_electronics')} readOnly />
-                </div>
-                <div className="preview-field">
-                  <label>{t('signage.setting.group.label.region_country')}</label>
-                  <select disabled>
-                    <option>{t('signage.setting.group.label.asia_pacific')}</option>
-                  </select>
-                </div>
-                <div className="preview-field">
-                  <label>{t('signage.setting.group.label.time_zone')}</label>
-                  <select disabled>
-                    <option>{t('signage.setting.group.label.utc0900_asiaseoul')}</option>
-                  </select>
-                </div>
-                <div className="preview-field">
-                  <label>{t('signage.setting.group.label.business_type')}</label>
-                  <select disabled>
-                    <option>{t('signage.setting.group.label.end_customer')}</option>
-                  </select>
-                </div>
+          {!structure.loading && structure.error && (
+            <Alert variant="danger" className="mb-0">
+              <Alert.Heading className="h6">Figma 구조를 가져올 수 없습니다</Alert.Heading>
+              <p className="small mb-2">{structure.error}</p>
+              <hr />
+              <div className="small mb-0">
+                확인할 항목:
+                <ul className="mb-0">
+                  <li>
+                    API 서버 실행 여부 — <code>npm run dev:all</code>
+                  </li>
+                  <li>
+                    <code>FIGMA_API_KEY</code> 설정 (프로젝트 <code>.env</code> 또는{' '}
+                    <code>~/.hermes/.env</code>)
+                  </li>
+                  <li>Figma API 429(rate limit) — 잠시 후 재시도</li>
+                </ul>
               </div>
-            </section>
+            </Alert>
+          )}
 
-            {/* Toggle Sections */}
-            <section className="preview-section">
-              <div className="preview-toggle-row">
-                <span>{t('signage.setting.group.title.automatic_license_assignment')}</span>
-                <span className="toggle-on">{t('signage.setting.group.label.on')}</span>
-              </div>
-              <div className="preview-toggle-row">
-                <span>{t('signage.setting.group.title.automatic_device_approval')}</span>
-                <span className="toggle-on">{t('signage.setting.group.label.on')}</span>
-              </div>
-              <div className="preview-toggle-row">
-                <span>{t('signage.setting.group.title.single_signon_sso')}</span>
-                <button className="btn btn-outline btn-sm">{t('signage.setting.group.button.turn_off')}</button>
-              </div>
-            </section>
+          {!structure.loading && !structure.error && !frame && (
+            <Alert variant="secondary" className="mb-0 small">
+              렌더링할 프레임이 없습니다. Frame ID를 확인하고 "MCP로 다시 가져오기"를 눌러주세요.
+            </Alert>
+          )}
 
-            {/* Theme */}
-            <section className="preview-section">
-              <h3>{t('signage.setting.group.label.theme_color')}</h3>
-              <div className="preview-themes">
-                <div className="preview-theme active">
-                  <div className="theme-swatch theme-basic" />
-                  <span>{t('signage.setting.group.label.basic')}</span>
-                </div>
-                <div className="preview-theme">
-                  <div className="theme-swatch theme-dark" />
-                  <span>{t('signage.setting.group.label.dark')}</span>
-                </div>
-                <div className="preview-theme">
-                  <div className="theme-swatch theme-03" />
-                  <span>{t('signage.setting.group.label.thema_03')}</span>
-                </div>
-              </div>
-            </section>
+          {frame && <FigmaFrameRenderer node={frame} highlightMapped={highlight} fitWidth={1040} />}
+        </Card.Body>
+        {highlight && frame && (
+          <Card.Footer className="small text-muted d-flex gap-4 flex-wrap">
+            <span>
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 12,
+                  height: 12,
+                  outline: '1px dashed rgba(13,110,253,.45)',
+                  marginRight: 6,
+                }}
+              />
+              i18n 키 매핑됨 (언어 전환 시 변경)
+            </span>
+            <span>
+              <span
+                style={{
+                  display: 'inline-block',
+                  width: 12,
+                  height: 12,
+                  outline: '1px dashed rgba(108,117,125,.35)',
+                  marginRight: 6,
+                }}
+              />
+              i18n 미적용 — Figma 원문 표시 (시나리오 설명·숫자·날짜 등 번역 제외 대상 포함)
+            </span>
+          </Card.Footer>
+        )}
+      </Card>
 
-            {/* Workspace Table */}
-            <section className="preview-section">
-              <div className="preview-table-header">
-                <button className="btn btn-primary btn-sm">{t('signage.setting.group.button.add_workspace')}</button>
-                <input
-                  type="text"
-                  placeholder={t('signage.setting.group.label.search_for_workspace')}
-                  className="preview-search"
-                  readOnly
-                />
-              </div>
-              <table className="preview-table">
-                <thead>
+      {/* 실제 렌더된 키 매핑 */}
+      <Card className="mb-4 border-info">
+        <Card.Header className="bg-info text-white d-flex align-items-center">
+          <span>🔤 이 화면에 적용된 i18n 키</span>
+          <Badge bg="light" text="dark" className="ms-auto">
+            {renderedKeys.length}개
+          </Badge>
+        </Card.Header>
+        <Card.Body className="p-0">
+          {renderedKeys.length === 0 ? (
+            <div className="p-3 small text-muted">
+              매핑된 키가 없습니다. 파이프라인을 실행해 <code>components-map.json</code>을 생성하세요.
+            </div>
+          ) : (
+            <div style={{ maxHeight: 320, overflow: 'auto' }}>
+              <Table size="sm" className="mb-0">
+                <thead className="position-sticky top-0 bg-white">
                   <tr>
-                    <th>{t('signage.setting.group.label.workspace_name')}</th>
-                    <th>{t('signage.setting.group.label.device_count')}</th>
-                    <th>{t('signage.setting.group.label.user_count')}</th>
-                    <th>{t('signage.setting.group.label.licensed_product')}</th>
+                    <th>i18n Key</th>
+                    <th>Figma 원문 (en)</th>
+                    <th>현재 값 ({i18n.language})</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>Workspace A1</td>
-                    <td>12</td>
-                    <td>5</td>
-                    <td>Pro</td>
-                  </tr>
-                  <tr>
-                    <td>Workspace B2</td>
-                    <td>8</td>
-                    <td>3</td>
-                    <td>Standard</td>
-                  </tr>
+                  {renderedKeys.map((entry) => (
+                    <tr key={entry.key}>
+                      <td>
+                        <code className="small">{entry.key}</code>
+                      </td>
+                      <td className="small text-muted">{entry.source}</td>
+                      <td>
+                        <strong>{t(entry.key)}</strong>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
-              </table>
-            </section>
-          </div>
-        </div>
-      </div>
+              </Table>
+            </div>
+          )}
+        </Card.Body>
+      </Card>
 
-      {/* Summary */}
-      <div className="preview-summary">
-        <h4>✨ 결과 요약</h4>
-        <ul>
-          <li>Figma 디자인에서 <strong>87개 텍스트</strong>를 자동 추출</li>
-          <li>UX 문맥 기반으로 <strong>4개 언어</strong> 번역 완료</li>
-          <li>React 컴포넌트 <strong>자동 생성</strong> — 바로 사용 가능</li>
-          <li>전체 소요 시간: <strong>약 5분</strong> (기존 수작업 대비 96% 단축)</li>
-        </ul>
-      </div>
+      {/* 실측 요약 — 하드코딩 수치 제거 */}
+      <Card className="mb-4 bg-success bg-opacity-10 border-success">
+        <Card.Body>
+          <h6 className="text-success mb-3">✨ 결과 요약 (실측)</h6>
+          <ul className="mb-0 small">
+            <li>
+              Figma 노드 <strong>{stats?.totalNodes ?? '-'}개</strong> 중 텍스트 노드{' '}
+              <strong>{stats?.textNodes ?? '-'}개</strong>
+            </li>
+            <li>
+              i18n 키 매핑 <strong>{stats?.mappedKeys ?? '-'}개</strong>
+              {stats && stats.textNodes > 0 && (
+                <> ({Math.round((stats.mappedKeys / stats.textNodes) * 100)}%)</>
+              )}
+            </li>
+            <li>
+              <code>components-map.json</code> 총 키{' '}
+              <strong>{componentsMap.loading ? '...' : totalMappedKeys}개</strong> /{' '}
+              프레임 {componentsMap.data?.length ?? 0}개
+            </li>
+            <li>
+              데이터 출처 <strong>{sourceMeta?.label ?? '-'}</strong>
+              {structure.data?.fetchedAt && (
+                <> · 조회 시각 {new Date(structure.data.fetchedAt).toLocaleString()}</>
+              )}
+            </li>
+          </ul>
+        </Card.Body>
+      </Card>
 
-      <div className="step-footer">
-        <button className="btn btn-secondary" onClick={onBack}>← 이전</button>
-        <button className="btn btn-primary btn-large" onClick={onNext}>
+      <div className="d-flex justify-content-between">
+        <Button variant="outline-secondary" onClick={onBack}>
+          ← 이전
+        </Button>
+        <Button variant="primary" size="lg" onClick={onNext}>
           📝 QA 검증 가이드
-        </button>
+        </Button>
       </div>
-    </div>
+    </>
   );
 }
 
