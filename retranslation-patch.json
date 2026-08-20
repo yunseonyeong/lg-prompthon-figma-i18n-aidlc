@@ -1,19 +1,25 @@
 {
-  "generatedAt": "2026-08-20T05:43:44.158Z",
+  "generatedAt": "2026-08-20T05:47:31.744Z",
   "note": "Dev-B 재번역 제안입니다. src/locales 를 직접 수정하지 않았습니다. 아래 값은 4계층 재검증을 통과한 번역만 담고 있습니다.",
   "attempts": 2,
-  "patchCount": 4,
+  "patchCount": 10,
   "unresolvedCount": 4,
   "patch": {
     "ja": {
-      "console.setting.group.label.set_single_signon": "シングルサインオン(SSO)をオンにし、選択した認証タイプの詳細を設定してください。"
+      "console.setting.group.label.set_single_signon": "シングルサインオン(SSO)をオンにし、選択した認証タイプの詳細を設定してください。",
+      "console.setting.group.label.art_lounge": "Art Lounge",
+      "console.setting.group.label.hotel_mobile_app": "Hotel Mobile App"
     },
     "ko": {
       "console.setting.group.label.set_single_signon": "싱글 사인온(SSO)을 켜고 선택한 인증 유형의 세부 정보를 설정하세요.",
+      "console.setting.group.label.art_lounge": "Art Lounge",
+      "console.setting.group.label.hotel_mobile_app": "Hotel Mobile App",
       "console.setting.group.button.off": "꺼짐"
     },
     "zh-CN": {
-      "console.setting.group.label.set_single_signon": "将单点登录(SSO)开启，并设置所选认证类型的详细信息。"
+      "console.setting.group.label.set_single_signon": "将单点登录(SSO)开启，并设置所选认证类型的详细信息。",
+      "console.setting.group.label.art_lounge": "Art Lounge",
+      "console.setting.group.label.hotel_mobile_app": "Hotel Mobile App"
     }
   },
   "details": [
@@ -40,6 +46,54 @@
       "after": "将单点登录(SSO)开启，并设置所选认证类型的详细信息。",
       "attempt": 1,
       "reason": "용어 불일치: \"Single Sign-On\" → 기대 \"单点登录\" (기대: 单点登录)"
+    },
+    {
+      "key": "console.setting.group.label.art_lounge",
+      "locale": "ja",
+      "before": "アートラウンジ",
+      "after": "Art Lounge",
+      "attempt": 1,
+      "reason": "제품명 번역 금지 위반: \"Art Lounge\" → \"アートラウンジ\" (기대: Art Lounge)"
+    },
+    {
+      "key": "console.setting.group.label.art_lounge",
+      "locale": "ko",
+      "before": "아트 라운지",
+      "after": "Art Lounge",
+      "attempt": 1,
+      "reason": "제품명 번역 금지 위반: \"Art Lounge\" → \"아트 라운지\" (기대: Art Lounge)"
+    },
+    {
+      "key": "console.setting.group.label.art_lounge",
+      "locale": "zh-CN",
+      "before": "艺术休息室",
+      "after": "Art Lounge",
+      "attempt": 1,
+      "reason": "제품명 번역 금지 위반: \"Art Lounge\" → \"艺术休息室\" (기대: Art Lounge)"
+    },
+    {
+      "key": "console.setting.group.label.hotel_mobile_app",
+      "locale": "ja",
+      "before": "ホテルモバイルアプリ",
+      "after": "Hotel Mobile App",
+      "attempt": 1,
+      "reason": "제품명 번역 금지 위반: \"Hotel Mobile App\" → \"ホテルモバイルアプリ\" (기대: Hotel Mobile App)"
+    },
+    {
+      "key": "console.setting.group.label.hotel_mobile_app",
+      "locale": "ko",
+      "before": "호텔 모바일 앱",
+      "after": "Hotel Mobile App",
+      "attempt": 1,
+      "reason": "제품명 번역 금지 위반: \"Hotel Mobile App\" → \"호텔 모바일 앱\" (기대: Hotel Mobile App)"
+    },
+    {
+      "key": "console.setting.group.label.hotel_mobile_app",
+      "locale": "zh-CN",
+      "before": "酒店移动应用",
+      "after": "Hotel Mobile App",
+      "attempt": 1,
+      "reason": "제품명 번역 금지 위반: \"Hotel Mobile App\" → \"酒店移动应用\" (기대: Hotel Mobile App)"
     },
     {
       "key": "console.setting.group.button.off",
