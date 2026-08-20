@@ -27,11 +27,13 @@ export {
 } from './preblock.js';
 export {
   discoverTermCandidates,
+  findTermConflicts,
   findRepeatedViolations,
   loadProposals,
   saveProposals,
   PROPOSAL_PATH,
   type TermProposal,
+  type TermConflict,
 } from './glossary-growth.js';
 export {
   runRound,

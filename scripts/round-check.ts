@@ -196,6 +196,21 @@ function main(): void {
   console.log(`  확정 누적     : ${m.confirmedTotal}건 (이번 라운드 신규 ${result.newlyConfirmed}건)`);
   console.log(`  용어집        : ${m.glossaryTerms}개`);
 
+  // 기존 용어와 충돌한 후보 (US-2.2: 충돌 시 알림)
+  const mismatches = result.conflicts.filter((c) => c.mismatch);
+  if (mismatches.length > 0) {
+    console.log(`\n▶ 용어 충돌 — 등재 번역과 어긋남 ${mismatches.length}건 (Dev-A 재번역 대상)`);
+    for (const c of mismatches.slice(0, 8)) {
+      console.log(`  "${c.candidate}" (${c.occurrences}회)`);
+      console.log(`     ${c.message}`);
+    }
+    if (mismatches.length > 8) console.log(`  ... 외 ${mismatches.length - 8}건`);
+  }
+  const benign = result.conflicts.length - mismatches.length;
+  if (benign > 0) {
+    console.log(`\n▶ 용어 충돌 — 등재 불필요 ${benign}건 (이미 등재/제품명/복합어)`);
+  }
+
   if (result.repeatedViolations.length > 0) {
     console.log('\n▶ 반복 위반 용어 (용어집 보강 대상)');
     for (const rv of result.repeatedViolations.slice(0, 8)) {

@@ -33,9 +33,11 @@ import {
 } from './preblock.js';
 import {
   discoverTermCandidates,
+  findTermConflicts,
   loadProposals,
   saveProposals,
   findRepeatedViolations,
+  type TermConflict,
 } from './glossary-growth.js';
 import type { Issue, LocaleBundle } from './types.js';
 
@@ -47,6 +49,8 @@ export interface RoundResult {
   newProposals: number;
   /** 이번 라운드에 새로 확정된 항목 수 */
   newlyConfirmed: number;
+  /** 기존 용어와 충돌해 제안되지 않은 후보 (US-2.2 충돌 알림) */
+  conflicts: TermConflict[];
 }
 
 export interface RoundOptions {
@@ -158,5 +162,6 @@ export function runRound(bundle: LocaleBundle, options: RoundOptions = {}): Roun
     repeatedViolations: result.repeatedViolations,
     newProposals,
     newlyConfirmed: Math.max(0, result.metrics.confirmedTotal - prevConfirmedCount),
+    conflicts: findTermConflicts(bundle, glossary),
   };
 }
