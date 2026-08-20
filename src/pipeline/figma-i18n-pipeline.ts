@@ -19,10 +19,14 @@ import { initRetriever, retrieveForBatch, retrieverStatus } from '../retrieval/i
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ===== 환경변수 로드 =====
-// 프로젝트 .env를 우선 로드하고, 없는 값은 ~/.hermes/.env에서 보완한다.
+// ~/.hermes/.env 를 먼저 깔고 프로젝트 .env 로 덮어쓴다.
 // (해커톤 환경에서 FRIENDLI_API_KEY가 ~/.hermes/.env에 발급되어 있음)
-dotenv.config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
-dotenv.config({ path: path.join(os.homedir(), '.hermes', '.env'), quiet: true });
+//
+// override: true 가 필요한 이유 — dotenv 기본 동작은 이미 프로세스 환경에 있는
+// 값을 덮어쓰지 않는다. 셸에 placeholder 가 export 되어 있으면 .env 에 진짜
+// 키를 넣어도 무시되고 "Invalid token" 이 난다.
+dotenv.config({ path: path.join(os.homedir(), '.hermes', '.env'), override: true, quiet: true });
+dotenv.config({ path: path.resolve(__dirname, '../../.env'), override: true, quiet: true });
 
 // ===== 설정 =====
 const CONFIG = {
