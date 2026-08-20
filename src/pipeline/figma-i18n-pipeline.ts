@@ -13,6 +13,8 @@ import * as path from 'path';
 import * as os from 'os';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+// Dev-B 검증 루프가 축적한 컨텍스트를 번역 직전에 주입한다 (docs/retriever-integration.md)
+import { initRetriever, retrieveForBatch, retrieverStatus } from '../retrieval/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -475,11 +477,40 @@ async function translateBatch(
   glossary: Record<string, Record<string, string>>,
   contextEntries: I18nEntry[] = []
 ): Promise<I18nEntry[]> {
+  // ── Dev-B 컨텍스트 검색 (US-2.3/2.4 연동) ──
+  // 실패해도 throw하지 않는다. 리트리버 때문에 파이프라인이 죽으면 안 된다.
+  const ctx = await retrieveForBatch(
+    entries.map((e) => ({ key: e.key, source: e.source, context: e.context, role: e.role }))
+  );
+
+  // 이미 검증을 통과한 항목은 재번역하지 않는다 (회귀 원천 차단 + API 비용 절감)
+  for (const e of entries) {
+    const c = ctx.confirmed[e.key];
+    if (c) {
+      e.translations = {
+        en: e.source.trim(),
+        ko: c.ko ?? '',
+        ja: c.ja ?? '',
+        'zh-CN': c['zh-CN'] ?? '',
+      };
+    }
+  }
+  const targets = entries.filter((e) => !ctx.confirmed[e.key]);
+  if (targets.length === 0) {
+    console.log(`      ↳ 전량 확정 재사용 (${entries.length}건) — API 호출 생략`);
+    return entries;
+  }
+  if (ctx.stats.confirmedCount > 0 || ctx.stats.forbiddenCount > 0 || ctx.stats.similarCount > 0) {
+    console.log(
+      `      ↳ 리트리버: 확정 ${ctx.stats.confirmedCount} / 금지 ${ctx.stats.forbiddenCount} / 유사 ${ctx.stats.similarCount}`
+    );
+  }
+
   const glossaryContext = Object.entries(glossary)
     .map(([en, translations]) => `  "${en}" → ko: "${translations.ko}", ja: "${translations.ja}", zh-CN: "${translations['zh-CN']}"`)
     .join('\n');
 
-  const textsToTranslate = entries
+  const textsToTranslate = targets
     .map((e, i) => `${i + 1}. "${e.source}" (context: ${e.context}, role: ${e.role})`)
     .join('\n');
 
@@ -505,7 +536,7 @@ ${contextInfo}
 
 DOMAIN GLOSSARY:
 ${glossaryContext}
-
+${ctx.promptBlock ? '\n' + ctx.promptBlock + '\n' : ''}
 TEXTS TO TRANSLATE:
 ${textsToTranslate}
 
@@ -550,7 +581,8 @@ Respond ONLY with a JSON array, no explanation:
 
     const translations = JSON.parse(jsonMatch[0]);
 
-    return entries.map((entry, idx) => {
+    // 인덱스는 targets 기준이다 (확정 재사용 항목은 요청에서 제외됨)
+    targets.forEach((entry, idx) => {
       const t = translations.find((tr: any) => tr.index === idx + 1);
       if (t) {
         // 모델 응답에 선행/후행 공백이 섞이는 경우가 있어 정규화한다.
@@ -562,8 +594,8 @@ Respond ONLY with a JSON array, no explanation:
           'zh-CN': clean(t['zh-CN']),
         };
       }
-      return entry;
     });
+    return entries;
   } catch (error) {
     console.error('Translation error:', error);
     return entries;
@@ -842,6 +874,13 @@ export async function runPipeline(fileKey?: string): Promise<void> {
 
   // Step 4: EXAONE 번역
   console.log('🌐 Step 4: EXAONE 문맥 기반 번역...');
+  // Dev-B 저장소/인덱스 로드 (1회). 없으면 축소 모드로 조용히 동작한다.
+  await initRetriever();
+  const rs = retrieverStatus();
+  console.log(
+    `   리트리버: 용어 ${rs.glossaryTerms} / 확정 ${rs.confirmed} / 거부 ${rs.rejected} / 벡터검색 ${rs.vectorReady ? 'ON' : 'OFF'}`
+  );
+  for (const note of rs.notes) console.log(`     ⚠️  ${note}`);
   const glossary = loadGlossary();
   const translated = await translateWithExaone(translationTargets, glossary);
   console.log(`   번역 완료: ${translated.length}개`);
