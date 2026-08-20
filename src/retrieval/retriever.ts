@@ -96,6 +96,8 @@ export interface BatchContext {
     glossaryCount: number;
     forbiddenCount: number;
     similarCount: number;
+    /** 확정되지 않아 제외된 유사 사례 수 */
+    similarRejected: number;
     /** 저장소/인덱스/모델 일부를 쓸 수 없어 축소 동작 중 */
     degraded: boolean;
     notes: string[];
@@ -112,6 +114,17 @@ export interface RetrieverOptions {
   maxSimilar?: number;
   /** 벡터 검색 비활성화 (결정론적 채널만 사용) */
   disableVectorSearch?: boolean;
+  /**
+   * 유사 사례를 확정(confirmed) 항목으로만 제한. 기본 true.
+   *
+   * 번역 메모리는 src/locales 전체를 색인하므로 검증에 실패한 번역과
+   * 미번역 항목까지 들어 있습니다. 이를 걸러내지 않으면 리트리버가
+   * "SIMILAR APPROVED TRANSLATIONS" 라는 이름으로 결함 번역을 Dev-A 에게
+   * 넘기게 되고, 오류가 다음 번역으로 전파됩니다.
+   *
+   * 실제로 "Device" → "Device"(미번역) 가 유사 사례로 반환되고 있었습니다.
+   */
+  requireConfirmed?: boolean;
 }
 
 // ── 내부 상태 ──────────────────────────────────────────
@@ -131,6 +144,7 @@ const DEFAULTS: Required<RetrieverOptions> = {
   minScore: DEFAULT_MIN_SCORE,
   maxSimilar: 5,
   disableVectorSearch: false,
+  requireConfirmed: true,
 };
 
 /**
@@ -155,6 +169,13 @@ export async function initRetriever(options: RetrieverOptions = {}): Promise<voi
     rejected = loadRejected();
   } catch (e) {
     notes.push(`피드백 저장소 로드 실패: ${(e as Error).message}`);
+  }
+
+  if (opts.requireConfirmed && Object.keys(confirmed).length === 0) {
+    notes.push(
+      '확정 번역이 0건입니다 → 유사 사례가 비어 있습니다. ' +
+        'npm run round:check 를 먼저 실행하면 채워집니다.'
+    );
   }
 
   let tmIndex: LocalIndex | null = null;
@@ -239,7 +260,7 @@ function buildPromptBlock(ctx: Omit<BatchContext, 'promptBlock' | 'stats'>): str
 
   if (ctx.similar.length > 0) {
     parts.push(
-      'SIMILAR APPROVED TRANSLATIONS (reference for consistency):\n' +
+      'SIMILAR APPROVED TRANSLATIONS (review-passed, reference for consistency):\n' +
         ctx.similar
           .map((s) => `  "${s.sourceText}" → ${s.locale}: "${s.translation}"`)
           .join('\n')
@@ -285,6 +306,7 @@ export async function retrieveForBatch(entries: RetrievalEntry[]): Promise<Batch
       glossaryCount: 0,
       forbiddenCount: 0,
       similarCount: 0,
+      similarRejected: 0,
       degraded: true,
       notes: s.notes,
     },
@@ -328,18 +350,30 @@ export async function retrieveForBatch(entries: RetrievalEntry[]): Promise<Batch
 
     // ④ 유사 사례 — 확정되지 않은(=새로 번역해야 하는) 항목만 대상
     const similar: SimilarHit[] = [];
+    let similarRejected = 0;
     if (s.vectorReady && s.tmIndex) {
       const needTranslation = entries.filter((e) => !confirmed[e.key]);
       const dedupe = new Map<string, SimilarHit>();
 
       for (const entry of needTranslation) {
         const vec = await embedQuery(entry.source);
-        const results = await s.tmIndex.queryItems(vec, entry.source, 3);
+        const results = await s.tmIndex.queryItems(vec, entry.source, 5);
         for (const r of results) {
           if (r.score < s.options.minScore) continue;
           const m = r.item.metadata as Record<string, string>;
           // 자기 자신은 제외
           if (m.sourceText === entry.source) continue;
+
+          // 확정된 번역만 참고 예시로 내보낸다.
+          // 번역 메모리에는 검증 실패분과 미번역 항목도 색인되어 있다.
+          if (s.options.requireConfirmed) {
+            const c = s.confirmed[makeId(m.key, m.locale)];
+            if (!c || c.translation !== m.translation) {
+              similarRejected++;
+              continue;
+            }
+          }
+
           const dk = `${m.sourceText}::${m.locale}`;
           const prev = dedupe.get(dk);
           if (!prev || prev.score < r.score) {
@@ -370,6 +404,7 @@ export async function retrieveForBatch(entries: RetrievalEntry[]): Promise<Batch
         glossaryCount: glossaryTerms.length,
         forbiddenCount: forbidden.length,
         similarCount: similar.length,
+        similarRejected,
         degraded: !s.vectorReady,
         notes: s.notes,
       },

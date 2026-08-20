@@ -3,7 +3,7 @@
     "setting": {
       "group": {
         "label": {
-          "content": "内容",
+          "content": "Content",
           "schedule": "日程",
           "device": "设备",
           "settings": "设置",
@@ -13,19 +13,19 @@
           "list": "列表",
           "lastUpdateTime": "最后更新时间",
           "search": "搜索",
-          "businessA": "业务A",
-          "workspaceA1": "工作区A1",
+          "businessA": "Business A",
+          "workspaceA1": "Workspace A1",
           "groupAutoUpdateOn": "组自动更新: 开",
           "businessSiteInformation": "业务站点信息",
           "businessSiteId": "业务站点ID *",
-          "supportingText": "辅助文本",
+          "supportingText": "supporting text",
           "subsidiary": "子公司",
           "licensePolicy": "许可证策略",
           "period": "期限",
           "businessSiteName": "业务站点名称",
           "regionCountry": "地区 / 国家 *",
           "asiaPacific": "亚洲及太平洋",
-          "label": "标签",
+          "label": "Label",
           "korea": "韩国",
           "timeZone": "时区",
           "utc0900AsiaSeoul": "(UTC+09:00) 亚洲/首尔",
@@ -49,24 +49,24 @@
           "thema03": "主题03",
           "thema04": "主题04",
           "businessSiteAddress": "业务站点地址",
-          "magokjungang10RoGangseoGu": "马谷中央10路，江西区，首尔",
+          "magokjungang10RoGangseoGu": "MagokJungang 10-ro, Gangseo-gu, Seoul",
           "addressDetails": "地址详情",
-          "30A101Bldg": "30, A101栋",
+          "30A101Bldg": "30, A101 bldg.",
           "addressMemo": "地址备注",
-          "setSingleSignOn": "将SSO设置为ON，并设置所选认证类型的详细信息。",
+          "setSingleSignOn": "将 Single Sign-On (SSO) 设置为 ON，并设置所选认证类型的详细信息。",
           "sortBy": "排序方式",
           "lastUpdated": "最后更新",
           "total": "总计",
           "workspaceN": "工作区 N",
-          "deviceN": "设备 N",
-          "userN": "用户 N",
+          "deviceN": "Device N",
+          "userN": "User N",
           "searchForWorkspace": "工作区搜索",
           "workspaceName": "工作区名称",
           "deviceCount": "设备数",
           "userCount": "用户数",
           "licensedProduct": "许可产品",
           "delete": "删除",
-          "dashboard": "仪表板",
+          "dashboard": "Dashboard",
           "space": "空间",
           "devices": "设备",
           "data": "数据",
@@ -79,10 +79,10 @@
           "analytics": "分析",
           "library": "库",
           "videowall": "视频墙",
-          "contentSchedule": "内容日程",
+          "contentSchedule": "Content Schedule",
           "controlSchedule": "控制日程",
-          "artLounge": "艺术休息室",
-          "hotelMobileApp": "酒店移动应用",
+          "artLounge": "Art Lounge",
+          "hotelMobileApp": "Hotel Mobile App",
           "site": "站点",
           "ads": "广告",
           "setting": "设置"
@@ -101,7 +101,7 @@
           "save": "保存",
           "assignDevice": "分配设备",
           "editGroup": "编辑组",
-          "button": "按钮",
+          "button": "Button",
           "createBusinessSite": "创建业务站点",
           "turnOff": "关闭",
           "off": "关",
@@ -125,10 +125,10 @@
           "settings": "设置"
         },
         "status": {
-          "modified": "已修改"
+          "modified": "Modified"
         },
         "label": {
-          "descriptionDescriptionDescriptionDescription": "描述 描述 描述"
+          "descriptionDescriptionDescriptionDescription": "Description Description \nDescription Description"
         }
       }
     }
