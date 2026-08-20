@@ -10,6 +10,7 @@
 
 | # | 과제 | 심각도 | 차단 대상 | 상태 |
 |---|------|--------|-----------|------|
+| **0** | **데모 앱 key 불일치** | **긴급** | **데모 동작 자체** | **미해결** |
 | 1 | 추출 필터 보강 (Layer 4) | 높음 | Dev-B 검증 노이즈 | 대기 (Dev-B 반송 예정) |
 | 2 | 중복 key 제거 | 높음 | Dev-C 컴포넌트 | 미착수 |
 | 3 | 용어 제안 정확도 | 중간 | Dev-B 용어집 검토 | 미착수 |
@@ -17,6 +18,67 @@
 | 5 | 프레임 확장 | 중간 | 데모 범위 | Dev-C 결정 대기 |
 | 6 | 제품명 번역 금지 반영 | 낮음 | - | 미착수 |
 | 7 | 문장 조각 대응 | 낮음 | - | 원문 문제 (디자이너) |
+
+---
+
+## 0. 데모 앱 key 불일치 — 긴급
+
+**발견**: 2026-08-19 17:28, PR #5(`feature/web-app`) 병합 직후
+
+현재 `origin/main`에서 데모 앱이 **번역을 하나도 표시하지 못하는 상태**다.
+
+| 대상 | key 형식 | 건수 |
+|------|----------|------|
+| `src/locales/*.json` | `console.*` + snake_case | 110 |
+| 데모 앱 `t()` 호출 | `signage.*` + snake_case | 36 |
+| **일치** | — | **0** |
+
+### 원인
+
+Dev-C가 `signage.*` 시절 기준으로 컴포넌트를 작성했고,
+그 사이 key prefix가 `console.*`로 변경(PR #4)되었다.
+PR #4가 먼저 병합되었으나 Dev-C 브랜치는 그 이전 시점에서 분기했다.
+
+### 추가 리스크
+
+Dev-A 미병합 커밋(`3129f83` camelCase)이 병합되면 key가 한 번 더 바뀐다.
+`business_site_information` → `businessSiteInformation`
+즉 **지금 Dev-C가 `console.*` snake_case로 고쳐도 다시 깨진다.**
+
+### 조치 순서 (반드시 이 순서로)
+
+1. Dev-A camelCase 커밋을 main에 병합 → key 형식 확정
+2. Dev-C가 36개 참조를 최종 형식으로 일괄 수정
+3. 정합성 검증으로 확인
+
+### 근본 원인 및 재발 방지
+
+Dev-C가 key를 컴포넌트에 하드코딩했다.
+`src/components-map.json`을 읽어 참조하도록 바꾸면 key 형식이 바뀌어도
+수동 수정이 필요 없다. 애초에 이 파일을 그 목적으로 만들었다.
+
+**추가 제안**: 정합성 검사를 Dev-B의 `validate:i18n`에 규칙으로 넣는다.
+"코드에서 참조하는 모든 key가 locale에 존재하는가" — Layer 1 계열이며 API 불필요.
+이번 사고는 이 규칙 하나로 즉시 검출된다.
+
+### 검증용 스니펫
+
+```python
+import json, re, glob
+def flatten(d, p=''):
+    o = {}
+    for k, v in d.items():
+        key = f'{p}.{k}' if p else k
+        o.update(flatten(v, key)) if isinstance(v, dict) else o.update({key: v})
+    return o
+
+real = set(flatten(json.load(open('src/locales/en.json'))).keys())
+used = set()
+for f in glob.glob('src/**/*.tsx', recursive=True):
+    used |= set(re.findall(r"t\('([a-zA-Z0-9_.]+)'\)", open(f).read()))
+missing = sorted(k for k in used if k not in real)
+print(f'참조 {len(used)}개 중 locale에 없는 key: {len(missing)}개')
+```
 
 ---
 
