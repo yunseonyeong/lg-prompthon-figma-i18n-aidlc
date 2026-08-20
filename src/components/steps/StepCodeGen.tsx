@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, Row, Col, ListGroup, Badge, Button, Nav, Tab, Alert, ProgressBar } from 'react-bootstrap';
-import { API_BASE } from '../../api/client';
+import { API_BASE, fetchProjectConfig } from '../../api/client';
 
 interface StepCodeGenProps {
   onNext: () => void;
@@ -87,17 +87,26 @@ function StepCodeGen({ onNext, onBack }: StepCodeGenProps) {
       files: [],
     });
 
-    // 저장된 설정에서 값 가져오기
+    // 설정은 서버가 기준이다. 서버가 응답하지 않으면 localStorage 캐시로 폴백한다.
+    // (도메인 설명·언어는 서버가 직접 읽어 env로 전달하므로 여기서 보낼 필요가 없다)
     let figmaFileKey = '';
     let figmaFrameIds = '';
     try {
-      const saved = localStorage.getItem('ux-dlc-config');
-      if (saved) {
-        const config = JSON.parse(saved);
-        figmaFileKey = config.figmaFileKey || '';
-        figmaFrameIds = config.figmaFrameIds || '';
+      const server = await fetchProjectConfig();
+      figmaFileKey = server.figmaFileKey || '';
+      figmaFrameIds = server.figmaFrameIds || '';
+    } catch {
+      try {
+        const saved = localStorage.getItem('ux-dlc-config');
+        if (saved) {
+          const cached = JSON.parse(saved);
+          figmaFileKey = cached.figmaFileKey || '';
+          figmaFrameIds = cached.figmaFrameIds || '';
+        }
+      } catch {
+        /* 캐시도 없으면 파이프라인 기본값 사용 */
       }
-    } catch {}
+    }
 
     try {
       const res = await fetch(`${API_BASE}/pipeline/run`, {

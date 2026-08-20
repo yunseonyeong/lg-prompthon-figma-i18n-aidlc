@@ -33,6 +33,25 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(os.homedir(), '.hermes', '.env'), override: true, quiet: true });
 dotenv.config({ path: path.resolve(__dirname, '../../.env'), override: true, quiet: true });
 
+/**
+ * PIPELINE_LANGUAGES 파싱 (예: "en,ko,ja").
+ *
+ * 값이 없거나 전부 걸러지면 기본 4개 언어로 되돌린다.
+ * en은 원문 기준이므로 사용자가 빼더라도 강제로 포함시킨다 —
+ * 빠지면 generateLocaleFiles가 원문 없는 locale을 만들고 검증 Layer 1이 전부 실패한다.
+ */
+function parseLanguages(raw?: string): string[] {
+  const DEFAULTS = ['en', 'ko', 'ja', 'zh-CN'];
+  if (!raw) return DEFAULTS;
+  const allowed = new Set(DEFAULTS);
+  const picked = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => allowed.has(s));
+  if (picked.length === 0) return DEFAULTS;
+  return picked.includes('en') ? picked : ['en', ...picked];
+}
+
 // ===== 설정 =====
 const CONFIG: {
   figmaApiKey: string;
@@ -55,11 +74,15 @@ const CONFIG: {
   friendliApiKey: process.env.FRIENDLI_API_KEY || '',
   friendliModel: process.env.FRIENDLI_MODEL || 'depe675tjc2rcpo',
   outputDir: path.resolve(__dirname, '../locales'),
-  languages: ['en', 'ko', 'ja', 'zh-CN'],
+  // 화면의 "번역 대상 언어" 설정이 여기로 들어온다 (서버가 spawn 시 env로 전달).
+  // en은 원문이므로 항상 포함시킨다.
+  languages: parseLanguages(process.env.PIPELINE_LANGUAGES),
   // i18n key의 최상위 prefix (예: console.setting.group.title.xxx)
-  keyPrefix: 'console',
+  keyPrefix: process.env.PIPELINE_KEY_PREFIX || 'console',
   // 번역 프롬프트에 전달할 도메인 설명. 구체적일수록 문맥 번역 품질이 올라간다.
+  // 화면의 "도메인 설명" 설정이 여기로 들어온다.
   domainDescription:
+    process.env.PIPELINE_DOMAIN_DESCRIPTION ||
     'LG Business Cloud console — a B2B admin console for managing business sites, workspaces, device groups, users, roles and licenses',
   // 특정 프레임만 추출 (빈 배열이면 전체 추출)
   targetFrameIds: [

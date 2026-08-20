@@ -4,599 +4,1772 @@
     "frameId": "I15682:100919",
     "children": [
       {
-        "type": "title",
-        "key": "console.setting.group.title.workspaceGroupSettings",
-        "originalText": "Workspace/Group Settings"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.signage",
-        "originalText": "Signage"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.isRequired",
-        "originalText": "is required"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.calendar",
-        "originalText": "Calendar"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.list",
-        "originalText": "List"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.publish",
-        "originalText": "Publish"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.save",
-        "originalText": "Save"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.assignDevice",
-        "originalText": "Assign Device"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.editGroup",
-        "originalText": "Edit Group"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.publish",
-        "originalText": "Publish"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.lastUpdateTime",
-        "originalText": "Last Update Time"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.search",
-        "originalText": "Search"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.createBusinessSite",
-        "originalText": "Create Business Site"
-      },
-      {
-        "type": "title",
-        "key": "console.setting.group.title.businessSiteName",
-        "originalText": "Business Site Name"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.groupAutoUpdateOn",
-        "originalText": "Group Auto Update : On"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.turnOff",
-        "originalText": "Turn Off"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.off",
-        "originalText": "Off"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.edit",
-        "originalText": "Edit"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.businessSiteInformation",
-        "originalText": "Business Site Information"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.delete",
-        "originalText": "Delete"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.edit",
-        "originalText": "Edit"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.businessSiteId",
-        "originalText": "Business Site ID *"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.subsidiary",
-        "originalText": "Subsidiary"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.licensePolicy",
-        "originalText": "License Policy"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.period",
-        "originalText": "Period"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.businessSiteName",
-        "originalText": "Business Site Name *"
-      },
-      {
-        "type": "placeholder",
-        "key": "console.setting.group.placeholder.lgElectronics",
-        "originalText": "LG Electronics"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.regionCountry",
-        "originalText": "Region / Country *"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.asiaPacific",
-        "originalText": "Asia & Pacific"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.korea",
-        "originalText": "Korea"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.timeZone",
-        "originalText": "Time Zone *"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.utc0900AsiaSeoul",
-        "originalText": "(UTC+09:00) Asia/Seoul"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.verticalType",
-        "originalText": "Vertical Type *"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.systemIntegrator",
-        "originalText": "System Integrator"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.businessType",
-        "originalText": "Business Type *"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.endCustomer",
-        "originalText": "End Customer"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.siIntegratorName",
-        "originalText": "SI integrator Name *"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.utc0900AsiaSeoul",
-        "originalText": "(UTC+09:00) Asia/Seoul"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.endCustomerName",
-        "originalText": "End Customer Name *"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.systemIntegrator",
-        "originalText": "System Integrator"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.memo",
-        "originalText": "Memo"
-      },
-      {
-        "type": "title",
-        "key": "console.setting.group.title.apiAccess",
-        "originalText": "API Access"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.on",
-        "originalText": "ON"
-      },
-      {
-        "type": "title",
-        "key": "console.setting.group.title.automaticLicenseAssignment",
-        "originalText": "Automatic license assignment"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.on",
-        "originalText": "ON"
-      },
-      {
-        "type": "title",
-        "key": "console.setting.group.title.automaticDeviceApproval",
-        "originalText": "Automatic device approval"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.on",
-        "originalText": "ON"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.businessSiteLogo",
-        "originalText": "Business Site Logo"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.image",
-        "originalText": "Image *"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.unit",
-        "originalText": "unit"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.altText",
-        "originalText": "Alt Text"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.lgLogoImage",
-        "originalText": "LG logo image"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.unit",
-        "originalText": "unit"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.themeColor",
-        "originalText": "Theme Color"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.basic",
-        "originalText": "Basic"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.dark",
-        "originalText": "Dark"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.thema03",
-        "originalText": "Thema 03"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.thema04",
-        "originalText": "Thema 04"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.businessSiteAddress",
-        "originalText": "Business Site Address"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.addressDetails",
-        "originalText": "Address Details"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.addressMemo",
-        "originalText": "Address Memo"
-      },
-      {
-        "type": "title",
-        "key": "console.setting.group.title.singleSignOnSso",
-        "originalText": "Single Sign-On (SSO)"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.setSingleSignOn",
-        "originalText": "Set Single Sign-On (SSO) to ON and set the detailes for the selected authentication type."
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.sortBy",
-        "originalText": "Sort by"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.lastUpdated",
-        "originalText": "Last Updated"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.addWorkspace",
-        "originalText": "Add Workspace"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.userSearch",
-        "originalText": "User Search"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.aboutRole",
-        "originalText": "About Role"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.changeBusinessSite",
-        "originalText": "Change Business Site"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.userSearch",
-        "originalText": "User Search"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.aboutRole",
-        "originalText": "About Role"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.total",
-        "originalText": "Total"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.searchForWorkspace",
-        "originalText": "Search for Workspace"
-      },
-      {
-        "type": "button",
-        "key": "console.setting.group.button.filter",
-        "originalText": "Filter"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.workspaceName",
-        "originalText": "Workspace Name"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.deviceCount",
-        "originalText": "Device Count"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.userCount",
-        "originalText": "User Count"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.licensedProduct",
-        "originalText": "Licensed Product"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.timeZone",
-        "originalText": "Time Zone"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.delete",
-        "originalText": "Delete"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.dashboard",
-        "originalText": "Dashboard"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.space",
-        "originalText": "Space"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.devices",
-        "originalText": "Devices"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.data",
-        "originalText": "Data"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.content",
-        "originalText": "Content"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.rules",
-        "originalText": "Rules"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.schedule",
-        "originalText": "Schedule"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.addOnService",
-        "originalText": "Add-On Service"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.siteMap",
-        "originalText": "Site Map"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.floorPlan",
-        "originalText": "Floor Plan"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.history",
-        "originalText": "History"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.report",
-        "originalText": "Report"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.analytics",
-        "originalText": "Analytics"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.library",
-        "originalText": "Library"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.videowall",
-        "originalText": "Videowall"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.contentSchedule",
-        "originalText": "Content Schedule"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.controlSchedule",
-        "originalText": "Control Schedule"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.artLounge",
-        "originalText": "Art Lounge"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.hotelMobileApp",
-        "originalText": "Hotel Mobile App"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.dashboard",
-        "originalText": "Dashboard"
-      },
-      {
         "type": "label",
         "key": "console.setting.group.label.device",
-        "originalText": "Device"
+        "originalText": "Device",
+        "layout": {
+          "x": 33933,
+          "y": -3530,
+          "width": 37,
+          "height": 16
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 11.675676345825195
       },
       {
         "type": "label",
         "key": "console.setting.group.label.data",
-        "originalText": "Data"
+        "originalText": "Data",
+        "layout": {
+          "x": 33991,
+          "y": -3530,
+          "width": 27,
+          "height": 16
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 11.675676345825195
       },
       {
         "type": "label",
         "key": "console.setting.group.label.content",
-        "originalText": "Content"
+        "originalText": "Content",
+        "layout": {
+          "x": 34038,
+          "y": -3530,
+          "width": 45,
+          "height": 16
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 11.675676345825195
       },
       {
         "type": "label",
         "key": "console.setting.group.label.site",
-        "originalText": "Site"
+        "originalText": "Site",
+        "layout": {
+          "x": 34104,
+          "y": -3530,
+          "width": 21,
+          "height": 16
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 11.675676345825195
       },
       {
         "type": "label",
         "key": "console.setting.group.label.ads",
-        "originalText": "Ads"
+        "originalText": "Ads",
+        "layout": {
+          "x": 34146,
+          "y": -3530,
+          "width": 21,
+          "height": 16
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 11.675676345825195
       },
       {
         "type": "label",
         "key": "console.setting.group.label.artLounge",
-        "originalText": "Art Lounge"
+        "originalText": "Art Lounge",
+        "layout": {
+          "x": 34187,
+          "y": -3530,
+          "width": 63,
+          "height": 16
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 11.675676345825195
       },
       {
         "type": "label",
         "key": "console.setting.group.label.addOnService",
-        "originalText": "Add-On Service"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.setting",
-        "originalText": "Setting"
-      },
-      {
-        "type": "title",
-        "key": "console.setting.group.title.console",
-        "originalText": "Console"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.device",
-        "originalText": "Device"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.data",
-        "originalText": "Data"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.content",
-        "originalText": "Content"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.site",
-        "originalText": "Site"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.ads",
-        "originalText": "Ads"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.artLounge",
-        "originalText": "Art Lounge"
-      },
-      {
-        "type": "label",
-        "key": "console.setting.group.label.addOnService",
-        "originalText": "Add-On Service"
+        "originalText": "Add-On Service",
+        "layout": {
+          "x": 34270,
+          "y": -3530,
+          "width": 86,
+          "height": 16
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 11.675676345825195
       },
       {
         "type": "label",
         "key": "console.setting.group.label.settings",
-        "originalText": "Settings"
+        "originalText": "Settings",
+        "layout": {
+          "x": 34377,
+          "y": -3530,
+          "width": 46,
+          "height": 16
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "title",
+        "key": "console.setting.group.title.console",
+        "originalText": "Console",
+        "layout": {
+          "x": 33741,
+          "y": -3529,
+          "width": 51,
+          "height": 17
+        },
+        "parentName": "logo",
+        "fontSize": 12.972973823547363
       },
       {
         "type": "label",
         "key": "console.setting.group.label.businessSiteName",
-        "originalText": "Business Site Name"
+        "originalText": "Business Site Name",
+        "layout": {
+          "x": 34275,
+          "y": -3527,
+          "width": 86,
+          "height": 10
+        },
+        "parentName": "content",
+        "fontSize": 9.08108139038086
       },
       {
         "type": "button",
         "key": "console.setting.group.button.extend",
-        "originalText": "Extend"
+        "originalText": "Extend",
+        "layout": {
+          "x": 34451,
+          "y": -3527,
+          "width": 31,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.dashboard",
+        "originalText": "Dashboard",
+        "layout": {
+          "x": 33751,
+          "y": -3525,
+          "width": 55,
+          "height": 15
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.device",
+        "originalText": "Device",
+        "layout": {
+          "x": 33826,
+          "y": -3525,
+          "width": 33,
+          "height": 15
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.data",
+        "originalText": "Data",
+        "layout": {
+          "x": 33880,
+          "y": -3525,
+          "width": 24,
+          "height": 15
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.content",
+        "originalText": "Content",
+        "layout": {
+          "x": 33925,
+          "y": -3525,
+          "width": 40,
+          "height": 15
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.site",
+        "originalText": "Site",
+        "layout": {
+          "x": 33986,
+          "y": -3525,
+          "width": 19,
+          "height": 15
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.ads",
+        "originalText": "Ads",
+        "layout": {
+          "x": 34026,
+          "y": -3525,
+          "width": 19,
+          "height": 15
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.artLounge",
+        "originalText": "Art Lounge",
+        "layout": {
+          "x": 34065,
+          "y": -3525,
+          "width": 56,
+          "height": 15
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.addOnService",
+        "originalText": "Add-On Service",
+        "layout": {
+          "x": 34142,
+          "y": -3525,
+          "width": 76,
+          "height": 15
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.setting",
+        "originalText": "Setting",
+        "layout": {
+          "x": 34238,
+          "y": -3525,
+          "width": 36,
+          "height": 15
+        },
+        "parentName": "BO_menuItem",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.dashboard",
+        "originalText": "Dashboard",
+        "layout": {
+          "x": 33592,
+          "y": -3490,
+          "width": 63,
+          "height": 16
+        },
+        "parentName": "itemContainer",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.space",
+        "originalText": "Space",
+        "layout": {
+          "x": 33734,
+          "y": -3490,
+          "width": 34,
+          "height": 16
+        },
+        "parentName": "itemContainer",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.devices",
+        "originalText": "Devices",
+        "layout": {
+          "x": 33877,
+          "y": -3490,
+          "width": 44,
+          "height": 16
+        },
+        "parentName": "itemContainer",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.data",
+        "originalText": "Data",
+        "layout": {
+          "x": 34020,
+          "y": -3490,
+          "width": 28,
+          "height": 16
+        },
+        "parentName": "itemContainer",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.content",
+        "originalText": "Content",
+        "layout": {
+          "x": 34162,
+          "y": -3490,
+          "width": 46,
+          "height": 16
+        },
+        "parentName": "itemContainer",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.rules",
+        "originalText": "Rules",
+        "layout": {
+          "x": 34305,
+          "y": -3490,
+          "width": 31,
+          "height": 16
+        },
+        "parentName": "itemContainer",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.schedule",
+        "originalText": "Schedule",
+        "layout": {
+          "x": 34448,
+          "y": -3490,
+          "width": 52,
+          "height": 16
+        },
+        "parentName": "itemContainer",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.addOnService",
+        "originalText": "Add-On Service",
+        "layout": {
+          "x": 34591,
+          "y": -3490,
+          "width": 87,
+          "height": 16
+        },
+        "parentName": "itemContainer",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "title",
+        "key": "console.setting.group.title.workspaceGroupSettings",
+        "originalText": "Workspace/Group Settings",
+        "layout": {
+          "x": 33611,
+          "y": -3447,
+          "width": 204,
+          "height": 20
+        },
+        "parentName": "sideBar/breadcrumb",
+        "fontSize": 15.567567825317383
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.signage",
+        "originalText": "Signage",
+        "layout": {
+          "x": 34084,
+          "y": -3446,
+          "width": 50,
+          "height": 18
+        },
+        "parentName": "Frame 2087334734",
+        "fontSize": 12.972973823547363
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.isRequired",
+        "originalText": "is required",
+        "layout": {
+          "x": 34637,
+          "y": -3444,
+          "width": 47,
+          "height": 13
+        },
+        "parentName": "required items",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.calendar",
+        "originalText": "Calendar",
+        "layout": {
+          "x": 34303,
+          "y": -3444,
+          "width": 41,
+          "height": 13
+        },
+        "parentName": "element/tab_segment",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.lastUpdateTime",
+        "originalText": "Last Update Time",
+        "layout": {
+          "x": 34382,
+          "y": -3444,
+          "width": 80,
+          "height": 13
+        },
+        "parentName": "right",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.list",
+        "originalText": "List",
+        "layout": {
+          "x": 34399,
+          "y": -3442,
+          "width": 16,
+          "height": 10
+        },
+        "parentName": "element/tab_segment",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.publish",
+        "originalText": "Publish",
+        "layout": {
+          "x": 34458,
+          "y": -3442,
+          "width": 32,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.save",
+        "originalText": "Save",
+        "layout": {
+          "x": 34517,
+          "y": -3442,
+          "width": 21,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.assignDevice",
+        "originalText": "Assign Device",
+        "layout": {
+          "x": 34375,
+          "y": -3442,
+          "width": 60,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.editGroup",
+        "originalText": "Edit Group",
+        "layout": {
+          "x": 34450,
+          "y": -3442,
+          "width": 47,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.publish",
+        "originalText": "Publish",
+        "layout": {
+          "x": 34524,
+          "y": -3442,
+          "width": 32,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.siteMap",
+        "originalText": "Site Map",
+        "layout": {
+          "x": 33734,
+          "y": -3439,
+          "width": 50,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.history",
+        "originalText": "History",
+        "layout": {
+          "x": 33877,
+          "y": -3439,
+          "width": 42,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.report",
+        "originalText": "Report",
+        "layout": {
+          "x": 34020,
+          "y": -3439,
+          "width": 39,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.library",
+        "originalText": "Library",
+        "layout": {
+          "x": 34162,
+          "y": -3439,
+          "width": 41,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.contentSchedule",
+        "originalText": "Content Schedule",
+        "layout": {
+          "x": 34448,
+          "y": -3439,
+          "width": 101,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.artLounge",
+        "originalText": "Art Lounge",
+        "layout": {
+          "x": 34591,
+          "y": -3439,
+          "width": 64,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.button",
+        "originalText": "Button",
+        "layout": {
+          "x": 34592,
+          "y": -3437,
+          "width": 35,
+          "height": 11
+        },
+        "parentName": "button",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.button",
+        "originalText": "Button",
+        "layout": {
+          "x": 34652,
+          "y": -3437,
+          "width": 35,
+          "height": 11
+        },
+        "parentName": "button",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.floorPlan",
+        "originalText": "Floor Plan",
+        "layout": {
+          "x": 33734,
+          "y": -3403,
+          "width": 58,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.analytics",
+        "originalText": "Analytics",
+        "layout": {
+          "x": 34020,
+          "y": -3403,
+          "width": 52,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.videowall",
+        "originalText": "Videowall",
+        "layout": {
+          "x": 34162,
+          "y": -3403,
+          "width": 56,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.controlSchedule",
+        "originalText": "Control Schedule",
+        "layout": {
+          "x": 34448,
+          "y": -3403,
+          "width": 97,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.hotelMobileApp",
+        "originalText": "Hotel Mobile App",
+        "layout": {
+          "x": 34591,
+          "y": -3403,
+          "width": 99,
+          "height": 16
+        },
+        "parentName": "2depth",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.search",
+        "originalText": "Search",
+        "layout": {
+          "x": 33637,
+          "y": -3384,
+          "width": 153,
+          "height": 15
+        },
+        "parentName": "search",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "title",
+        "key": "console.setting.group.title.businessSiteName",
+        "originalText": "Business Site Name",
+        "layout": {
+          "x": 33834,
+          "y": -3382,
+          "width": 862,
+          "height": 17
+        },
+        "parentName": "Body_Content_Buttonwrap",
+        "fontSize": 12.972973823547363
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.groupAutoUpdateOn",
+        "originalText": "Group Auto Update : On",
+        "layout": {
+          "x": 34509,
+          "y": -3381,
+          "width": 117,
+          "height": 14
+        },
+        "parentName": "Frame 2087333577",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.turnOff",
+        "originalText": "Turn Off",
+        "layout": {
+          "x": 34650,
+          "y": -3379,
+          "width": 36,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.off",
+        "originalText": "Off",
+        "layout": {
+          "x": 34659,
+          "y": -3379,
+          "width": 14,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.edit",
+        "originalText": "Edit",
+        "layout": {
+          "x": 34720,
+          "y": -3379,
+          "width": 26,
+          "height": 15
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.businessA",
+        "originalText": "Business A",
+        "layout": {
+          "x": 33651,
+          "y": -3340,
+          "width": 60,
+          "height": 16
+        },
+        "parentName": "Frame 2085673821",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.businessSiteInformation",
+        "originalText": "Business Site Information",
+        "layout": {
+          "x": 33855,
+          "y": -3336,
+          "width": 127,
+          "height": 15
+        },
+        "parentName": "Frame 2087334721",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.delete",
+        "originalText": "Delete",
+        "layout": {
+          "x": 34648,
+          "y": -3329,
+          "width": 29,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.edit",
+        "originalText": "Edit",
+        "layout": {
+          "x": 34704,
+          "y": -3329,
+          "width": 17,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.workspaceA1",
+        "originalText": "Workspace A1",
+        "layout": {
+          "x": 33657,
+          "y": -3306,
+          "width": 79,
+          "height": 16
+        },
+        "parentName": "Frame 2085673821",
+        "fontSize": 11.675676345825195
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.businessSiteId",
+        "originalText": "Business Site ID *",
+        "layout": {
+          "x": 33856,
+          "y": -3292,
+          "width": 210,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.subsidiary",
+        "originalText": "Subsidiary",
+        "layout": {
+          "x": 34076,
+          "y": -3292,
+          "width": 210,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.licensePolicy",
+        "originalText": "License Policy",
+        "layout": {
+          "x": 34304,
+          "y": -3292,
+          "width": 430,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.period",
+        "originalText": "Period",
+        "layout": {
+          "x": 34311,
+          "y": -3273,
+          "width": 402,
+          "height": 13
+        },
+        "parentName": "dropdown",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.supportingText",
+        "originalText": "supporting text",
+        "layout": {
+          "x": 33863,
+          "y": -3252,
+          "width": 110,
+          "height": 11
+        },
+        "parentName": "supporting-text",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.businessSiteName",
+        "originalText": "Business Site Name *",
+        "layout": {
+          "x": 33856,
+          "y": -3235,
+          "width": 431,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.regionCountry",
+        "originalText": "Region / Country *",
+        "layout": {
+          "x": 34303,
+          "y": -3235,
+          "width": 210,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.label",
+        "originalText": "Label",
+        "layout": {
+          "x": 34524,
+          "y": -3235,
+          "width": 153,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "placeholder",
+        "key": "console.setting.group.placeholder.lgElectronics",
+        "originalText": "LG Electronics",
+        "layout": {
+          "x": 33863,
+          "y": -3216,
+          "width": 418,
+          "height": 13
+        },
+        "parentName": "input_text",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.asiaPacific",
+        "originalText": "Asia & Pacific",
+        "layout": {
+          "x": 34310,
+          "y": -3216,
+          "width": 199,
+          "height": 13
+        },
+        "parentName": "dropdown",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.korea",
+        "originalText": "Korea",
+        "layout": {
+          "x": 34531,
+          "y": -3216,
+          "width": 199,
+          "height": 13
+        },
+        "parentName": "dropdown",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.supportingText",
+        "originalText": "supporting text",
+        "layout": {
+          "x": 33863,
+          "y": -3196,
+          "width": 110,
+          "height": 11
+        },
+        "parentName": "supporting-text",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.timeZone",
+        "originalText": "Time Zone *",
+        "layout": {
+          "x": 33856,
+          "y": -3179,
+          "width": 437,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.verticalType",
+        "originalText": "Vertical Type *",
+        "layout": {
+          "x": 34303,
+          "y": -3179,
+          "width": 210,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.businessType",
+        "originalText": "Business Type *",
+        "layout": {
+          "x": 34524,
+          "y": -3179,
+          "width": 210,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.utc0900AsiaSeoul",
+        "originalText": "(UTC+09:00) Asia/Seoul",
+        "layout": {
+          "x": 33863,
+          "y": -3160,
+          "width": 425,
+          "height": 13
+        },
+        "parentName": "dropdown",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.systemIntegrator",
+        "originalText": "System Integrator",
+        "layout": {
+          "x": 34310,
+          "y": -3160,
+          "width": 199,
+          "height": 13
+        },
+        "parentName": "dropdown",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.endCustomer",
+        "originalText": "End Customer",
+        "layout": {
+          "x": 34531,
+          "y": -3160,
+          "width": 199,
+          "height": 13
+        },
+        "parentName": "dropdown",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.siIntegratorName",
+        "originalText": "SI integrator Name *",
+        "layout": {
+          "x": 33856,
+          "y": -3122,
+          "width": 434,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.endCustomerName",
+        "originalText": "End Customer Name *",
+        "layout": {
+          "x": 34301,
+          "y": -3122,
+          "width": 434,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.utc0900AsiaSeoul",
+        "originalText": "(UTC+09:00) Asia/Seoul",
+        "layout": {
+          "x": 33863,
+          "y": -3104,
+          "width": 422,
+          "height": 13
+        },
+        "parentName": "dropdown",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.systemIntegrator",
+        "originalText": "System Integrator",
+        "layout": {
+          "x": 34307,
+          "y": -3104,
+          "width": 422,
+          "height": 13
+        },
+        "parentName": "dropdown",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.memo",
+        "originalText": "Memo",
+        "layout": {
+          "x": 33856,
+          "y": -3066,
+          "width": 878,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.supportingText",
+        "originalText": "supporting text",
+        "layout": {
+          "x": 33863,
+          "y": -3026,
+          "width": 110,
+          "height": 11
+        },
+        "parentName": "supporting-text",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "title",
+        "key": "console.setting.group.title.apiAccess",
+        "originalText": "API Access",
+        "layout": {
+          "x": 33855,
+          "y": -2988,
+          "width": 53,
+          "height": 15
+        },
+        "parentName": "element/base_form_title",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.on",
+        "originalText": "ON",
+        "layout": {
+          "x": 33931,
+          "y": -2988,
+          "width": 17,
+          "height": 15
+        },
+        "parentName": "Frame 2087334736",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "title",
+        "key": "console.setting.group.title.automaticLicenseAssignment",
+        "originalText": "Automatic license assignment",
+        "layout": {
+          "x": 34021,
+          "y": -2988,
+          "width": 150,
+          "height": 15
+        },
+        "parentName": "element/base_form_title",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.on",
+        "originalText": "ON",
+        "layout": {
+          "x": 34194,
+          "y": -2988,
+          "width": 17,
+          "height": 15
+        },
+        "parentName": "Frame 2087334736",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "title",
+        "key": "console.setting.group.title.automaticDeviceApproval",
+        "originalText": "Automatic device approval",
+        "layout": {
+          "x": 34284,
+          "y": -2988,
+          "width": 132,
+          "height": 15
+        },
+        "parentName": "element/base_form_title",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.on",
+        "originalText": "ON",
+        "layout": {
+          "x": 34439,
+          "y": -2988,
+          "width": 17,
+          "height": 15
+        },
+        "parentName": "Frame 2087334736",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.createBusinessSite",
+        "originalText": "Create Business Site",
+        "layout": {
+          "x": 33653,
+          "y": -2953,
+          "width": 101,
+          "height": 11
+        },
+        "parentName": "button",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.themeColor",
+        "originalText": "Theme Color",
+        "layout": {
+          "x": 34306,
+          "y": -2933,
+          "width": 428,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.businessSiteLogo",
+        "originalText": "Business Site Logo",
+        "layout": {
+          "x": 33856,
+          "y": -2927,
+          "width": 429,
+          "height": 9
+        },
+        "parentName": "label",
+        "fontSize": 6.269865036010742
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.image",
+        "originalText": "Image *",
+        "layout": {
+          "x": 33862,
+          "y": -2912,
+          "width": 271,
+          "height": 9
+        },
+        "parentName": "label",
+        "fontSize": 6.269865036010742
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.unit",
+        "originalText": "unit",
+        "layout": {
+          "x": 33967,
+          "y": -2907,
+          "width": 14,
+          "height": 10
+        },
+        "parentName": "input_text",
+        "fontSize": 7.314842224121094
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.basic",
+        "originalText": "Basic",
+        "layout": {
+          "x": 34339,
+          "y": -2902,
+          "width": 26,
+          "height": 15
+        },
+        "parentName": "Frame 2087334023",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.dark",
+        "originalText": "Dark",
+        "layout": {
+          "x": 34431,
+          "y": -2902,
+          "width": 24,
+          "height": 15
+        },
+        "parentName": "Frame 2087334023",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.thema03",
+        "originalText": "Thema 03",
+        "layout": {
+          "x": 34522,
+          "y": -2902,
+          "width": 49,
+          "height": 15
+        },
+        "parentName": "Frame 2087334023",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.thema04",
+        "originalText": "Thema 04",
+        "layout": {
+          "x": 34522,
+          "y": -2901,
+          "width": 49,
+          "height": 15
+        },
+        "parentName": "Frame 2087334023",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.supportingText",
+        "originalText": "supporting text",
+        "layout": {
+          "x": 34313,
+          "y": -2893,
+          "width": 110,
+          "height": 11
+        },
+        "parentName": "supporting-text",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.filenameSample00123Jpg",
+        "originalText": "FileName_sample_00123.jpg",
+        "layout": {
+          "x": 33939,
+          "y": -2891,
+          "width": 113,
+          "height": 12
+        },
+        "parentName": "Frame 2085673868",
+        "fontSize": 8.359819412231445
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.supportingText",
+        "originalText": "supporting text",
+        "layout": {
+          "x": 33868,
+          "y": -2880,
+          "width": 89,
+          "height": 9
+        },
+        "parentName": "supporting-text",
+        "fontSize": 6.269865036010742
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.altText",
+        "originalText": "Alt Text",
+        "layout": {
+          "x": 33861,
+          "y": -2829,
+          "width": 22,
+          "height": 9
+        },
+        "parentName": "input_text",
+        "fontSize": 6.269865036010742
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.lgLogoImage",
+        "originalText": "LG logo image",
+        "layout": {
+          "x": 33868,
+          "y": -2813,
+          "width": 406,
+          "height": 10
+        },
+        "parentName": "input_text",
+        "fontSize": 7.314842224121094
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.unit",
+        "originalText": "unit",
+        "layout": {
+          "x": 33967,
+          "y": -2813,
+          "width": 14,
+          "height": 10
+        },
+        "parentName": "input_text",
+        "fontSize": 7.314842224121094
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.businessSiteAddress",
+        "originalText": "Business Site Address",
+        "layout": {
+          "x": 33856,
+          "y": -2744,
+          "width": 431,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.addressDetails",
+        "originalText": "Address Details",
+        "layout": {
+          "x": 34303,
+          "y": -2744,
+          "width": 57,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.magokjungang10RoGangseoGu",
+        "originalText": "MagokJungang 10-ro, Gangseo-gu, Seoul",
+        "layout": {
+          "x": 33863,
+          "y": -2719,
+          "width": 418,
+          "height": 13
+        },
+        "parentName": "input_text",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.30A101Bldg",
+        "originalText": "30, A101 bldg.",
+        "layout": {
+          "x": 34310,
+          "y": -2719,
+          "width": 418,
+          "height": 13
+        },
+        "parentName": "input_text",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.addressMemo",
+        "originalText": "Address Memo",
+        "layout": {
+          "x": 33856,
+          "y": -2682,
+          "width": 878,
+          "height": 11
+        },
+        "parentName": "label",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.supportingText",
+        "originalText": "supporting text",
+        "layout": {
+          "x": 33863,
+          "y": -2642,
+          "width": 110,
+          "height": 11
+        },
+        "parentName": "supporting-text",
+        "fontSize": 7.783783912658691
+      },
+      {
+        "type": "title",
+        "key": "console.setting.group.title.singleSignOnSso",
+        "originalText": "Single Sign-On (SSO)",
+        "layout": {
+          "x": 33855,
+          "y": -2604,
+          "width": 102,
+          "height": 15
+        },
+        "parentName": "element/base_form_title",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.setSingleSignOn",
+        "originalText": "Set Single Sign-On (SSO) to ON and set the detailes for the selected authentication type.",
+        "layout": {
+          "x": 33855,
+          "y": -2580,
+          "width": 374,
+          "height": 13
+        },
+        "parentName": "Frame 2087334723",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.total",
+        "originalText": "Total",
+        "layout": {
+          "x": 34345,
+          "y": -2514,
+          "width": 21,
+          "height": 13
+        },
+        "parentName": "text",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.workspaceN",
+        "originalText": "Workspace N",
+        "layout": {
+          "x": 34371,
+          "y": -2514,
+          "width": 58,
+          "height": 13
+        },
+        "parentName": "text",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.deviceN",
+        "originalText": "Device N",
+        "layout": {
+          "x": 34439,
+          "y": -2514,
+          "width": 39,
+          "height": 13
+        },
+        "parentName": "text",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.userN",
+        "originalText": "User N",
+        "layout": {
+          "x": 34488,
+          "y": -2514,
+          "width": 30,
+          "height": 13
+        },
+        "parentName": "text",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.filter",
+        "originalText": "Filter",
+        "layout": {
+          "x": 34721,
+          "y": -2514,
+          "width": 26,
+          "height": 13
+        },
+        "parentName": "Frame 5",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.sortBy",
+        "originalText": "Sort by",
+        "layout": {
+          "x": 33834,
+          "y": -2513,
+          "width": 35,
+          "height": 12
+        },
+        "parentName": "Frame 28",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.lastUpdated",
+        "originalText": "Last Updated",
+        "layout": {
+          "x": 33896,
+          "y": -2513,
+          "width": 185,
+          "height": 19
+        },
+        "parentName": "Frame 480981896",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.searchForWorkspace",
+        "originalText": "Search for Workspace",
+        "layout": {
+          "x": 34535,
+          "y": -2513,
+          "width": 126,
+          "height": 12
+        },
+        "parentName": "search box",
+        "fontSize": 10.378378868103027
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.addWorkspace",
+        "originalText": "Add Workspace",
+        "layout": {
+          "x": 33845,
+          "y": -2512,
+          "width": 68,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.userSearch",
+        "originalText": "User Search",
+        "layout": {
+          "x": 33912,
+          "y": -2512,
+          "width": 80,
+          "height": 15
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.aboutRole",
+        "originalText": "About Role",
+        "layout": {
+          "x": 33991,
+          "y": -2512,
+          "width": 74,
+          "height": 15
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.changeBusinessSite",
+        "originalText": "Change Business Site",
+        "layout": {
+          "x": 33941,
+          "y": -2512,
+          "width": 93,
+          "height": 10
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.userSearch",
+        "originalText": "User Search",
+        "layout": {
+          "x": 34009,
+          "y": -2512,
+          "width": 80,
+          "height": 15
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "button",
+        "key": "console.setting.group.button.aboutRole",
+        "originalText": "About Role",
+        "layout": {
+          "x": 34088,
+          "y": -2512,
+          "width": 74,
+          "height": 15
+        },
+        "parentName": "button",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.workspaceName",
+        "originalText": "Workspace Name",
+        "layout": {
+          "x": 33882,
+          "y": -2473,
+          "width": 80,
+          "height": 13
+        },
+        "parentName": "content",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.deviceCount",
+        "originalText": "Device Count",
+        "layout": {
+          "x": 34134,
+          "y": -2473,
+          "width": 60,
+          "height": 13
+        },
+        "parentName": "content",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.userCount",
+        "originalText": "User Count",
+        "layout": {
+          "x": 34225,
+          "y": -2473,
+          "width": 51,
+          "height": 13
+        },
+        "parentName": "content",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.licensedProduct",
+        "originalText": "Licensed Product",
+        "layout": {
+          "x": 34316,
+          "y": -2473,
+          "width": 78,
+          "height": 13
+        },
+        "parentName": "content",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.timeZone",
+        "originalText": "Time Zone",
+        "layout": {
+          "x": 34568,
+          "y": -2473,
+          "width": 47,
+          "height": 13
+        },
+        "parentName": "content",
+        "fontSize": 9.08108139038086
+      },
+      {
+        "type": "label",
+        "key": "console.setting.group.label.delete",
+        "originalText": "Delete",
+        "layout": {
+          "x": 34719,
+          "y": -2473,
+          "width": 30,
+          "height": 13
+        },
+        "parentName": "content",
+        "fontSize": 9.08108139038086
       }
     ]
   },
@@ -605,9 +1778,43 @@
     "frameId": "I33512:25483",
     "children": [
       {
+        "type": "status",
+        "key": "console.doc.title.status.modified",
+        "originalText": "Modified",
+        "layout": {
+          "x": 35060,
+          "y": -3664,
+          "width": 61,
+          "height": 23
+        },
+        "parentName": "Doc_Status+Version",
+        "fontSize": 15
+      },
+      {
         "type": "title",
         "key": "console.doc.title.title.settings",
-        "originalText": "Settings"
+        "originalText": "Settings",
+        "layout": {
+          "x": 33590,
+          "y": -3646,
+          "width": 67,
+          "height": 27
+        },
+        "parentName": "subtitle",
+        "fontSize": 18
+      },
+      {
+        "type": "label",
+        "key": "console.doc.title.label.descriptionDescriptionDescriptionDescription",
+        "originalText": "Description Description \nDescription Description",
+        "layout": {
+          "x": 35060,
+          "y": -3629,
+          "width": 380,
+          "height": 46
+        },
+        "parentName": "Tag",
+        "fontSize": 15
       }
     ]
   }

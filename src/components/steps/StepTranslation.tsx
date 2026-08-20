@@ -2,13 +2,16 @@ import { useState } from 'react';
 import { Card, Row, Col, Table, Badge, Button, ButtonGroup, Alert, Form, Spinner } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import Pagination, { usePagination } from '../Pagination';
-import { useComponentsMap, useLiveLocales } from '../../hooks/useFigmaData';
+import { SkeletonRegion, SkeletonStatCards, SkeletonTable } from '../Skeleton';
+import { useComponentsMap } from '../../hooks/useFigmaData';
 import { updateLocaleEntry } from '../../api/client';
 import i18n from '../../i18n';
 
 interface StepTranslationProps {
   onNext: () => void;
   onBack: () => void;
+  /** 산출물이 없을 때 파이프라인 실행 화면으로 보낸다 (데드락 방지) */
+  onGoToPipeline: () => void;
 }
 
 /**
@@ -34,7 +37,7 @@ function buildNested(dottedKey: string, value: string): Record<string, unknown> 
   return root;
 }
 
-function StepTranslation({ onNext, onBack }: StepTranslationProps) {
+function StepTranslation({ onNext, onBack, onGoToPipeline }: StepTranslationProps) {
   const { t } = useTranslation();
   const [reviewLang, setReviewLang] = useState<'ko' | 'ja' | 'zh-CN'>('ko');
 
@@ -49,8 +52,7 @@ function StepTranslation({ onNext, onBack }: StepTranslationProps) {
   const [edits, setEdits] = useState<Record<string, string>>({});
 
   const { data, loading, error } = useComponentsMap();
-  // 파이프라인이 방금 쓴 locale JSON을 런타임에 주입한다 (번들 값 고정 문제 해결)
-  useLiveLocales();
+  // locale 로딩은 App에서 1회 수행한다 (src/i18n.ts loadLocalesFromApi)
   const componentsMap = data ?? [];
 
   const allItems = componentsMap.flatMap((frame) => frame.children.map((child) => child));
@@ -123,16 +125,36 @@ function StepTranslation({ onNext, onBack }: StepTranslationProps) {
     return variants[type] || 'secondary';
   };
 
-  if (loading || error) {
+  if (loading) {
+    return (
+      <SkeletonRegion label="번역 결과를 불러오는 중">
+        <h4 className="mb-4">Step 4. EXAONE 번역 리뷰</h4>
+        <div className="mb-4">
+          <SkeletonStatCards count={4} />
+        </div>
+        <Card>
+          <SkeletonTable rows={15} columns={4} columnWidths={['10%', '40%', '40%', '10%']} />
+        </Card>
+      </SkeletonRegion>
+    );
+  }
+
+  if (error || uniqueKeys.length === 0) {
     return (
       <>
-        <h4 className="mb-4">Step 4. EXAONE 번역 결과</h4>
+        <h4 className="mb-4">Step 4. EXAONE 번역 리뷰</h4>
         <Alert variant={error ? 'danger' : 'secondary'}>
-          {loading ? '번역 결과를 불러오는 중...' : `불러오기 실패: ${error}`}
+          {error ? `불러오기 실패: ${error}` : '번역할 항목이 없습니다.'}
+          <div className="small mt-1">파이프라인을 실행하면 번역 결과가 생성됩니다.</div>
         </Alert>
-        <Button variant="outline-secondary" onClick={onBack}>
-          ← 이전
-        </Button>
+        <div className="d-flex justify-content-between">
+          <Button variant="outline-secondary" onClick={onBack}>
+            ← 이전
+          </Button>
+          <Button variant="primary" onClick={onGoToPipeline}>
+            ⚡ 파이프라인 실행하러 가기
+          </Button>
+        </div>
       </>
     );
   }

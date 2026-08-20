@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Card, Table, Badge, Button, Form, ProgressBar, Nav, Tab, Alert } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
-import { useComponentsMap, useLiveLocales } from '../../hooks/useFigmaData';
+import { useComponentsMap } from '../../hooks/useFigmaData';
+import { SkeletonRegion, SkeletonStatCards, SkeletonTable } from '../Skeleton';
 
 interface QAGuideItem {
   key: string;
@@ -10,13 +11,22 @@ interface QAGuideItem {
   frame: string;
 }
 
-function StepQAGuide({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
+function StepQAGuide({
+  onBack,
+  onComplete,
+  onGoToPipeline,
+}: {
+  onBack: () => void;
+  /** 마지막 단계 완료. 대시보드(Step 1)로 복귀한다. */
+  onComplete: () => void;
+  /** 산출물이 없을 때 파이프라인 실행 화면으로 보낸다 (데드락 방지) */
+  onGoToPipeline: () => void;
+}) {
   const { t, i18n } = useTranslation();
   const [checkedKeys, setCheckedKeys] = useState<Set<string>>(new Set());
   const [subsidiaryChecked, setSubsidiaryChecked] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState('qa');
   const { data, loading, error } = useComponentsMap();
-  useLiveLocales();
   const componentsMap = data ?? [];
 
   const qaItems: QAGuideItem[] = componentsMap.flatMap((frame) =>
@@ -58,54 +68,37 @@ function StepQAGuide({ onBack, onNext }: { onBack: () => void; onNext: () => voi
 
   const displayItems = qaItems.slice(0, 20);
 
-  /**
-   * QA 검토용 CSV 내보내기.
-   *
-   * 이전에는 이 버튼들이 onClick 없이 조용히 아무 일도 하지 않았다.
-   * CSV는 Excel에서 바로 열리므로 별도 의존성 없이 실제 동작하게 만든다.
-   */
-  const handleExportCsv = () => {
-    const langs = ['en', 'ko', 'ja', 'zh-CN'];
-    const header = ['frame', 'type', 'i18nKey', 'figmaOriginal', ...langs, 'qaChecked', 'subsidiaryChecked'];
-
-    // 쉼표/따옴표/개행이 든 번역문이 열을 깨뜨리지 않도록 RFC 4180 방식으로 감싼다.
-    const escape = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-
-    const rows = qaItems.map((item) =>
-      [
-        item.frame,
-        item.type,
-        item.key,
-        item.originalText,
-        ...langs.map((l) => i18n.getFixedT(l)(item.key)),
-        checkedKeys.has(item.key) ? 'Y' : 'N',
-        subsidiaryChecked.has(item.key) ? 'Y' : 'N',
-      ]
-        .map(escape)
-        .join(',')
+  if (loading) {
+    return (
+      <SkeletonRegion label="QA 항목을 불러오는 중">
+        <h4 className="mb-4">Step 7. QA 검증 가이드 + 법인 감수</h4>
+        <div className="mb-4">
+          <SkeletonStatCards count={2} />
+        </div>
+        <Card>
+          <SkeletonTable rows={12} columns={5} />
+        </Card>
+      </SkeletonRegion>
     );
+  }
 
-    // BOM을 붙이지 않으면 Excel이 UTF-8 한글/일본어/중국어를 깨뜨린다.
-    const csv = '\uFEFF' + [header.map(escape).join(','), ...rows].join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `i18n-qa-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  if (loading || error) {
+  if (error || total === 0) {
     return (
       <>
         <h4 className="mb-4">Step 7. QA 검증 가이드 + 법인 감수</h4>
         <Alert variant={error ? 'danger' : 'secondary'}>
-          {loading ? 'QA 항목을 불러오는 중...' : `불러오기 실패: ${error}`}
+          {error
+            ? `불러오기 실패: ${error}`
+            : 'QA 항목이 없습니다. 파이프라인을 실행하면 생성됩니다.'}
         </Alert>
-        <Button variant="outline-secondary" onClick={onBack}>
-          ← 이전
-        </Button>
+        <div className="d-flex justify-content-between">
+          <Button variant="outline-secondary" onClick={onBack}>
+            ← 이전
+          </Button>
+          <Button variant="primary" onClick={onGoToPipeline}>
+            ⚡ 파이프라인 실행하러 가기
+          </Button>
+        </div>
       </>
     );
   }
@@ -217,25 +210,6 @@ function StepQAGuide({ onBack, onNext }: { onBack: () => void; onNext: () => voi
         </Card>
       </Tab.Container>
 
-      {/* Export */}
-      <Card className="mb-4 bg-light">
-        <Card.Body>
-          <h6 className="mb-3">📤 내보내기</h6>
-          <div className="d-flex gap-2 flex-wrap">
-            <Button variant="outline-secondary" size="sm" onClick={handleExportCsv}>
-              📊 CSV 내보내기 (Excel용)
-            </Button>
-            {/* 미구현 기능은 조용히 무반응하지 않도록 명시적으로 비활성화한다 */}
-            <Button variant="outline-secondary" size="sm" disabled title="아직 구현되지 않았습니다">
-              📄 PDF (법인 감수용) — 준비 중
-            </Button>
-            <Button variant="outline-secondary" size="sm" disabled title="아직 구현되지 않았습니다">
-              📧 이메일 발송 — 준비 중
-            </Button>
-          </div>
-        </Card.Body>
-      </Card>
-
       <div className="d-flex justify-content-between">
         <Button variant="outline-secondary" onClick={onBack}>
           ← 이전
@@ -250,8 +224,9 @@ function StepQAGuide({ onBack, onNext }: { onBack: () => void; onNext: () => voi
         >
           체크 초기화
         </Button>
-        <Button variant="primary" size="lg" onClick={onNext}>
-          🔍 Figma 비교
+        {/* Step 7이 마지막 단계다 (Figma 비교 단계 제거). 완료 시 대시보드로 복귀한다. */}
+        <Button variant="success" size="lg" onClick={onComplete}>
+          ✅ 완료
         </Button>
       </div>
     </>

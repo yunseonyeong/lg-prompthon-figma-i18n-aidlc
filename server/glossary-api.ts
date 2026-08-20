@@ -16,6 +16,8 @@ const LOCALES_DIR = path.join(__dirname, '../src/locales');
 const COMPONENTS_MAP_PATH = path.join(__dirname, '../src/components-map.json');
 const GENERATED_COMPONENTS_DIR = path.join(__dirname, '../src/components/generated');
 const HISTORY_PATH = path.join(__dirname, '../src/data/pipeline-history.json');
+// 실행별 번역 결과 스냅샷 (locales는 다음 실행에 덮어써지므로 별도 보관)
+const TRANSLATIONS_DIR = path.join(__dirname, '../src/data/translations');
 const CONFIG_PATH = path.join(__dirname, '../src/data/project-config.json');
 
 const app = express();
@@ -368,9 +370,23 @@ app.get('/api/pipeline/components', async (_req, res) => {
 
 // GET /api/pipeline/components/:name - 특정 컴포넌트 코드 조회
 app.get('/api/pipeline/components/:name', async (req, res) => {
+  const { name } = req.params;
+
+  // 경로 탐색 차단.
+  // 검증 없이 path.join(dir, `${name}.tsx`)를 쓰면 name="../../App"이
+  // src/App.tsx로 빠져나가 저장소의 임의 .tsx 파일을 읽을 수 있다 (실측 확인).
+  if (!/^[A-Za-z0-9_-]+$/.test(name)) {
+    return res.status(400).json({ error: '잘못된 컴포넌트 이름입니다.' });
+  }
+
+  const filePath = path.join(GENERATED_COMPONENTS_DIR, `${name}.tsx`);
+  // 이중 안전장치 — 해석된 절대경로가 생성 디렉터리 안에 있는지 확인
+  const root = path.resolve(GENERATED_COMPONENTS_DIR);
+  if (!path.resolve(filePath).startsWith(root + path.sep)) {
+    return res.status(400).json({ error: '허용되지 않는 경로입니다.' });
+  }
+
   try {
-    const { name } = req.params;
-    const filePath = path.join(GENERATED_COMPONENTS_DIR, `${name}.tsx`);
     const content = await fs.readFile(filePath, 'utf-8');
     res.json({ name, code: content });
   } catch (error) {
@@ -409,11 +425,29 @@ app.post('/api/pipeline/run', async (req, res) => {
     if (figmaFrameIds) args.push(figmaFrameIds);  // 두 번째 인자로 프레임 ID 전달
     
     console.log(`   실행 명령: node ${args.join(' ')}`);
+
+    // 저장된 프로젝트 설정을 파이프라인에 전달한다.
+    // fileKey/frameIds는 argv로 넘기지만 도메인 설명·언어는 argv 자리가 없어
+    // 환경변수로 전달한다. 이걸 하지 않으면 화면에서 설정을 바꿔도 번역에 반영되지 않는다.
+    const pipelineEnv: Record<string, string> = { ...(process.env as Record<string, string>) };
+    try {
+      const saved = JSON.parse(await fs.readFile(CONFIG_PATH, 'utf-8'));
+      if (typeof saved.domainDescription === 'string' && saved.domainDescription.trim()) {
+        pipelineEnv.PIPELINE_DOMAIN_DESCRIPTION = saved.domainDescription.trim();
+        console.log(`   도메인 설명: ${saved.domainDescription.slice(0, 60)}...`);
+      }
+      if (Array.isArray(saved.targetLanguages) && saved.targetLanguages.length > 0) {
+        pipelineEnv.PIPELINE_LANGUAGES = saved.targetLanguages.join(',');
+        console.log(`   번역 대상 언어: ${pipelineEnv.PIPELINE_LANGUAGES}`);
+      }
+    } catch {
+      console.log('   (저장된 프로젝트 설정 없음 — 파이프라인 기본값 사용)');
+    }
     console.log('');
-    
+
     const child = spawn('node', args, {
       cwd: path.join(__dirname, '..'),
-      env: { ...process.env },
+      env: pipelineEnv,
     });
     
     let output = '';
@@ -476,17 +510,29 @@ app.post('/api/pipeline/run', async (req, res) => {
         const files = await getGeneratedFiles();
         console.log(`   생성된 파일: ${files.length}개`);
         
-        // 히스토리 저장
+        // 히스토리 + 번역 결과 스냅샷 저장
         try {
           const componentsCount = files.filter(f => f.path.includes('generated') && f.path.endsWith('.tsx')).length;
-          await saveHistory({
+
+          // 이번 실행이 만든 번역을 별도 테이블로 보관한다.
+          // locales는 다음 실행에서 덮어써지므로 스냅샷이 없으면 과거 결과를 볼 수 없다.
+          const rows = await buildTranslationRows();
+
+          const runId = await saveHistory({
             figmaFileKey: figmaFileKey || 'zdG3CHXVU6TzD4cc28o5Yb',
             figmaFileName: 'LG Business Cloud Console',
             extractedCount,
             translatedCount,
             componentsCount,
             languages: ['en', 'ko', 'ja', 'zh-CN'],
+            keyCount: rows.length,
+            hasTranslations: rows.length > 0,
           });
+
+          if (rows.length > 0) {
+            await saveTranslationSnapshot(runId, rows);
+            console.log(`   번역 스냅샷 저장: ${rows.length}건 (runId=${runId})`);
+          }
         } catch (e) {
           console.error('히스토리 저장 실패:', e);
         }
@@ -554,22 +600,165 @@ app.get('/api/figma/structure', async (req, res) => {
   }
 });
 
+// ============ 산출물 다운로드 ============
+
+/**
+ * 다운로드 허용 파일 allowlist.
+ *
+ * 사용자 입력을 path.join에 그대로 넣으면 '../../.env' 같은 값으로 경로를 벗어난다.
+ * 이름 → 절대경로를 미리 고정해 그 외 요청은 거부한다.
+ */
+function downloadablePath(name: string): string | null {
+  const map: Record<string, string> = {
+    'en.json': path.join(LOCALES_DIR, 'en.json'),
+    'ko.json': path.join(LOCALES_DIR, 'ko.json'),
+    'ja.json': path.join(LOCALES_DIR, 'ja.json'),
+    'zh-CN.json': path.join(LOCALES_DIR, 'zh-CN.json'),
+    'components-map.json': COMPONENTS_MAP_PATH,
+    'figma-structure.json': path.join(__dirname, '../src/figma-structure.json'),
+  };
+  return map[name] ?? null;
+}
+
+// GET /api/pipeline/download/:name - 현재 산출물 파일 다운로드
+app.get('/api/pipeline/download/:name', async (req, res) => {
+  const filePath = downloadablePath(req.params.name);
+  if (!filePath) {
+    return res.status(400).json({ error: `다운로드할 수 없는 파일: ${req.params.name}` });
+  }
+  try {
+    const content = await fs.readFile(filePath, 'utf-8');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${req.params.name}"`);
+    res.send(content);
+  } catch {
+    res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
+  }
+});
+
+// ============ 번역 결과 스냅샷 (다국어 테이블) ============
+
+/**
+ * 실행 시점의 번역 결과를 별도 테이블로 보관한다.
+ *
+ * src/locales/*.json 은 다음 실행에서 덮어써지므로 "이번 실행이 무엇을 만들었는지"가
+ * 남지 않는다. 히스토리 항목마다 스냅샷을 따로 두어 과거 실행 결과를 조회/다운로드할 수 있게 한다.
+ * 히스토리 JSON에 인라인으로 넣으면 실행당 ~20KB가 쌓여 파일이 비대해지므로 실행별 파일로 분리한다.
+ */
+interface TranslationRow {
+  key: string;
+  en: string;
+  ko: string;
+  ja: string;
+  'zh-CN': string;
+}
+
+function flattenLocale(obj: any, prefix = ''): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(obj ?? {})) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (typeof v === 'object' && v !== null && !Array.isArray(v)) {
+      Object.assign(out, flattenLocale(v, key));
+    } else if (typeof v === 'string') {
+      out[key] = v;
+    }
+  }
+  return out;
+}
+
+/** 현재 locale 파일들을 읽어 다국어 행 배열로 만든다 */
+async function buildTranslationRows(): Promise<TranslationRow[]> {
+  const langs = ['en', 'ko', 'ja', 'zh-CN'] as const;
+  const flat: Partial<Record<(typeof langs)[number], Record<string, string>>> = {};
+  for (const lang of langs) {
+    try {
+      const raw = await fs.readFile(path.join(LOCALES_DIR, `${lang}.json`), 'utf-8');
+      flat[lang] = flattenLocale(JSON.parse(raw));
+    } catch {
+      flat[lang] = {};
+    }
+  }
+  return Object.keys(flat.en ?? {}).map((key) => ({
+    key,
+    en: flat.en?.[key] ?? '',
+    ko: flat.ko?.[key] ?? '',
+    ja: flat.ja?.[key] ?? '',
+    'zh-CN': flat['zh-CN']?.[key] ?? '',
+  }));
+}
+
+async function saveTranslationSnapshot(runId: string, rows: TranslationRow[]): Promise<void> {
+  await fs.mkdir(TRANSLATIONS_DIR, { recursive: true });
+  await fs.writeFile(
+    path.join(TRANSLATIONS_DIR, `${runId}.json`),
+    JSON.stringify({ runId, at: new Date().toISOString(), rowCount: rows.length, rows }, null, 2),
+    'utf-8'
+  );
+}
+
+/** 실행 ID 검증 — 파일명으로 쓰이므로 경로 문자를 막는다 */
+function safeRunId(id: string): string | null {
+  return /^[A-Za-z0-9_-]+$/.test(id) ? id : null;
+}
+
+// GET /api/pipeline/history/:id/translations - 실행 시점 번역 결과 (다국어 테이블)
+app.get('/api/pipeline/history/:id/translations', async (req, res) => {
+  const runId = safeRunId(req.params.id);
+  if (!runId) return res.status(400).json({ error: '잘못된 실행 ID입니다.' });
+  try {
+    const raw = await fs.readFile(path.join(TRANSLATIONS_DIR, `${runId}.json`), 'utf-8');
+    res.json(JSON.parse(raw));
+  } catch {
+    res.status(404).json({ error: '이 실행의 번역 스냅샷이 없습니다.' });
+  }
+});
+
+// GET /api/pipeline/history/:id/translations.csv - 다국어 테이블 CSV 다운로드
+app.get('/api/pipeline/history/:id/translations.csv', async (req, res) => {
+  const runId = safeRunId(req.params.id);
+  if (!runId) return res.status(400).json({ error: '잘못된 실행 ID입니다.' });
+  try {
+    const raw = await fs.readFile(path.join(TRANSLATIONS_DIR, `${runId}.json`), 'utf-8');
+    const { rows } = JSON.parse(raw) as { rows: TranslationRow[] };
+
+    // RFC 4180 — 번역문에 쉼표/따옴표/개행이 있어도 열이 깨지지 않게 감싼다
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const header = ['key', 'en', 'ko', 'ja', 'zh-CN'];
+    const csv =
+      // BOM 없으면 Excel이 UTF-8 한중일 문자를 깨뜨린다
+      '\uFEFF' +
+      [
+        header.map(esc).join(','),
+        ...rows.map((r) => [r.key, r.en, r.ko, r.ja, r['zh-CN']].map(esc).join(',')),
+      ].join('\r\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="translations-${runId}.csv"`);
+    res.send(csv);
+  } catch {
+    res.status(404).json({ error: '이 실행의 번역 스냅샷이 없습니다.' });
+  }
+});
+
 // 헬퍼 함수들
-async function saveHistory(entry: any) {
+/** 히스토리 항목을 추가하고 실행 ID를 반환한다 (번역 스냅샷 파일명으로 사용) */
+async function saveHistory(entry: any): Promise<string> {
   let data = { history: [] as any[] };
   try {
     data = JSON.parse(await fs.readFile(HISTORY_PATH, 'utf-8'));
   } catch {}
-  
+
+  const id = Date.now().toString();
   data.history.unshift({
-    id: Date.now().toString(),
+    id,
     timestamp: new Date().toISOString(),
     ...entry,
   });
   data.history = data.history.slice(0, 50);
-  
+
   await fs.mkdir(path.dirname(HISTORY_PATH), { recursive: true });
   await fs.writeFile(HISTORY_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  return id;
 }
 
 function countKeys(obj: any, prefix = ''): number {

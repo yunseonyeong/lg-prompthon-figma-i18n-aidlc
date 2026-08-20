@@ -11,7 +11,8 @@ import { Card, Row, Col, Table, Button, Badge, Alert, Spinner, Form } from 'reac
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../LanguageSwitcher';
 import FigmaFrameRenderer from '../FigmaFrameRenderer';
-import { useComponentsMap, useFigmaMcpStatus, useFigmaStructure, useLiveLocales } from '../../hooks/useFigmaData';
+import { useComponentsMap, useFigmaMcpStatus, useFigmaStructure } from '../../hooks/useFigmaData';
+import { SkeletonPanel, SkeletonRegion, SkeletonTable } from '../Skeleton';
 import type { FigmaNodeView, FigmaSource } from '../../types/figma';
 
 interface StepPreviewProps {
@@ -49,7 +50,6 @@ function StepPreview({ onBack, onNext }: StepPreviewProps) {
   const mcp = useFigmaMcpStatus();
   const structure = useFigmaStructure();
   const componentsMap = useComponentsMap();
-  useLiveLocales();
 
   const [selectedFrameIdx, setSelectedFrameIdx] = useState(0);
   const [highlight, setHighlight] = useState(true);
@@ -196,10 +196,10 @@ function StepPreview({ onBack, onNext }: StepPreviewProps) {
         </Card.Header>
         <Card.Body className="p-3 bg-white">
           {structure.loading && (
-            <div className="text-center py-5">
-              <Spinner animation="border" className="mb-3" />
-              <div className="text-muted small">Figma 구조를 불러오는 중...</div>
-            </div>
+            <SkeletonRegion label="Figma 구조를 불러오는 중">
+              {/* 프레임이 들어갈 큰 영역 골격 */}
+              <SkeletonPanel height={420} />
+            </SkeletonRegion>
           )}
 
           {!structure.loading && structure.error && (
@@ -270,7 +270,11 @@ function StepPreview({ onBack, onNext }: StepPreviewProps) {
           </Badge>
         </Card.Header>
         <Card.Body className="p-0">
-          {renderedKeys.length === 0 ? (
+          {structure.loading || componentsMap.loading ? (
+            <SkeletonRegion label="i18n 키 매핑을 불러오는 중">
+              <SkeletonTable rows={8} columns={3} columnWidths={['45%', '27%', '28%']} />
+            </SkeletonRegion>
+          ) : renderedKeys.length === 0 ? (
             <div className="p-3 small text-muted">
               매핑된 키가 없습니다. 파이프라인을 실행해 <code>components-map.json</code>을 생성하세요.
             </div>
