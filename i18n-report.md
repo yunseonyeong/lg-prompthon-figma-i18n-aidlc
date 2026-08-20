@@ -1,0 +1,189 @@
+# i18n 검증 리포트
+
+생성일시: 2026-08-20T02:36:18.754Z
+
+## 요약
+
+| 계층 | FAIL | WARN | INFO | 상태 |
+|------|------|------|------|------|
+| Layer 1: 구조적 결함 | 0 | 0 | 0 | PASS |
+| Layer 2: 용어집 위반 | 6 | 17 | 0 | FAIL |
+| Layer 3: 문맥 오역 | 0 | 0 | 1 | PASS |
+| Layer 4: 번역 제외 대상 | 33 | 0 | 0 | FAIL |
+
+## 상세
+
+- **[WARN]** Layer 2 | [ko] `console.setting.group.label.workspace_a1`
+  - 용어 불일치: "Space" → 기대 "공간", 실제 "워크스페이스 A1"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [zh-CN] `console.setting.group.label.workspace_a1`
+  - 용어 불일치: "Space" → 기대 "空间", 실제 "工作区A1"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [ja] `console.setting.group.label.set_single_signon`
+  - 용어 불일치: "Single Sign-On" → 기대 "シングルサインオン", 실제 "SSOをオンにし、選択した認証タイプの詳細を設定してください。"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [ko] `console.setting.group.label.set_single_signon`
+  - 용어 불일치: "Single Sign-On" → 기대 "싱글 사인온", 실제 "SSO를 켜고 선택한 인증 유형의 세부 정보를 설정하세요."
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [zh-CN] `console.setting.group.label.set_single_signon`
+  - 용어 불일치: "Single Sign-On" → 기대 "单点登录", 실제 "将 SSO 开启，并设置所选认证类型的详细信息。"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [ko] `console.setting.group.label.workspace_n`
+  - 용어 불일치: "Space" → 기대 "공간", 실제 "워크스페이스 N"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [zh-CN] `console.setting.group.label.workspace_n`
+  - 용어 불일치: "Space" → 기대 "空间", 실제 "工作区 N"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [ko] `console.setting.group.label.search_for_workspace`
+  - 용어 불일치: "Space" → 기대 "공간", 실제 "워크스페이스 검색"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [zh-CN] `console.setting.group.label.search_for_workspace`
+  - 용어 불일치: "Space" → 기대 "空间", 실제 "工作区搜索"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [ko] `console.setting.group.label.workspace_name`
+  - 용어 불일치: "Space" → 기대 "공간", 실제 "워크스페이스 이름"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [zh-CN] `console.setting.group.label.workspace_name`
+  - 용어 불일치: "Space" → 기대 "空间", 실제 "工作区名称"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [zh-CN] `console.setting.group.label.licensed_product`
+  - 용어 불일치: "License" → 기대 "许可证", 실제 "许可产品"
+  - 담당: Dev-A / Dev-B
+- **[FAIL]** Layer 2 | [ja] `console.setting.group.label.art_lounge`
+  - 제품명 번역 금지 위반: "Art Lounge" → "アートラウンジ" (원문 유지 필요)
+  - 담당: Dev-A
+- **[FAIL]** Layer 2 | [ko] `console.setting.group.label.art_lounge`
+  - 제품명 번역 금지 위반: "Art Lounge" → "아트 라운지" (원문 유지 필요)
+  - 담당: Dev-A
+- **[FAIL]** Layer 2 | [zh-CN] `console.setting.group.label.art_lounge`
+  - 제품명 번역 금지 위반: "Art Lounge" → "艺术休息室" (원문 유지 필요)
+  - 담당: Dev-A
+- **[FAIL]** Layer 2 | [ja] `console.setting.group.label.hotel_mobile_app`
+  - 제품명 번역 금지 위반: "Hotel Mobile App" → "ホテルモバイルアプリ" (원문 유지 필요)
+  - 담당: Dev-A
+- **[FAIL]** Layer 2 | [ko] `console.setting.group.label.hotel_mobile_app`
+  - 제품명 번역 금지 위반: "Hotel Mobile App" → "호텔 모바일 앱" (원문 유지 필요)
+  - 담당: Dev-A
+- **[FAIL]** Layer 2 | [zh-CN] `console.setting.group.label.hotel_mobile_app`
+  - 제품명 번역 금지 위반: "Hotel Mobile App" → "酒店移动应用" (원문 유지 필요)
+  - 담당: Dev-A
+- **[WARN]** Layer 2 | [ko] `console.setting.group.title.workspacegroup_settings`
+  - 용어 불일치: "Space" → 기대 "공간", 실제 "워크스페이스/그룹 설정"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [zh-CN] `console.setting.group.title.workspacegroup_settings`
+  - 용어 불일치: "Space" → 기대 "空间", 실제 "工作区/组设置"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [ko] `console.setting.group.button.off`
+  - ON/OFF 표기 위반: 버튼은 "끄기", 상태는 "꺼짐" (현재: "끔")
+  - 담당: Dev-B
+- **[WARN]** Layer 2 | [ko] `console.setting.group.button.add_workspace`
+  - 용어 불일치: "Space" → 기대 "공간", 실제 "워크스페이스 추가"
+  - 담당: Dev-A / Dev-B
+- **[WARN]** Layer 2 | [zh-CN] `console.setting.group.button.add_workspace`
+  - 용어 불일치: "Space" → 기대 "空间", 실제 "添加工作区"
+  - 담당: Dev-A / Dev-B
+- **[FAIL]** Layer 4 | [ja] `console.setting.group.label.business_a`
+  - 번역 제외 대상이 번역됨: "Business A" → "ビジネスA" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.setting.group.label.business_a`
+  - 번역 제외 대상이 번역됨: "Business A" → "비즈니스 A" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.setting.group.label.business_a`
+  - 번역 제외 대상이 번역됨: "Business A" → "业务A" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ja] `console.setting.group.label.workspace_a1`
+  - 번역 제외 대상이 번역됨: "Workspace A1" → "ワークスペースA1" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.setting.group.label.workspace_a1`
+  - 번역 제외 대상이 번역됨: "Workspace A1" → "워크스페이스 A1" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.setting.group.label.workspace_a1`
+  - 번역 제외 대상이 번역됨: "Workspace A1" → "工作区A1" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ja] `console.setting.group.label.supporting_text`
+  - 번역 제외 대상이 번역됨: "supporting text" → "補助テキスト" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.setting.group.label.supporting_text`
+  - 번역 제외 대상이 번역됨: "supporting text" → "보조 텍스트" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.setting.group.label.supporting_text`
+  - 번역 제외 대상이 번역됨: "supporting text" → "辅助文本" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ja] `console.setting.group.label.label`
+  - 번역 제외 대상이 번역됨: "Label" → "ラベル" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.setting.group.label.label`
+  - 번역 제외 대상이 번역됨: "Label" → "레이블" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.setting.group.label.label`
+  - 번역 제외 대상이 번역됨: "Label" → "标签" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ja] `console.setting.group.label.magokjungang_10ro_gangseogu`
+  - 번역 제외 대상이 번역됨: "MagokJungang 10-ro, Gangseo-gu, Seoul" → "マゴクチュンアン10ロ、カンソグ、ソウル" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.setting.group.label.magokjungang_10ro_gangseogu`
+  - 번역 제외 대상이 번역됨: "MagokJungang 10-ro, Gangseo-gu, Seoul" → "마곡중앙10로, 강서구, 서울" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.setting.group.label.magokjungang_10ro_gangseogu`
+  - 번역 제외 대상이 번역됨: "MagokJungang 10-ro, Gangseo-gu, Seoul" → "麻谷中央10路，江西区，首尔" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ja] `console.setting.group.label.30_a101_bldg`
+  - 번역 제외 대상이 번역됨: "30, A101 bldg." → "30, A101棟" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.setting.group.label.30_a101_bldg`
+  - 번역 제외 대상이 번역됨: "30, A101 bldg." → "30, A101동" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.setting.group.label.30_a101_bldg`
+  - 번역 제외 대상이 번역됨: "30, A101 bldg." → "30, A101栋" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ja] `console.setting.group.label.device_n`
+  - 번역 제외 대상이 번역됨: "Device N" → "デバイス N" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.setting.group.label.device_n`
+  - 번역 제외 대상이 번역됨: "Device N" → "장치 N" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.setting.group.label.device_n`
+  - 번역 제외 대상이 번역됨: "Device N" → "设备 N" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ja] `console.setting.group.label.user_n`
+  - 번역 제외 대상이 번역됨: "User N" → "ユーザー N" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.setting.group.label.user_n`
+  - 번역 제외 대상이 번역됨: "User N" → "사용자 N" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.setting.group.label.user_n`
+  - 번역 제외 대상이 번역됨: "User N" → "用户 N" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ja] `console.setting.group.button.button`
+  - 번역 제외 대상이 번역됨: "Button" → "ボタン" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.setting.group.button.button`
+  - 번역 제외 대상이 번역됨: "Button" → "버튼" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.setting.group.button.button`
+  - 번역 제외 대상이 번역됨: "Button" → "按钮" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ja] `console.doc.title.status.modified`
+  - 번역 제외 대상이 번역됨: "Modified" → "修正済み" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.doc.title.status.modified`
+  - 번역 제외 대상이 번역됨: "Modified" → "수정됨" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.doc.title.status.modified`
+  - 번역 제외 대상이 번역됨: "Modified" → "已修改" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ja] `console.doc.title.label.description_description_description`
+  - 번역 제외 대상이 번역됨: "Description Description 
+Description Description" → "説明 説明 説明" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [ko] `console.doc.title.label.description_description_description`
+  - 번역 제외 대상이 번역됨: "Description Description 
+Description Description" → "설명 설명 설명" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[FAIL]** Layer 4 | [zh-CN] `console.doc.title.label.description_description_description`
+  - 번역 제외 대상이 번역됨: "Description Description 
+Description Description" → "描述 描述 描述" (원문 유지 또는 제거 필요)
+  - 담당: Dev-A (추출 필터)
+- **[INFO]** Layer 3 | [en] `console.setting.group.label.set_single_signon`
+  - 원문 오타: "detailes" → "details"
+  - 담당: 디자이너
