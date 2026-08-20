@@ -11,16 +11,81 @@ git checkout feat/review-glossary-vectra
 npm install
 ```
 
-`npm warn install-scripts` 경고가 나오는 건 정상입니다. 무시해도 됩니다.
+> `npm warn install-scripts` 경고가 나오는 건 정상입니다. 무시해도 됩니다.
 
-> ⚠️ **`data/` 디렉토리는 git에 없습니다.** 재생성 가능한 파생물이라 제외했습니다.
-> 벡터 검색을 쓰는 항목(5, 6번)을 테스트하려면 3번을 먼저 실행하세요.
+---
+
+## 파일 요구사항 한눈에
+
+각 명령어가 필요한 파일과, 없을 때 어떻게 되는지입니다. **실제로 파일을 지워보고 확인한 내용**입니다.
+
+| 명령어 | 필요한 파일 | 없으면 |
+|--------|------------|--------|
+| `test:run` / `typecheck` | 소스만 (전부 커밋됨) | — |
+| `validate:i18n` | `src/locales/*.json`<br>`requirements/domain-glossary.md` | `❌ en.json 이 필요합니다` / 용어집 경로 안내 후 중단 |
+| `glossary:audit` | 위와 동일 | 동일 |
+| `init:vectra` | 없음 | — (`data/` 생성) |
+| `reindex` | `src/locales/*.json`<br>`requirements/domain-glossary.md` | 위와 동일 |
+| `round:check` | `src/locales/*.json`<br>`requirements/domain-glossary.md` | `❌ en.json 이 필요합니다` |
+| `round:simulate` | 위와 동일 | 동일 |
+| `report:evolution` | `data/feedback/rounds.jsonl` | `라운드 이력이 없습니다` 안내 (정상 종료) |
+| `glossary:approve` | `data/feedback/glossary-proposals.json` | `제안 파일이 없습니다` 안내 (정상 종료) |
+| `retriever:demo` | `data/translation-memory/` | **degraded로 계속 동작** (용어집만 반환) |
+| `memory:search` | `data/translation-memory/` | `❌ 인덱스가 없습니다` 후 중단 |
+| `vite build` | `index.html`, `vite.config.ts`, `src/` 앱 코드 | 빌드 실패 |
+
+### 커밋되어 있는 것 (그대로 쓰면 됨)
+
+```
+src/locales/en.json ko.json ja.json zh-CN.json   검증 대상
+requirements/domain-glossary.md                  검증 기준 (48개 용어 + 제품명 8개)
+src/retrieval/  src/validation/  scripts/        구현 코드
+tsconfig.json  package.json  vite.config.ts      설정
+docs/                                            문서
+```
+
+### 직접 만들어야 하는 것
+
+```
+data/translation-memory/    npm run init:vectra + reindex
+data/glossary-index/        npm run init:vectra + reindex
+data/feedback/*             npm run round:check 실행 시 자동 생성
+```
+
+`data/`는 git에 없습니다. 재생성 가능한 파생물이라 제외했습니다.
+지워도 아래 3줄로 완전 복구됩니다.
+
+```bash
+rm -rf data
+npm run init:vectra && npm run reindex && npm run round:check
+```
+
+### `.env` 는 필요 없습니다
+
+Dev-B 명령어는 **외부 API를 호출하지 않습니다.** 임베딩 모델이 로컬에서 돌기 때문입니다.
+`FIGMA_API_KEY` / `FRIENDLI_API_KEY`는 Dev-A의 `npm run pipeline`에만 필요합니다.
+
+확인:
+
+```bash
+grep -rl "FRIENDLI\|FIGMA_API" scripts/ src/retrieval/ src/validation/
+# 출력 없음 = API 키 참조 없음
+```
+
+### 생성되는 파일
+
+| 파일 | 만드는 명령어 | 용도 |
+|------|--------------|------|
+| `i18n-report.md` | `validate:i18n`, `round:check` | 전체 검증 리포트 |
+| `extraction-issues.md` | 위와 동일 | **Dev-A 반송** — 추출 필터 수정 요청 |
+| `evolution-report.md` | `report:evolution -- --md` | 라운드 추이 |
 
 ---
 
 ## 1. 타입체크 + 단위 테스트 (30초)
 
-인덱스나 모델 없이 바로 됩니다.
+**필요한 파일**: 소스만. 인덱스·모델·`.env` 전부 불필요합니다.
+`data/`가 없어도 59건 전부 통과합니다.
 
 ```bash
 npx tsc --noEmit     # 또는 npm run typecheck
@@ -41,6 +106,9 @@ Test Files  3 passed (3)
 ---
 
 ## 2. 검증 실행 (10초)
+
+**필요한 파일**: `src/locales/*.json` (en 필수), `requirements/domain-glossary.md`
+둘 다 커밋되어 있어 추가 준비가 없습니다. `data/`도 불필요합니다.
 
 ```bash
 npm run validate:i18n     # 4계층 검증
@@ -67,6 +135,9 @@ Layer 4: 번역 제외 대상      FAIL=33
 
 ## 3. Vectra 인덱스 생성 (15초, 최초 1회)
 
+**필요한 파일**: `src/locales/*.json`, `requirements/domain-glossary.md`
+**생성되는 것**: `data/translation-memory/` (330건), `data/glossary-index/` (144건)
+
 ```bash
 npm run init:vectra
 npm run reindex
@@ -88,6 +159,10 @@ API 키 불필요, 비용 없음 (모델 MIT 라이선스).
 ---
 
 ## 4. 자가발전 루프 (20초) ★ 핵심
+
+**필요한 파일**: `src/locales/*.json`, `requirements/domain-glossary.md`
+인덱스는 불필요합니다 (루프는 벡터 검색을 쓰지 않습니다).
+**생성되는 것**: `data/feedback/` 5개 파일
 
 ```bash
 npm run round:simulate
@@ -130,6 +205,9 @@ npm run report:evolution -- --md  # evolution-report.md 생성
 
 ## 5. Dev-A: 리트리버 확인 (10초)
 
+**필요한 파일**: `data/translation-memory/` (3번 먼저 실행), `requirements/domain-glossary.md`
+인덱스가 없어도 죽지 않고 `벡터 검색: 비활성`으로 계속 동작합니다.
+
 ```bash
 npm run retriever:demo
 ```
@@ -167,6 +245,8 @@ const ctx = await retrieveForBatch(entries);  // 배치마다
 
 ## 6. Dev-C: 앱이 안 깨졌는지 (5초)
 
+**필요한 파일**: `index.html`, `vite.config.ts`, `src/` 앱 코드 (전부 커밋됨)
+
 ```bash
 npx vite build
 ```
@@ -188,6 +268,8 @@ npx vite build
 
 ## 7. 번역 메모리 검색 (선택)
 
+**필요한 파일**: `data/translation-memory/` — 없으면 중단됩니다 (3번 먼저 실행)
+
 ```bash
 npm run memory:search -- "remove" --locale ko --top 3
 npm run memory:search -- "산업 분야" --top 3        # 한국어로 검색해도 걸림
@@ -201,19 +283,21 @@ npm run memory:search -- "remove" --min 0.84       # 임계값 적용
 
 ## 명령어 요약
 
-| 명령어 | 소요 | 인덱스 필요 |
-|--------|------|------------|
-| `npm run test:run` | 2초 | ✗ |
-| `npm run typecheck` | 5초 | ✗ |
-| `npm run validate:i18n` | 3초 | ✗ |
-| `npm run glossary:audit` | 3초 | ✗ |
-| `npm run init:vectra` + `reindex` | 15초 | (생성) |
-| `npm run round:check` | 3초 | ✗ |
-| `npm run round:simulate` | 15초 | ✗ |
-| `npm run report:evolution` | 1초 | ✗ |
-| `npm run retriever:demo` | 10초 | ✓ |
-| `npm run memory:search -- "..."` | 5초 | ✓ |
-| `npm run glossary:approve` | 1초 | ✗ |
+| 명령어 | 소요 | 인덱스 | locale | 용어집 |
+|--------|------|--------|--------|--------|
+| `npm run test:run` | 2초 | ✗ | ✗ | ✗ |
+| `npm run typecheck` | 5초 | ✗ | ✗ | ✗ |
+| `npm run validate:i18n` | 3초 | ✗ | ✓ | ✓ |
+| `npm run glossary:audit` | 3초 | ✗ | ✓ | ✓ |
+| `npm run init:vectra` + `reindex` | 15초 | 생성 | ✓ | ✓ |
+| `npm run round:check` | 3초 | ✗ | ✓ | ✓ |
+| `npm run round:simulate` | 15초 | ✗ | ✓ | ✓ |
+| `npm run report:evolution` | 1초 | ✗ | ✗ | ✗ |
+| `npm run retriever:demo` | 10초 | 권장 | ✗ | ✓ |
+| `npm run memory:search -- "..."` | 5초 | **필수** | ✗ | ✗ |
+| `npm run glossary:approve` | 1초 | ✗ | ✗ | ✗ |
+
+`locale` = `src/locales/*.json` / `용어집` = `requirements/domain-glossary.md` (둘 다 커밋됨)
 
 ---
 
