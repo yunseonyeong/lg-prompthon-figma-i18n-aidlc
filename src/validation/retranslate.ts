@@ -44,8 +44,11 @@ import { loadFrames } from './layer3-exaone.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
 
-dotenv.config({ path: path.join(ROOT, '.env'), quiet: true });
-dotenv.config({ path: path.join(os.homedir(), '.hermes', '.env'), quiet: true });
+// ~/.hermes/.env 를 먼저 깔고 프로젝트 .env 로 덮어쓴다.
+// override: true — dotenv 기본값은 기존 환경변수를 덮어쓰지 않아서,
+// 셸에 placeholder 가 남아 있으면 .env 를 고쳐도 반영되지 않는다.
+dotenv.config({ path: path.join(os.homedir(), '.hermes', '.env'), override: true, quiet: true });
+dotenv.config({ path: path.join(ROOT, '.env'), override: true, quiet: true });
 
 const CONFIG = {
   apiUrl:

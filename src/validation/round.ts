@@ -41,9 +41,12 @@ import {
 } from './glossary-growth.js';
 import type { Issue, LocaleBundle } from './types.js';
 import { findEscalations, escalationsToIssues, type Escalation } from './escalation.js';
+import { checkFingerprint, writeFingerprint, type FingerprintCheck } from './glossary-fingerprint.js';
 
 export interface RoundResult {
   round: number;
+  /** 용어집 지문 검사 결과 */
+  fingerprint: FingerprintCheck;
   issues: Issue[];
   metrics: RoundMetrics;
   repeatedViolations: Array<{ term: string; count: number; keys: string[] }>;
@@ -73,7 +76,8 @@ export function evaluateRound(
   bundle: LocaleBundle,
   glossary: GlossaryData,
   feedback: FeedbackState,
-  round: number
+  round: number,
+  options: { forceRevalidate?: boolean } = {}
 ): {
   issues: Issue[];
   nextConfirmed: ReturnType<typeof selectConfirmable>;
@@ -86,8 +90,10 @@ export function evaluateRound(
   // ① 사전 차단
   const pre = checkPreBlock(bundle, feedback);
 
-  // ② 4계층 검증 — 확정본과 동일한 항목은 건너뜀
-  const layerIssues = runAllLayers(bundle, glossary, { skipKeys: pre.skipIds });
+  // ② 4계층 검증 — 확정본과 동일한 항목은 건너뜀.
+  //    단 용어집이 바뀌면 기존 확정은 이전 기준 판정이라 스킵을 해제한다.
+  const skipKeys = options.forceRevalidate ? new Set<string>() : pre.skipIds;
+  const layerIssues = runAllLayers(bundle, glossary, { skipKeys });
 
   // 재시도 상한 초과 항목 (US-2.4). 기존 거부 이력 기준으로 판정한다.
   const escalations = findEscalations(bundle, feedback.rejected);
@@ -105,7 +111,7 @@ export function evaluateRound(
   // 지표
   const en = bundle['en'] ?? {};
   const targetCount = Object.keys(en).length * 3; // ko/ja/zh-CN
-  const skipped = pre.skipIds.size;
+  const skipped = options.forceRevalidate ? 0 : pre.skipIds.size;
 
   const metrics: RoundMetrics = {
     round,
@@ -145,7 +151,12 @@ export function runRound(bundle: LocaleBundle, options: RoundOptions = {}): Roun
   const round = options.round ?? nextRoundNumber();
   const prevConfirmedCount = Object.keys(feedback.confirmed).length;
 
-  const result = evaluateRound(bundle, glossary, feedback, round);
+  // 용어집이 개정되면 이전 확정 판정은 무효다 → 전수 재검증
+  const fingerprint = checkFingerprint(glossary);
+
+  const result = evaluateRound(bundle, glossary, feedback, round, {
+    forceRevalidate: fingerprint.forceRevalidate,
+  });
 
   // ④ 용어집 제안
   let newProposals = 0;
@@ -162,10 +173,12 @@ export function runRound(bundle: LocaleBundle, options: RoundOptions = {}): Roun
     saveRejected(result.nextRejected);
     saveExclusions(result.nextExclusions);
     appendRound(result.metrics);
+    writeFingerprint(fingerprint.current);
   }
 
   return {
     round,
+    fingerprint,
     issues: result.issues,
     metrics: result.metrics,
     repeatedViolations: result.repeatedViolations,

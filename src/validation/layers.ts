@@ -278,41 +278,38 @@ export function checkLayer2(bundle: LocaleBundle, glossary: GlossaryData): Issue
 // Layer 3: 문맥 오역 → Dev-B → Dev-A
 // ─────────────────────────────────────────────────────────
 
-/** 도메인에서 오역이 반복되는 지점을 규칙화 */
+/**
+ * 도메인에서 오역이 반복되는 지점.
+ *
+ * ⚠️ 기대 번역을 하드코딩하지 않습니다. 용어집에서 런타임에 조회합니다.
+ *    한때 correct: '산업 분야' 로 박아뒀는데 용어집이 '버티컬 타입'으로
+ *    개정되면서 어긋났습니다. 용어집 값을 코드에 복제하면 반드시 드리프트합니다.
+ */
 const CONTEXT_TRAPS: Array<{
-  en: RegExp;
+  /** 용어집에 등재된 영어 용어 — 기대 번역은 여기서 조회한다 */
+  glossaryTerm: string;
   locale: string;
+  /** 오역 패턴 */
   wrong: RegExp;
-  correct: string;
   note: string;
 }> = [
   {
-    en: /\bextend\b/i,
+    glossaryTerm: 'Extend',
     locale: 'ko',
     wrong: /확장/,
-    correct: '연장',
     note: '라이선스 유효기간 연장 (화면 확장 아님)',
   },
   {
-    en: /\bwithdraw\b/i,
+    glossaryTerm: 'Withdraw',
     locale: 'ko',
     wrong: /탈퇴/,
-    correct: '회수',
     note: '할당 라이선스 회수 (계정 탈퇴 아님)',
   },
   {
-    en: /\bvertical\b/i,
+    glossaryTerm: 'Vertical Type',
     locale: 'ko',
     wrong: /세로|수직/,
-    correct: '산업 분야',
     note: '업종 분류 (화면 방향 아님)',
-  },
-  {
-    en: /\bplayer\b/i,
-    locale: 'ko',
-    wrong: /플레이어/,
-    correct: '재생 장치',
-    note: 'Signage 도메인의 재생 장치',
   },
 ];
 
@@ -320,26 +317,41 @@ export function checkLayer3(bundle: LocaleBundle, glossary?: GlossaryData): Issu
   const issues: Issue[] = [];
   const en = bundle['en'];
   if (!en) return issues;
+  if (!glossary) return issues; // 기대 번역을 용어집에서 얻으므로 없으면 검사 불가
 
   for (const [key, enValue] of Object.entries(en)) {
-    if (glossary && isExcludedSource(enValue, glossary.excludePatterns)) continue;
+    if (isExcludedSource(enValue, glossary.excludePatterns)) continue;
+
     for (const trap of CONTEXT_TRAPS) {
-      if (!trap.en.test(enValue)) continue;
+      if (!containsTerm(enValue, trap.glossaryTerm)) continue;
+
+      const entry = glossary.entries.find(
+        (e) => e.english.toLowerCase() === trap.glossaryTerm.toLowerCase()
+      );
+      if (!entry) continue; // 용어집에서 빠졌으면 이 트랩은 무효
+
+      const expected =
+        trap.locale === 'ko' ? entry.ko : trap.locale === 'ja' ? entry.ja : entry.zhCN;
+      if (!expected) continue;
+
       const tv = bundle[trap.locale]?.[key];
       if (!tv) continue;
-      if (trap.wrong.test(tv)) {
-        issues.push({
-          layer: 3,
-          severity: 'FAIL',
-          key,
-          locale: trap.locale,
-          message: `문맥 오역: "${enValue}" → "${tv}" (기대 "${trap.correct}" — ${trap.note})`,
-          assignee: ASSIGNEES.devBtoA,
-          rule: 'glossary §3, §5',
-          actual: tv,
-          expected: trap.correct,
-        });
-      }
+
+      // 이미 등재어를 만족하면 오역이 아니다
+      if (translationContains(tv, expected)) continue;
+      if (!trap.wrong.test(tv)) continue;
+
+      issues.push({
+        layer: 3,
+        severity: 'FAIL',
+        key,
+        locale: trap.locale,
+        message: `문맥 오역: "${enValue}" → "${tv}" (기대 "${expected}" — ${trap.note})`,
+        assignee: ASSIGNEES.devBtoA,
+        rule: 'glossary §3, §5',
+        actual: tv,
+        expected,
+      });
     }
   }
 

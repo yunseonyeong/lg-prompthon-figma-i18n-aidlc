@@ -3,7 +3,7 @@
     "setting": {
       "group": {
         "label": {
-          "content": "多媒体",
+          "content": "Content",
           "schedule": "日程",
           "device": "设备",
           "settings": "设置",
@@ -13,15 +13,19 @@
           "list": "列表",
           "lastUpdateTime": "最后更新时间",
           "search": "搜索",
+          "businessA": "Business A",
+          "workspaceA1": "Workspace A1",
           "groupAutoUpdateOn": "组自动更新: 开",
           "businessSiteInformation": "业务站点信息",
           "businessSiteId": "业务站点ID *",
+          "supportingText": "supporting text",
           "subsidiary": "子公司",
           "licensePolicy": "许可证策略",
           "period": "期限",
           "businessSiteName": "业务站点名称",
           "regionCountry": "地区 / 国家 *",
           "asiaPacific": "亚洲及太平洋",
+          "label": "Label",
           "korea": "韩国",
           "timeZone": "时区",
           "utc0900AsiaSeoul": "(UTC+09:00) 亚洲/首尔",
@@ -44,19 +48,24 @@
           "thema03": "主题03",
           "thema04": "主题04",
           "businessSiteAddress": "业务站点地址",
+          "magokjungang10RoGangseoGu": "MagokJungang 10-ro, Gangseo-gu, Seoul",
           "addressDetails": "地址详情",
+          "30A101Bldg": "30, A101 bldg.",
           "addressMemo": "地址备注",
           "setSingleSignOn": "将 Single Sign-On (SSO) 设置为 ON，并设置所选认证类型的详细信息。",
           "sortBy": "排序方式",
           "lastUpdated": "最后更新",
           "total": "总计",
+          "workspaceN": "工作区 N",
+          "deviceN": "Device N",
+          "userN": "User N",
           "searchForWorkspace": "工作区搜索",
           "workspaceName": "工作区名称",
           "deviceCount": "设备数",
           "userCount": "用户数",
           "licensedProduct": "许可产品",
           "delete": "删除",
-          "dashboard": "管理界面",
+          "dashboard": "Dashboard",
           "space": "空间",
           "devices": "设备",
           "data": "数据",
@@ -69,7 +78,7 @@
           "analytics": "分析",
           "library": "库",
           "videowall": "视频墙",
-          "contentSchedule": "多媒体日程",
+          "contentSchedule": "Content Schedule",
           "controlSchedule": "控制日程",
           "artLounge": "Art Lounge",
           "hotelMobileApp": "Hotel Mobile App",
@@ -91,6 +100,7 @@
           "save": "保存",
           "assignDevice": "分配设备",
           "editGroup": "编辑组",
+          "button": "Button",
           "createBusinessSite": "创建业务站点",
           "turnOff": "关闭",
           "off": "关",
@@ -112,6 +122,12 @@
       "title": {
         "title": {
           "settings": "设置"
+        },
+        "status": {
+          "modified": "Modified"
+        },
+        "label": {
+          "descriptionDescriptionDescriptionDescription": "Description Description \nDescription Description"
         }
       }
     }

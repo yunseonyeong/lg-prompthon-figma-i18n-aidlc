@@ -36,6 +36,14 @@ export {
   type TermConflict,
 } from './glossary-growth.js';
 export {
+  glossaryFingerprint,
+  checkFingerprint,
+  readFingerprint,
+  writeFingerprint,
+  FINGERPRINT_PATH,
+  type FingerprintCheck,
+} from './glossary-fingerprint.js';
+export {
   findEscalations,
   escalationsToIssues,
   escalatedIds,

@@ -44,8 +44,11 @@ const ROOT = path.resolve(__dirname, '../..');
 
 // Dev-A 파이프라인과 동일한 순서로 환경변수를 읽는다.
 // 해커톤 환경에서 FRIENDLI_API_KEY는 ~/.hermes/.env 에 발급되어 있다.
-dotenv.config({ path: path.join(ROOT, '.env'), quiet: true });
-dotenv.config({ path: path.join(os.homedir(), '.hermes', '.env'), quiet: true });
+// ~/.hermes/.env 를 먼저 깔고 프로젝트 .env 로 덮어쓴다.
+// override: true — dotenv 기본값은 기존 환경변수를 덮어쓰지 않아서,
+// 셸에 placeholder 가 남아 있으면 .env 를 고쳐도 반영되지 않는다.
+dotenv.config({ path: path.join(os.homedir(), '.hermes', '.env'), override: true, quiet: true });
+dotenv.config({ path: path.join(ROOT, '.env'), override: true, quiet: true });
 
 const CONFIG = {
   apiUrl:

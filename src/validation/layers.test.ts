@@ -25,6 +25,8 @@ const GLOSSARY: GlossaryData = {
     { english: 'Space', context: '공간 메뉴', ko: '공간', ja: 'スペース', zhCN: '空间', category: '메뉴' },
     { english: 'Group', context: '묶음', ko: '그룹', ja: 'グループ', zhCN: '组', category: '핵심' },
     { english: 'Extend', context: '기간 연장', ko: '연장', ja: '延長', zhCN: '延长', category: '라이선스' },
+    { english: 'Withdraw', context: '라이선스 회수', ko: '회수', ja: '回収', zhCN: '回收', category: '라이선스' },
+    { english: 'Vertical Type', context: '업종 분류', ko: '버티컬 타입', ja: '業種', zhCN: '行业类型', category: '비즈니스' },
   ],
   productNames: ['Art Lounge', 'LG Electronics'],
   excludePatterns: ['Business A', 'supporting text', 'Label'],
@@ -181,7 +183,7 @@ describe('checkLayer3', () => {
       en: { 'x.ext': 'Extend' },
       ko: { 'x.ext': '확장' },
     };
-    const issues = checkLayer3(bundle);
+    const issues = checkLayer3(bundle, GLOSSARY);
     expect(issues).toHaveLength(1);
     expect(issues[0].expected).toBe('연장');
     expect(issues[0].assignee).toBe('Dev-B → Dev-A');
@@ -192,7 +194,7 @@ describe('checkLayer3', () => {
       en: { 'x.ext': 'Extend' },
       ko: { 'x.ext': '연장' },
     };
-    expect(checkLayer3(bundle)).toHaveLength(0);
+    expect(checkLayer3(bundle, GLOSSARY)).toHaveLength(0);
   });
 
   it('Vertical 오역을 잡는다', () => {
@@ -200,7 +202,31 @@ describe('checkLayer3', () => {
       en: { 'x.v': 'Vertical Type' },
       ko: { 'x.v': '세로 유형' },
     };
-    expect(checkLayer3(bundle).some((i) => i.expected === '산업 분야')).toBe(true);
+    expect(checkLayer3(bundle, GLOSSARY).some((i) => i.expected === '버티컬 타입')).toBe(true);
+  });
+
+  it('용어집이 없으면 검사하지 않는다 (기대 번역을 얻을 수 없음)', () => {
+    const bundle: LocaleBundle = {
+      en: { 'x.ext': 'Extend' },
+      ko: { 'x.ext': '확장' },
+    };
+    expect(checkLayer3(bundle)).toHaveLength(0);
+  });
+
+  it('기대 번역을 용어집에서 조회한다 (하드코딩 아님)', () => {
+    // 용어집이 개정되면 기대값도 따라 바뀌어야 한다
+    const revised: GlossaryData = {
+      ...GLOSSARY,
+      entries: GLOSSARY.entries.map((e) =>
+        e.english === 'Vertical Type' ? { ...e, ko: '산업 분야' } : e
+      ),
+    };
+    const bundle: LocaleBundle = {
+      en: { 'x.v': 'Vertical Type' },
+      ko: { 'x.v': '세로 유형' },
+    };
+    const issues = checkLayer3(bundle, revised);
+    expect(issues[0].expected).toBe('산업 분야');
   });
 });
 

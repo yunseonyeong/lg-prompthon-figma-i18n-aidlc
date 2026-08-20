@@ -253,3 +253,34 @@ describe('feedback-store', () => {
     expect(loadConfirmed()).toEqual({});
   });
 });
+
+describe('유사 사례 확정 필터', () => {
+  beforeEach(() => { backupFiles(); _resetRetriever(); });
+  afterEach(() => { restoreFiles(); _resetRetriever(); });
+
+  it('확정 저장소가 비면 안내를 남긴다', async () => {
+    saveConfirmed({});
+    saveRejected({});
+    // 벡터 검색은 끄되 requireConfirmed 기본값(true) 경고 경로를 확인
+    await initRetriever({ disableVectorSearch: true });
+    const ctx = await retrieveForBatch(SAMPLE_ENTRIES);
+    expect(ctx.stats.notes.some((n) => n.includes('확정 번역이 0건'))).toBe(true);
+  });
+
+  it('requireConfirmed=false 면 경고를 내지 않는다', async () => {
+    saveConfirmed({});
+    saveRejected({});
+    await initRetriever({ disableVectorSearch: true, requireConfirmed: false });
+    const ctx = await retrieveForBatch(SAMPLE_ENTRIES);
+    expect(ctx.stats.notes.some((n) => n.includes('확정 번역이 0건'))).toBe(false);
+  });
+
+  it('벡터 검색이 꺼져 있으면 유사 사례와 제외 건수가 모두 0', async () => {
+    saveConfirmed({});
+    saveRejected({});
+    await initRetriever({ disableVectorSearch: true });
+    const ctx = await retrieveForBatch(SAMPLE_ENTRIES);
+    expect(ctx.stats.similarCount).toBe(0);
+    expect(ctx.stats.similarRejected).toBe(0);
+  });
+});

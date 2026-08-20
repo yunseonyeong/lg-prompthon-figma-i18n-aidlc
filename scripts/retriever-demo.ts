@@ -55,6 +55,7 @@ async function main() {
   console.log(`   금지 패턴   : ${ctx.stats.forbiddenCount}건`);
   console.log(`   유사 사례   : ${ctx.stats.similarCount}건`);
   console.log(`   degraded    : ${ctx.stats.degraded}`);
+  console.log(`   확정 미달로 제외 : ${ctx.stats.similarRejected}건`);
 
   if (ctx.similar.length > 0) {
     console.log('\n▶ 유사 사례 상세');
