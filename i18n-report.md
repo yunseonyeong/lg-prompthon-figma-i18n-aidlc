@@ -1,6 +1,6 @@
 # i18n 검증 리포트 (Round 1)
 
-생성일시: 2026-08-20T05:51:01.220Z
+생성일시: 2026-08-20T07:11:40.727Z
 
 ## 계층별 요약
 
@@ -8,14 +8,17 @@
 |------|------|------|------|------|
 | Layer 0: 사전 차단 (축적된 피드백) | 0 | 0 | 0 | PASS |
 | Layer 1: 구조적 결함 | 0 | 0 | 0 | PASS |
-| Layer 2: 용어집 위반 | 6 | 14 | 0 | FAIL |
-| Layer 3: 문맥 오역 | 0 | 0 | 1 | PASS |
-| Layer 4: 번역 제외 대상 | 33 | 0 | 0 | FAIL |
+| Layer 2: 용어집 위반 | 6 | 22 | 0 | FAIL |
+| Layer 3: 문맥 오역 | 0 | 0 | 4 | PASS |
+| Layer 4: 번역 제외 대상 | 34 | 0 | 0 | FAIL |
 
 ## 상세
 
 ### Layer 2: 용어집 위반
 
+- **[WARN]** [zh-CN] `console.setting.group.label.content`
+  - 용어 불일치: "Content" → 기대 "多媒体"
+  - 담당: Dev-A / Dev-B / 규칙: glossary §1
 - **[WARN]** [ko] `console.setting.group.label.device`
   - 용어 불일치: "Device" → 기대 "디바이스"
   - 담당: Dev-A / Dev-B / 규칙: glossary §1
@@ -43,8 +46,17 @@
 - **[WARN]** [ko] `console.setting.group.label.licensedProduct`
   - 용어 불일치: "Licensed Product" → 기대 "라이선스 솔루션"
   - 담당: Dev-A / Dev-B / 규칙: glossary §1
+- **[WARN]** [zh-CN] `console.setting.group.label.dashboard`
+  - 용어 불일치: "Dashboard" → 기대 "管理控制台"
+  - 담당: Dev-A / Dev-B / 규칙: glossary §1
 - **[WARN]** [ko] `console.setting.group.label.space`
   - 용어 불일치: "Space" → 기대 "스페이스"
+  - 담당: Dev-A / Dev-B / 규칙: glossary §1
+- **[WARN]** [zh-CN] `console.setting.group.label.contentSchedule`
+  - 용어 불일치: "Content" → 기대 "多媒体"
+  - 담당: Dev-A / Dev-B / 규칙: glossary §1
+- **[WARN]** [zh-CN] `console.setting.group.label.contentSchedule`
+  - 용어 불일치: "Content Schedule" → 기대 "多媒体日程"
   - 담당: Dev-A / Dev-B / 규칙: glossary §1
 - **[FAIL]** [ja] `console.setting.group.label.artLounge`
   - 제품명 번역 금지 위반: "Art Lounge" → "アートラウンジ"
@@ -73,12 +85,33 @@
 - **[WARN]** [ko] `console.setting.group.button.assignDevice`
   - 용어 불일치: "Device" → 기대 "디바이스"
   - 담당: Dev-A / Dev-B / 규칙: glossary §1
+- **[WARN]** [ja] `console.setting.group.label.settings`
+  - 동일 번역 중복: 서로 다른 원문 "Settings", "Setting" 이 모두 "設定" 으로 번역됨
+  - 담당: Dev-A / Dev-B / 규칙: L2-03 (검증 명세)
+- **[WARN]** [ja] `console.setting.group.button.turnOff`
+  - 동일 번역 중복: 서로 다른 원문 "Turn Off", "Off" 이 모두 "オフ" 으로 번역됨
+  - 담당: Dev-A / Dev-B / 규칙: L2-03 (검증 명세)
+- **[WARN]** [ko] `console.setting.group.label.settings`
+  - 동일 번역 중복: 서로 다른 원문 "Settings", "Setting" 이 모두 "설정" 으로 번역됨
+  - 담당: Dev-A / Dev-B / 규칙: L2-03 (검증 명세)
+- **[WARN]** [zh-CN] `console.setting.group.label.settings`
+  - 동일 번역 중복: 서로 다른 원문 "Settings", "Setting" 이 모두 "设置" 으로 번역됨
+  - 담당: Dev-A / Dev-B / 규칙: L2-03 (검증 명세)
 - **[WARN]** [ko] `console.setting.group.button.off`
   - ON/OFF 표기 위반: 버튼은 "끄기", 상태는 "꺼짐"
   - 담당: Dev-B / 규칙: glossary §6
 
 ### Layer 3: 문맥 오역
 
+- **[INFO]** [en] `console.setting.group.label.isRequired`
+  - 문장 조각: "is required" — 주어가 없는 조각. "{field} is required" 형태의 placeholder 필요
+  - 담당: 디자이너 / 규칙: 원문 품질
+- **[INFO]** [en] `console.setting.group.label.thema03`
+  - 원문 오타: "thema" → "theme"
+  - 담당: 디자이너 / 규칙: 원문 품질
+- **[INFO]** [en] `console.setting.group.label.thema04`
+  - 원문 오타: "thema" → "theme"
+  - 담당: 디자이너 / 규칙: 원문 품질
 - **[INFO]** [en] `console.setting.group.label.setSingleSignOn`
   - 원문 오타: "detailes" → "details"
   - 담당: 디자이너 / 규칙: 원문 품질
@@ -120,6 +153,9 @@
   - 담당: Dev-A (추출 필터) / 규칙: glossary §9
 - **[FAIL]** [zh-CN] `console.setting.group.label.label`
   - 번역 제외 대상이 번역됨: "Label" → "标签"
+  - 담당: Dev-A (추출 필터) / 규칙: glossary §9
+- **[FAIL]** [en] `console.setting.group.label.filenameSample00123Jpg`
+  - 번역 제외 대상이 추출됨 (번역은 안 됨): "FileName_sample_00123.jpg" — key 자체를 제거해야 함
   - 담당: Dev-A (추출 필터) / 규칙: glossary §9
 - **[FAIL]** [ja] `console.setting.group.label.magokjungang10RoGangseoGu`
   - 번역 제외 대상이 번역됨: "MagokJungang 10-ro, Gangseo-gu, Seoul" → "マゴクチュンアン10ロ、カンソグ、ソウル"

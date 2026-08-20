@@ -17,6 +17,7 @@ import { flattenJson, LAYER_NAMES, runRound, type Issue, type Layer, type Locale
 import { FEEDBACK_PATHS, loadRounds } from '../src/retrieval/feedback-store.js';
 import { PROPOSAL_PATH } from '../src/validation/glossary-growth.js';
 import { renderEscalationReport, MAX_RETRIES } from '../src/validation/escalation.js';
+import { FINGERPRINT_PATH } from '../src/validation/glossary-fingerprint.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -66,6 +67,7 @@ function resetState(): void {
     FEEDBACK_PATHS.exclusions,
     FEEDBACK_PATHS.rounds,
     PROPOSAL_PATH,
+    FINGERPRINT_PATH,
   ]) {
     if (fs.existsSync(p)) fs.unlinkSync(p);
   }
@@ -166,6 +168,10 @@ function main(): void {
   const byLayer = groupByLayer(result.issues);
 
   console.log(`\n▶ Round ${result.round}\n`);
+
+  if (result.fingerprint.message) {
+    console.log(`⚠️  ${result.fingerprint.message}\n`);
+  }
 
   // 계층별 결과
   for (const layer of [0, 1, 2, 3, 4] as Layer[]) {
