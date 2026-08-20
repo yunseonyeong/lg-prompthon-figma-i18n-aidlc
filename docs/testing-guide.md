@@ -322,10 +322,34 @@ rm -rf data && npm run init:vectra && npm run reindex
 
 ---
 
+## 8. 에이전트로 실행 (Dev-B 본래 워크플로)
+
+npm 스크립트는 계산기이고, 에이전트는 그것을 돌려서 판단하는 주체입니다.
+
+```bash
+kiro-cli chat --agent review-agent      # Ctrl+Shift+R
+kiro-cli chat --agent glossary-agent    # Ctrl+Shift+G
+```
+
+에이전트 시작 시 훅이 환경 상태를 한 줄로 출력합니다.
+
+```
+Review Agent | glossary 48 terms + 8 product names | locales 4 | vectra ready |
+rounds 1 | confirmed 287 | rejected 39 | pending proposals 2
+```
+
+`glossary MISSING` 또는 `vectra MISSING`이 보이면 준비가 안 된 상태입니다.
+`glossary 0 terms`가 나오면 용어집을 못 읽은 것이므로 그 상태의 리뷰 결과는 믿을 수 없습니다.
+
+입출력 계약은 `docs/agent-io-contract.md`에 정리했습니다.
+
+---
+
 ## 상세 문서
 
 | 문서 | 내용 |
 |------|------|
+| `docs/agent-io-contract.md` | 에이전트별 입력/출력 파일과 실행 명령어 |
 | `docs/retriever-integration.md` | Dev-A 연동 가이드 (코드 예시 포함) |
 | `docs/self-improving-loop.md` | 자가발전 루프 설계와 실측 |
 | `aidlc-docs/construction/build-and-test/i18n-verification-spec.md` | 4계층 검증 명세 |

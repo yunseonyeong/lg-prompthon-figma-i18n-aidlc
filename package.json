@@ -28,7 +28,8 @@
     "round:check": "tsx scripts/round-check.ts",
     "glossary:approve": "tsx scripts/glossary-approve.ts",
     "report:evolution": "tsx scripts/report-evolution.ts",
-    "round:simulate": "tsx scripts/round-simulate.ts"
+    "round:simulate": "tsx scripts/round-simulate.ts",
+    "stats": "tsx scripts/stats.ts"
   },
   "dependencies": {
     "i18next": "23.16.8",
