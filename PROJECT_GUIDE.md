@@ -93,6 +93,20 @@ kiro-cli chat --agent glossary-agent   # Ctrl+Shift+G
 > ⚠️ Layer 4는 번역을 고쳐서 해결하면 안 됩니다. 애초에 추출되면 안 됐던 항목이므로
 > `extraction-issues.md`로 Dev-A에게 반송하세요.
 
+#### 번역 메모리 (US-2.3) 인터페이스 계약
+
+`aidlc-docs/construction/translation-memory-contract.md` 참조.
+
+Dev-A가 호출하고 Dev-B가 구현하는 구조라, **시그니처를 먼저 합의**하면
+서로 기다리지 않고 병렬로 진행할 수 있습니다.
+
+핵심 설계 결정 두 가지:
+
+1. **검증 PASS된 번역만 저장** — 미검증 번역을 저장하면 few-shot 예시가 되어
+   오역이 전파됩니다. `save()` 호출 주체는 Dev-B입니다.
+2. **`isAvailable()`은 예외를 던지지 않음** — Dev-B 구현이 늦어도 Dev-A 파이프라인이
+   fallback으로 계속 동작해야 합니다.
+
 ---
 
 ### 👤 Dev-C: FE 코드 생성 + 데모 웹앱
