@@ -5,7 +5,7 @@
     "children": [
       {
         "type": "title",
-        "key": "console.setting.group.title.workspacegroup_settings",
+        "key": "console.setting.group.title.workspaceGroupSettings",
         "originalText": "Workspace/Group Settings"
       },
       {
@@ -15,7 +15,7 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.is_required",
+        "key": "console.setting.group.label.isRequired",
         "originalText": "is required"
       },
       {
@@ -40,12 +40,12 @@
       },
       {
         "type": "button",
-        "key": "console.setting.group.button.assign_device",
+        "key": "console.setting.group.button.assignDevice",
         "originalText": "Assign Device"
       },
       {
         "type": "button",
-        "key": "console.setting.group.button.edit_group",
+        "key": "console.setting.group.button.editGroup",
         "originalText": "Edit Group"
       },
       {
@@ -55,7 +55,7 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.last_update_time",
+        "key": "console.setting.group.label.lastUpdateTime",
         "originalText": "Last Update Time"
       },
       {
@@ -75,32 +75,32 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.business_a",
+        "key": "console.setting.group.label.businessA",
         "originalText": "Business A"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.workspace_a1",
+        "key": "console.setting.group.label.workspaceA1",
         "originalText": "Workspace A1"
       },
       {
         "type": "button",
-        "key": "console.setting.group.button.create_business_site",
+        "key": "console.setting.group.button.createBusinessSite",
         "originalText": "Create Business Site"
       },
       {
         "type": "title",
-        "key": "console.setting.group.title.business_site_name",
+        "key": "console.setting.group.title.businessSiteName",
         "originalText": "Business Site Name"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.group_auto_update",
+        "key": "console.setting.group.label.groupAutoUpdateOn",
         "originalText": "Group Auto Update : On"
       },
       {
         "type": "button",
-        "key": "console.setting.group.button.turn_off",
+        "key": "console.setting.group.button.turnOff",
         "originalText": "Turn Off"
       },
       {
@@ -115,7 +115,7 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.business_site_information",
+        "key": "console.setting.group.label.businessSiteInformation",
         "originalText": "Business Site Information"
       },
       {
@@ -130,12 +130,12 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.business_site_id",
+        "key": "console.setting.group.label.businessSiteId",
         "originalText": "Business Site ID *"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supportingText",
         "originalText": "supporting text"
       },
       {
@@ -145,7 +145,7 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.license_policy",
+        "key": "console.setting.group.label.licensePolicy",
         "originalText": "License Policy"
       },
       {
@@ -155,27 +155,27 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.business_site_name",
+        "key": "console.setting.group.label.businessSiteName",
         "originalText": "Business Site Name *"
       },
       {
         "type": "placeholder",
-        "key": "console.setting.group.placeholder.lg_electronics",
+        "key": "console.setting.group.placeholder.lgElectronics",
         "originalText": "LG Electronics"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supportingText",
         "originalText": "supporting text"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.region_country",
+        "key": "console.setting.group.label.regionCountry",
         "originalText": "Region / Country *"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.asia_pacific",
+        "key": "console.setting.group.label.asiaPacific",
         "originalText": "Asia & Pacific"
       },
       {
@@ -190,52 +190,52 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.time_zone",
+        "key": "console.setting.group.label.timeZone",
         "originalText": "Time Zone *"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.utc0900_asiaseoul",
+        "key": "console.setting.group.label.utc0900AsiaSeoul",
         "originalText": "(UTC+09:00) Asia/Seoul"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.vertical_type",
+        "key": "console.setting.group.label.verticalType",
         "originalText": "Vertical Type *"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.system_integrator",
+        "key": "console.setting.group.label.systemIntegrator",
         "originalText": "System Integrator"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.business_type",
+        "key": "console.setting.group.label.businessType",
         "originalText": "Business Type *"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.end_customer",
+        "key": "console.setting.group.label.endCustomer",
         "originalText": "End Customer"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.si_integrator_name",
+        "key": "console.setting.group.label.siIntegratorName",
         "originalText": "SI integrator Name *"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.utc0900_asiaseoul",
+        "key": "console.setting.group.label.utc0900AsiaSeoul",
         "originalText": "(UTC+09:00) Asia/Seoul"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.end_customer_name",
+        "key": "console.setting.group.label.endCustomerName",
         "originalText": "End Customer Name *"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.system_integrator",
+        "key": "console.setting.group.label.systemIntegrator",
         "originalText": "System Integrator"
       },
       {
@@ -245,12 +245,12 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supportingText",
         "originalText": "supporting text"
       },
       {
         "type": "title",
-        "key": "console.setting.group.title.api_access",
+        "key": "console.setting.group.title.apiAccess",
         "originalText": "API Access"
       },
       {
@@ -260,7 +260,7 @@
       },
       {
         "type": "title",
-        "key": "console.setting.group.title.automatic_license_assignment",
+        "key": "console.setting.group.title.automaticLicenseAssignment",
         "originalText": "Automatic license assignment"
       },
       {
@@ -270,7 +270,7 @@
       },
       {
         "type": "title",
-        "key": "console.setting.group.title.automatic_device_approval",
+        "key": "console.setting.group.title.automaticDeviceApproval",
         "originalText": "Automatic device approval"
       },
       {
@@ -280,7 +280,7 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.business_site_logo",
+        "key": "console.setting.group.label.businessSiteLogo",
         "originalText": "Business Site Logo"
       },
       {
@@ -290,7 +290,7 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supportingText",
         "originalText": "supporting text"
       },
       {
@@ -300,17 +300,17 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.filenamesample00123jpg",
+        "key": "console.setting.group.label.filenameSample00123Jpg",
         "originalText": "FileName_sample_00123.jpg"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.alt_text",
+        "key": "console.setting.group.label.altText",
         "originalText": "Alt Text"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.lg_logo_image",
+        "key": "console.setting.group.label.lgLogoImage",
         "originalText": "LG logo image"
       },
       {
@@ -320,7 +320,7 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.theme_color",
+        "key": "console.setting.group.label.themeColor",
         "originalText": "Theme Color"
       },
       {
@@ -335,97 +335,97 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.thema_03",
+        "key": "console.setting.group.label.thema03",
         "originalText": "Thema 03"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.thema_04",
+        "key": "console.setting.group.label.thema04",
         "originalText": "Thema 04"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supportingText",
         "originalText": "supporting text"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.business_site_address",
+        "key": "console.setting.group.label.businessSiteAddress",
         "originalText": "Business Site Address"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.magokjungang_10ro_gangseogu",
+        "key": "console.setting.group.label.magokjungang10RoGangseoGu",
         "originalText": "MagokJungang 10-ro, Gangseo-gu, Seoul"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.address_details",
+        "key": "console.setting.group.label.addressDetails",
         "originalText": "Address Details"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.30_a101_bldg",
+        "key": "console.setting.group.label.30A101Bldg",
         "originalText": "30, A101 bldg."
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.address_memo",
+        "key": "console.setting.group.label.addressMemo",
         "originalText": "Address Memo"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.supporting_text",
+        "key": "console.setting.group.label.supportingText",
         "originalText": "supporting text"
       },
       {
         "type": "title",
-        "key": "console.setting.group.title.single_signon_sso",
+        "key": "console.setting.group.title.singleSignOnSso",
         "originalText": "Single Sign-On (SSO)"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.set_single_signon",
+        "key": "console.setting.group.label.setSingleSignOn",
         "originalText": "Set Single Sign-On (SSO) to ON and set the detailes for the selected authentication type."
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.sort_by",
+        "key": "console.setting.group.label.sortBy",
         "originalText": "Sort by"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.last_updated",
+        "key": "console.setting.group.label.lastUpdated",
         "originalText": "Last Updated"
       },
       {
         "type": "button",
-        "key": "console.setting.group.button.add_workspace",
+        "key": "console.setting.group.button.addWorkspace",
         "originalText": "Add Workspace"
       },
       {
         "type": "button",
-        "key": "console.setting.group.button.user_search",
+        "key": "console.setting.group.button.userSearch",
         "originalText": "User Search"
       },
       {
         "type": "button",
-        "key": "console.setting.group.button.about_role",
+        "key": "console.setting.group.button.aboutRole",
         "originalText": "About Role"
       },
       {
         "type": "button",
-        "key": "console.setting.group.button.change_business_site",
+        "key": "console.setting.group.button.changeBusinessSite",
         "originalText": "Change Business Site"
       },
       {
         "type": "button",
-        "key": "console.setting.group.button.user_search",
+        "key": "console.setting.group.button.userSearch",
         "originalText": "User Search"
       },
       {
         "type": "button",
-        "key": "console.setting.group.button.about_role",
+        "key": "console.setting.group.button.aboutRole",
         "originalText": "About Role"
       },
       {
@@ -435,22 +435,22 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.workspace_n",
+        "key": "console.setting.group.label.workspaceN",
         "originalText": "Workspace N"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.device_n",
+        "key": "console.setting.group.label.deviceN",
         "originalText": "Device N"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.user_n",
+        "key": "console.setting.group.label.userN",
         "originalText": "User N"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.search_for_workspace",
+        "key": "console.setting.group.label.searchForWorkspace",
         "originalText": "Search for Workspace"
       },
       {
@@ -460,27 +460,27 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.workspace_name",
+        "key": "console.setting.group.label.workspaceName",
         "originalText": "Workspace Name"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.device_count",
+        "key": "console.setting.group.label.deviceCount",
         "originalText": "Device Count"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.user_count",
+        "key": "console.setting.group.label.userCount",
         "originalText": "User Count"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.licensed_product",
+        "key": "console.setting.group.label.licensedProduct",
         "originalText": "Licensed Product"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.time_zone",
+        "key": "console.setting.group.label.timeZone",
         "originalText": "Time Zone"
       },
       {
@@ -525,17 +525,17 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.addon_service",
+        "key": "console.setting.group.label.addOnService",
         "originalText": "Add-On Service"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.site_map",
+        "key": "console.setting.group.label.siteMap",
         "originalText": "Site Map"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.floor_plan",
+        "key": "console.setting.group.label.floorPlan",
         "originalText": "Floor Plan"
       },
       {
@@ -565,22 +565,22 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.content_schedule",
+        "key": "console.setting.group.label.contentSchedule",
         "originalText": "Content Schedule"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.control_schedule",
+        "key": "console.setting.group.label.controlSchedule",
         "originalText": "Control Schedule"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.art_lounge",
+        "key": "console.setting.group.label.artLounge",
         "originalText": "Art Lounge"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.hotel_mobile_app",
+        "key": "console.setting.group.label.hotelMobileApp",
         "originalText": "Hotel Mobile App"
       },
       {
@@ -615,12 +615,12 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.art_lounge",
+        "key": "console.setting.group.label.artLounge",
         "originalText": "Art Lounge"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.addon_service",
+        "key": "console.setting.group.label.addOnService",
         "originalText": "Add-On Service"
       },
       {
@@ -660,12 +660,12 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.art_lounge",
+        "key": "console.setting.group.label.artLounge",
         "originalText": "Art Lounge"
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.addon_service",
+        "key": "console.setting.group.label.addOnService",
         "originalText": "Add-On Service"
       },
       {
@@ -675,7 +675,7 @@
       },
       {
         "type": "label",
-        "key": "console.setting.group.label.business_site_name",
+        "key": "console.setting.group.label.businessSiteName",
         "originalText": "Business Site Name"
       },
       {
@@ -701,7 +701,7 @@
       },
       {
         "type": "label",
-        "key": "console.doc.title.label.description_description_description",
+        "key": "console.doc.title.label.descriptionDescriptionDescriptionDescription",
         "originalText": "Description Description \nDescription Description"
       }
     ]

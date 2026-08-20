@@ -348,15 +348,44 @@ export function generateI18nKey(node: TextNode, frameContexts: Map<string, strin
   return `${domain}.${feature}.${role}.${identifier}`;
 }
 
+/**
+ * 텍스트에서 i18n key의 identifier 부분을 생성한다 (camelCase).
+ *
+ * 처리 순서가 중요하다. 구분자를 먼저 공백으로 바꾸지 않으면
+ * 단어가 붙어버린다: "Workspace/Group" → "workspacegroup" (X)
+ */
 function generateIdentifier(text: string): string {
-  // 텍스트에서 식별자 생성
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '')
-    .trim()
-    .split(/\s+/)
-    .slice(0, 3) // 최대 3단어
-    .join('_');
+  // 1. 구분자를 공백으로 치환 (제거하면 단어가 붙는다)
+  const separated = text.replace(/[/\-_+:,.()[\]{}|&*'"`~!?<>@#$%^=;\\]/g, ' ');
+
+  // 2. 영숫자와 공백만 남김
+  const cleaned = separated.replace(/[^a-zA-Z0-9\s]/g, ' ');
+
+  // 3. 토큰화
+  const rawTokens = cleaned.split(/\s+/).filter(Boolean);
+
+  // 4. 숫자만으로 된 토큰은 앞 토큰에 붙인다 (UTC 09 00 → utc0900)
+  const tokens: string[] = [];
+  for (const tok of rawTokens) {
+    if (/^\d+$/.test(tok) && tokens.length > 0) {
+      tokens[tokens.length - 1] += tok;
+    } else {
+      tokens.push(tok);
+    }
+  }
+
+  // 5. 최대 4단어까지 사용 (3단어로는 구분이 부족한 사례가 있었다)
+  const picked = tokens.slice(0, 4);
+  if (picked.length === 0) return 'unknown';
+
+  // 6. camelCase 조립
+  return picked
+    .map((tok, i) => {
+      const lower = tok.toLowerCase();
+      if (i === 0) return lower;
+      return lower.charAt(0).toUpperCase() + lower.slice(1);
+    })
+    .join('');
 }
 
 // ===== US-1.4: EXAONE 문맥 기반 번역 =====
