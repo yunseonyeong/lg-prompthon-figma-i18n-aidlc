@@ -215,10 +215,24 @@ describe('checkLayer4', () => {
     expect(issues[0].assignee).toBe('Dev-A (추출 필터)');
   });
 
-  it('원문 유지 시 통과한다', () => {
+  it('번역되지 않았어도 제외 대상은 검출한다', () => {
+    // 검증 명세: 애초에 추출되면 안 됐던 항목이므로 번역 여부와 무관하다.
+    // 번역만 안 됐다고 통과시키면 추출 필터가 고쳐지지 않아 매 라운드 재등장한다.
     const bundle: LocaleBundle = {
       en: { 'x.b': 'Business A' },
       ko: { 'x.b': 'Business A' },
+    };
+    const issues = checkLayer4(bundle, GLOSSARY);
+    expect(issues).toHaveLength(1);
+    expect(issues[0].message).toContain('추출됨');
+    expect(issues[0].expected).toBe('(추출 제외)');
+    expect(issues[0].assignee).toBe('Dev-A (추출 필터)');
+  });
+
+  it('제외 대상이 아니면 검출하지 않는다', () => {
+    const bundle: LocaleBundle = {
+      en: { 'x.n': 'Business Site Name' },
+      ko: { 'x.n': '비즈니스 사이트 이름' },
     };
     expect(checkLayer4(bundle, GLOSSARY)).toHaveLength(0);
   });

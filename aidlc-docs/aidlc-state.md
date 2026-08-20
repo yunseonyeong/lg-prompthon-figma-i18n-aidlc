@@ -40,6 +40,14 @@
 
 #### Unit 2: Quality System (Dev-B)
 
+**서브 항목의 출처**: 아래 서브 항목은 전부 `aidlc-docs/inception/user-stories/stories.md`의
+Acceptance Criteria 원문입니다 (US-2.1 5개 / US-2.2 4개 / US-2.3 4개 / US-2.4 3개 = 16개, 1:1 대응).
+제가 임의로 추가한 항목은 없습니다.
+
+`aidlc-docs/construction/build-and-test/i18n-verification-spec.md`가 이를 계층별로
+상세화하며, 검증해야 할 **알려진 결함 목록을 테스트 케이스로 지정**하고 있습니다
+("검증 체계가 이를 검출하지 못하면 규칙이 부족한 것이다"). 대조 결과는 아래 별도 표에 있습니다.
+
 수용 기준 단위로 대조했습니다. 미충족 항목은 근거를 남겼습니다.
 
 - [x] **US-2.1 번역 품질 자동 검증** (4/5) — `src/validation/layers.ts`
@@ -63,11 +71,32 @@
   - [ ] **i18n-agent가 피드백 반영해 재번역 — 트리거 없음**. 파이프라인 실행 주체가 없어 Dev-A 협의 필요
   - [ ] **최대 3회 재시도 후 에스컬레이션 — 미구현**. `rejected[id].length`로 계산 가능하나 판정 코드 없음
 
-**추가 구현 (수용 기준 외)**
-- [x] Layer 0 사전 차단 — 회귀/재발/제외미수정 검출. LLM 출력 흔들림으로 확정 번역이 망가지는 것을 차단
-- [x] 라운드 지표 축적 + 추이 리포트 — `rounds.jsonl`, `npm run report:evolution`
-- [x] Dev-A용 리트리버 함수 — `src/retrieval/index.ts`, `docs/retriever-integration.md`
-- [x] 에이전트 연결 — review-agent/glossary-agent가 결정론적 스크립트를 실행하도록 교정 (기존 설정은 존재하지 않는 용어집 경로를 참조해 용어집 없이 리뷰하고 있었음)
+**검증 명세의 알려진 결함 대조** (`i18n-verification-spec.md` 참고 절)
+
+| 계층 | 명세 건수 | 검출 | 비고 |
+|------|----------|------|------|
+| Layer 2 (L2-03) `Settings`/`Setting` 둘 다 "설정" | 1 | ✅ | 동일 번역 중복 검출 규칙 신규 추가 |
+| Layer 3 `Vertical Type` → "세로 유형" | 1 | ✅ | 규칙 보유. 현재 데이터는 이미 "산업 분야"로 수정된 상태 |
+| Layer 4 | 12 | ✅ 12 key | 번역되지 않은 제외 대상도 검출하도록 규칙 수정 |
+| 원문 문제 (`Thema` 2, `detailes` 1, `is required` 1) | 4 | ✅ 4 | `Thema` 오타·문장 조각 검출 신규 추가 |
+| Layer 1 | 0 | ✅ 0 | 명세와 일치 |
+
+**추가 구현 (문서에 정의되지 않은 자체 설계)**
+아래는 문서에 정의되지 않았고 구현 중 필요하다고 판단해 추가한 것입니다.
+출처를 구분해 둡니다.
+
+- [x] **Layer 0 사전 차단** — 회귀/재발/제외미수정 검출. **문서에 없는 자체 설계.**
+      근거: FR-09 "사용할수록 자가발전"을 만족하려면 확정 번역이 다음 라운드에
+      유지되는지 확인해야 함. LLM 출력이 흔들려 통과했던 번역이 망가지면
+      "개선"이 아니라 "요동"이 됨
+- [x] **라운드 지표 + 추이 리포트** — `rounds.jsonl`, `npm run report:evolution`.
+      **문서에 없음.** 근거: FR-09의 "자가발전"을 증명할 측정 수단이 없었음
+- [x] **Dev-A용 리트리버 함수** — `src/retrieval/index.ts`.
+      **문서에 없음. Dev-A 구두 요청** (2026-08-20). US-2.3의
+      "확정 데이터가 향후 번역 시 우선 참조됨"을 실제로 달성하는 경로
+- [x] **에이전트 설정 교정** — review-agent/glossary-agent.
+      기존 설정이 존재하지 않는 `.kiro/steering/domain-glossary.md`를 참조해
+      용어집 없이 리뷰하고 있었음. 결정론적 스크립트를 실행하도록 프롬프트/도구 수정
 
 **검증**: 테스트 64건 통과 / `round:simulate` 5라운드 FAIL 39→0, 검증대상 330→4
 
