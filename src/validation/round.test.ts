@@ -15,7 +15,7 @@ import {
   type FeedbackState,
 } from './preblock.js';
 import { evaluateRound } from './round.js';
-import { discoverTermCandidates, findRepeatedViolations } from './glossary-growth.js';
+import { discoverTermCandidates, findRepeatedViolations, findTermConflicts } from './glossary-growth.js';
 import type { Issue, LocaleBundle } from './types.js';
 
 const GLOSSARY: GlossaryData = {
@@ -226,6 +226,30 @@ describe('mergeRejected', () => {
     expect(mergeRejected(existing, incoming)['a::ko']).toHaveLength(1);
   });
 
+  it('중복 시 occurrences 를 올린다 (재시도 횟수 보존)', () => {
+    const existing = {
+      'a::ko': [{ key: 'a', locale: 'ko', wrong: 'X', reason: 'r', layer: 2, round: 1, occurrences: 1 }],
+    };
+    const incoming = {
+      'a::ko': [{ key: 'a', locale: 'ko', wrong: 'X', reason: 'r', layer: 2, round: 2 }],
+    };
+    const m = mergeRejected(existing, incoming);
+    expect(m['a::ko']).toHaveLength(1);
+    expect(m['a::ko'][0].occurrences).toBe(2);
+    expect(m['a::ko'][0].lastRound).toBe(2);
+  });
+
+  it('기존 이력을 변형하지 않는다 (불변성)', () => {
+    const existing = {
+      'a::ko': [{ key: 'a', locale: 'ko', wrong: 'X', reason: 'r', layer: 2, round: 1, occurrences: 1 }],
+    };
+    const incoming = {
+      'a::ko': [{ key: 'a', locale: 'ko', wrong: 'X', reason: 'r', layer: 2, round: 2 }],
+    };
+    mergeRejected(existing, incoming);
+    expect(existing['a::ko'][0].occurrences).toBe(1);
+  });
+
   it('다른 번역문은 추가한다', () => {
     const existing = {
       'a::ko': [{ key: 'a', locale: 'ko', wrong: 'X', reason: 'r', layer: 2, round: 1 }],
@@ -382,8 +406,7 @@ describe('glossary-growth', () => {
     expect(p['Filter'].status).toBe('approved');
   });
 
-  it('반복 위반 용어를 집계한다', () => {
-    const issues: Issue[] = [
+  it('반복 위반 용어를 집계한다', () => {    const issues: Issue[] = [
       { layer: 2, severity: 'WARN', key: 'a', locale: 'ko', message: '용어 불일치: "Workspace" → 기대 "워크스페이스"', assignee: 'x' },
       { layer: 2, severity: 'WARN', key: 'b', locale: 'ko', message: '용어 불일치: "Workspace" → 기대 "워크스페이스"', assignee: 'x' },
       { layer: 2, severity: 'WARN', key: 'c', locale: 'ko', message: '용어 불일치: "Group" → 기대 "그룹"', assignee: 'x' },
@@ -393,5 +416,62 @@ describe('glossary-growth', () => {
     expect(rv[0].count).toBe(2);
     // 1건만 위반한 Group은 제외
     expect(rv.find((x) => x.term === 'Group')).toBeUndefined();
+  });
+});
+
+describe('findTermConflicts — US-2.2 충돌 알림', () => {
+  it('이미 등재된 용어이고 번역이 일치하면 mismatch=false', () => {
+    const bundle: LocaleBundle = {
+      en: { 'a.ws': 'Workspace', 'b.ws': 'Workspace' },
+      ko: { 'a.ws': '워크스페이스', 'b.ws': '워크스페이스' },
+    };
+    const c = findTermConflicts(bundle, GLOSSARY);
+    const hit = c.find((x) => x.candidate === 'Workspace');
+    expect(hit).toBeDefined();
+    expect(hit?.kind).toBe('already-registered');
+    expect(hit?.mismatch).toBe(false);
+    expect(hit?.message).toContain('추가 등재 불필요');
+  });
+
+  it('등재 용어인데 번역이 어긋나면 mismatch=true로 알린다', () => {
+    const bundle: LocaleBundle = {
+      en: { 'a.ws': 'Workspace', 'b.ws': 'Workspace' },
+      ko: { 'a.ws': '작업 공간', 'b.ws': '작업 공간' }, // 등재는 '워크스페이스'
+    };
+    const hit = findTermConflicts(bundle, GLOSSARY).find((x) => x.candidate === 'Workspace');
+    expect(hit?.mismatch).toBe(true);
+    expect(hit?.existingKo).toBe('워크스페이스');
+    expect(hit?.candidateKo).toBe('작업 공간');
+    expect(hit?.message).toContain('Dev-A 재번역 필요');
+  });
+
+  it('제품명 후보는 제품명 충돌로 알린다', () => {
+    const bundle: LocaleBundle = {
+      en: { 'a.al': 'Art Lounge', 'b.al': 'Art Lounge' },
+      ko: { 'a.al': '아트 라운지', 'b.al': '아트 라운지' },
+    };
+    const hit = findTermConflicts(bundle, GLOSSARY).find((x) => x.candidate === 'Art Lounge');
+    expect(hit?.kind).toBe('product-name');
+    expect(hit?.mismatch).toBe(true);
+    expect(hit?.message).toContain('번역 금지');
+  });
+
+  it('복합어 내부 등재 용어 위반을 알린다 (§8-2)', () => {
+    const bundle: LocaleBundle = {
+      en: { 'a.wg': 'Workspace Settings', 'b.wg': 'Workspace Settings' },
+      ko: { 'a.wg': '작업 공간 설정', 'b.wg': '작업 공간 설정' },
+    };
+    const hit = findTermConflicts(bundle, GLOSSARY).find((x) => x.candidate === 'Workspace Settings');
+    expect(hit?.kind).toBe('covered-by-compound');
+    expect(hit?.mismatch).toBe(true);
+    expect(hit?.existingTerm).toBe('Workspace');
+  });
+
+  it('1회만 등장하면 충돌로 보고하지 않는다', () => {
+    const bundle: LocaleBundle = {
+      en: { 'a.ws': 'Workspace' },
+      ko: { 'a.ws': '작업 공간' },
+    };
+    expect(findTermConflicts(bundle, GLOSSARY)).toHaveLength(0);
   });
 });

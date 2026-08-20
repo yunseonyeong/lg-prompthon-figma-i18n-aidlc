@@ -53,6 +53,117 @@ export function saveProposals(data: Record<string, TermProposal>): void {
 const MIN_OCCURRENCES = 2;
 
 /**
+ * 기존 용어와의 충돌 (US-2.2 / FR-07: "기존 용어와 충돌 시 알림을 제공한다")
+ *
+ * 후보를 조용히 버리면 왜 제안되지 않았는지 알 수 없습니다.
+ * 특히 기존 등재 번역과 실제 번역이 어긋나는 경우(mismatch)는
+ * 용어집 문제가 아니라 Dev-A 번역 문제이므로 반드시 드러나야 합니다.
+ */
+export interface TermConflict {
+  candidate: string;
+  kind: 'already-registered' | 'product-name' | 'covered-by-compound';
+  /** 충돌한 기존 용어 */
+  existingTerm: string;
+  /** 기존 등재 번역 (ko) */
+  existingKo: string;
+  /** 후보의 실제 번역 (ko) */
+  candidateKo: string;
+  /** 기존 등재 번역과 어긋나는가 */
+  mismatch: boolean;
+  occurrences: number;
+  message: string;
+}
+
+/**
+ * 기존 용어와 충돌하는 후보를 수집한다.
+ * discoverTermCandidates 가 걸러낸 이유를 사용자에게 알리기 위한 것이다.
+ */
+export function findTermConflicts(
+  bundle: LocaleBundle,
+  glossary: GlossaryData
+): TermConflict[] {
+  const en = bundle['en'] ?? {};
+  const ko = bundle['ko'] ?? {};
+  const conflicts: TermConflict[] = [];
+
+  const bySource = new Map<string, string[]>();
+  for (const [key, value] of Object.entries(en)) {
+    const trimmed = value.trim();
+    if (!trimmed) continue;
+    if (glossary.excludePatterns.some((p) => trimmed.includes(p))) continue;
+    if (trimmed.split(/\s+/).length > 4) continue;
+    const norm = trimmed.replace(/\s*\*\s*$/, '').replace(/\s*:\s*$/, '');
+    if (!norm) continue;
+    const list = bySource.get(norm) ?? [];
+    list.push(key);
+    bySource.set(norm, list);
+  }
+
+  const byEnglish = new Map(glossary.entries.map((e) => [e.english.toLowerCase(), e]));
+  const productNames = new Map(glossary.productNames.map((p) => [p.toLowerCase(), p]));
+
+  for (const [source, keys] of bySource) {
+    if (keys.length < MIN_OCCURRENCES) continue;
+    const lower = source.toLowerCase();
+    const candidateKo = ko[keys[0]] ?? '';
+
+    const registered = byEnglish.get(lower);
+    if (registered) {
+      const mismatch = !!candidateKo && !candidateKo.toLowerCase().includes(registered.ko.toLowerCase());
+      conflicts.push({
+        candidate: source,
+        kind: 'already-registered',
+        existingTerm: registered.english,
+        existingKo: registered.ko,
+        candidateKo,
+        mismatch,
+        occurrences: keys.length,
+        message: mismatch
+          ? `이미 등재된 용어이나 번역이 어긋납니다. 등재 "${registered.ko}" vs 실제 "${candidateKo}" → Dev-A 재번역 필요`
+          : `이미 등재된 용어입니다 (${registered.ko}). 추가 등재 불필요`,
+      });
+      continue;
+    }
+
+    const product = productNames.get(lower);
+    if (product) {
+      conflicts.push({
+        candidate: source,
+        kind: 'product-name',
+        existingTerm: product,
+        existingKo: product,
+        candidateKo,
+        mismatch: !!candidateKo && candidateKo !== product,
+        occurrences: keys.length,
+        message: `제품명입니다 (glossary §7). 번역 금지 대상이므로 용어 등재가 아니라 원문 유지가 맞습니다`,
+      });
+      continue;
+    }
+
+    const covering = glossary.entries.find(
+      (e) => e.english && e.english.toLowerCase() !== lower && containsTerm(source, e.english)
+    );
+    if (covering) {
+      const mismatch = !!candidateKo && !candidateKo.toLowerCase().includes(covering.ko.toLowerCase());
+      conflicts.push({
+        candidate: source,
+        kind: 'covered-by-compound',
+        existingTerm: covering.english,
+        existingKo: covering.ko,
+        candidateKo,
+        mismatch,
+        occurrences: keys.length,
+        message: mismatch
+          ? `복합어 내부에 등재 용어 "${covering.english}"가 있으나 번역이 어긋납니다. 기대 "${covering.ko}" vs 실제 "${candidateKo}" (glossary §8-2)`
+          : `등재 용어 "${covering.english}"를 포함하는 복합어입니다. 별도 등재 불필요`,
+      });
+    }
+  }
+
+  return conflicts;
+}
+
+/**
  * 미등록 표현 후보 추출.
  *
  * en.json에서 다음 조건을 만족하는 원문을 후보로 본다.

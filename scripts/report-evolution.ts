@@ -45,14 +45,14 @@ function renderConsole(rounds: RoundMetrics[]): void {
   // 표
   console.log(
     `\n${'R'.padEnd(4)} ${'검증대상'.padEnd(10)} ${'건너뜀'.padEnd(9)} ${'FAIL'.padEnd(7)} ` +
-    `${'WARN'.padEnd(7)} ${'회귀'.padEnd(6)} ${'재발'.padEnd(6)} ${'확정누적'.padEnd(10)} 용어집`
+    `${'WARN'.padEnd(7)} ${'회귀'.padEnd(6)} ${'재발'.padEnd(6)} ${'에스컬'.padEnd(7)} ${'확정누적'.padEnd(10)} 용어집`
   );
   console.log('─'.repeat(94));
   for (const r of rounds) {
     console.log(
       `${String(r.round).padEnd(4)} ${String(r.checked).padEnd(10)} ${String(r.skipped).padEnd(9)} ` +
       `${String(r.fail).padEnd(7)} ${String(r.warn).padEnd(7)} ${String(r.regressions).padEnd(6)} ` +
-      `${String(r.recurrences).padEnd(6)} ${String(r.confirmedTotal).padEnd(10)} ${r.glossaryTerms}`
+      `${String(r.recurrences).padEnd(6)} ${String(r.escalations ?? 0).padEnd(7)} ${String(r.confirmedTotal).padEnd(10)} ${r.glossaryTerms}`
     );
   }
   console.log('─'.repeat(94));
@@ -120,13 +120,13 @@ function renderMarkdown(rounds: RoundMetrics[]): void {
     lines.push(
       '## 라운드별 지표',
       '',
-      '| Round | 검증 대상 | 확정 건너뜀 | FAIL | WARN | 회귀 | 재발 | 확정 누적 | 용어집 |',
-      '|-------|-----------|-------------|------|------|------|------|-----------|--------|'
+      '| Round | 검증 대상 | 확정 건너뜀 | FAIL | WARN | 회귀 | 재발 | 에스컬레이션 | 확정 누적 | 용어집 |',
+      '|-------|-----------|-------------|------|------|------|------|--------------|-----------|--------|'
     );
     for (const r of rounds) {
       lines.push(
         `| ${r.round} | ${r.checked} | ${r.skipped} | ${r.fail} | ${r.warn} | ` +
-        `${r.regressions} | ${r.recurrences} | ${r.confirmedTotal} | ${r.glossaryTerms} |`
+        `${r.regressions} | ${r.recurrences} | ${r.escalations ?? 0} | ${r.confirmedTotal} | ${r.glossaryTerms} |`
       );
     }
 

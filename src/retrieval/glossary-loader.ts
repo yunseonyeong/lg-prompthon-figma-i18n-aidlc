@@ -29,6 +29,13 @@ export interface GlossaryData {
  */
 export function loadGlossary(glossaryPath?: string): GlossaryData {
   const filePath = glossaryPath || path.join(ROOT, 'requirements', 'domain-glossary.md');
+  if (!fs.existsSync(filePath)) {
+    throw new Error(
+      `용어집을 찾을 수 없습니다: ${filePath}\n` +
+      `  이 파일은 검증과 리트리버의 기준입니다. git에 포함되어 있어야 합니다.\n` +
+      `  복구: git checkout requirements/domain-glossary.md`
+    );
+  }
   const content = fs.readFileSync(filePath, 'utf-8');
 
   const entries: GlossaryEntry[] = [];

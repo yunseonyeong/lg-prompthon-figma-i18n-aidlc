@@ -47,9 +47,20 @@ export interface RejectedEntry {
   wrong: string;
   reason: string;
   layer: number;
+  /** 최초 거부 라운드 */
   round: number;
   /** 올바른 번역이 확정된 경우 */
   correct?: string;
+  /**
+   * 같은 번역이 거부된 횟수 (재시도 횟수).
+   *
+   * 동일 번역문을 이력에 중복 저장하면 파일이 무한히 커지므로 병합하되,
+   * 재시도 상한(US-2.4) 판정에는 횟수가 필요하므로 카운터로 유지합니다.
+   * 없으면 1로 취급합니다 (구버전 데이터 호환).
+   */
+  occurrences?: number;
+  /** 마지막으로 거부된 라운드 */
+  lastRound?: number;
 }
 
 /** 번역 제외 확정 항목 (Layer 4) */
@@ -76,6 +87,8 @@ export interface RoundMetrics {
   recurrences: number;
   confirmedTotal: number;
   glossaryTerms: number;
+  /** 재시도 상한(3회) 초과로 사람 검토가 필요한 항목 수 */
+  escalations: number;
 }
 
 function ensureDir(): void {

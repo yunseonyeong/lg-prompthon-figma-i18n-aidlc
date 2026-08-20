@@ -27,12 +27,22 @@ export {
 } from './preblock.js';
 export {
   discoverTermCandidates,
+  findTermConflicts,
   findRepeatedViolations,
   loadProposals,
   saveProposals,
   PROPOSAL_PATH,
   type TermProposal,
+  type TermConflict,
 } from './glossary-growth.js';
+export {
+  findEscalations,
+  escalationsToIssues,
+  escalatedIds,
+  renderEscalationReport,
+  MAX_RETRIES,
+  type Escalation,
+} from './escalation.js';
 export {
   runRound,
   evaluateRound,
