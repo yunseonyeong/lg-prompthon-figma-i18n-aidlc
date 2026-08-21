@@ -1,41 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Card, Form, Button, Row, Col, ListGroup, Badge, Tab, Nav, Alert, Table, Spinner, Modal } from 'react-bootstrap';
+import { Card, Form, Button, Row, Col, ListGroup, Badge, Tab, Nav, Alert, Spinner } from 'react-bootstrap';
 import {
   API_BASE,
   DOWNLOADABLE_FILES,
   downloadUrl,
   fetchProjectConfig,
-  fetchTranslationSnapshot,
   saveProjectConfig,
-  translationsCsvUrl,
-  type TranslationSnapshot,
 } from '../../api/client';
 import { useFigmaMcpStatus } from '../../hooks/useFigmaData';
-import {
-  SkeletonList,
-  SkeletonRegion,
-  SkeletonStatCards,
-  SkeletonTable,
-} from '../Skeleton';
+import { SkeletonList, SkeletonRegion, SkeletonStatCards } from '../Skeleton';
 
 interface StepInputProps {
   onNext: () => void;
   /** 산출물이 없으면 Step 2(에러 화면) 대신 파이프라인 실행 화면으로 보낸다 */
   onGoToPipeline: () => void;
-}
-
-interface PipelineHistory {
-  id: string;
-  timestamp: string;
-  figmaFileKey: string;
-  figmaFileName: string;
-  extractedCount: number;
-  translatedCount: number;
-  componentsCount: number;
-  languages: string[];
-  /** 실행 시점 번역 스냅샷 보유 여부 (구버전 히스토리에는 없음) */
-  hasTranslations?: boolean;
-  keyCount?: number;
 }
 
 interface ProjectConfig {
@@ -58,26 +36,16 @@ function StepInput({ onNext, onGoToPipeline }: StepInputProps) {
     targetLanguages: ['en', 'ko', 'ja', 'zh-CN'],
     glossaryTermCount: 47,
   });
-  const [history, setHistory] = useState<PipelineHistory[]>([]);
   const [existingFiles, setExistingFiles] = useState<any[]>([]);
   const [hasExistingData, setHasExistingData] = useState(false);
   // API 응답 전/후를 구분해야 '데이터 없음'을 성급하게 렌더하지 않는다
   const [statusLoading, setStatusLoading] = useState(true);
-  const [historyLoading, setHistoryLoading] = useState(true);
-
-  // 실행별 번역 결과(다국어 테이블) 조회 상태
-  const [snapshot, setSnapshot] = useState<TranslationSnapshot | null>(null);
-  const [snapshotRunId, setSnapshotRunId] = useState<string | null>(null);
-  const [snapshotError, setSnapshotError] = useState<string | null>(null);
-  const [snapshotLoading, setSnapshotLoading] = useState(false);
-  const [snapshotFilter, setSnapshotFilter] = useState('');
 
   const [configSaving, setConfigSaving] = useState(false);
   const [configSaveMsg, setConfigSaveMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     loadExistingData();
-    loadHistory();
 
     // 설정 로드: 서버가 기준이다. localStorage는 서버 응답 전/실패 시 폴백.
     // (파이프라인은 서버에 저장된 값을 읽으므로 화면도 같은 값을 보여줘야 한다)
@@ -118,21 +86,6 @@ function StepInput({ onNext, onGoToPipeline }: StepInputProps) {
     }
   };
 
-  const loadHistory = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/pipeline/history`);
-      if (res.ok) {
-        const data = await res.json();
-        setHistory(data.history || []);
-      }
-    } catch {
-      const saved = localStorage.getItem('pipeline-history');
-      if (saved) setHistory(JSON.parse(saved));
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
-
   const handleUrlChange = (url: string) => {
     setConfig({ ...config, figmaUrl: url });
     const match = url.match(/figma\.com\/(?:design|file)\/([a-zA-Z0-9]+)/);
@@ -164,39 +117,6 @@ function StepInput({ onNext, onGoToPipeline }: StepInputProps) {
       setConfigSaving(false);
     }
   };
-
-  const openSnapshot = async (runId: string) => {
-    setSnapshotRunId(runId);
-    setSnapshotLoading(true);
-    setSnapshotError(null);
-    setSnapshot(null);
-    setSnapshotFilter('');
-    try {
-      setSnapshot(await fetchTranslationSnapshot(runId));
-    } catch (e: any) {
-      setSnapshotError(e?.message ?? String(e));
-    } finally {
-      setSnapshotLoading(false);
-    }
-  };
-
-  const closeSnapshot = () => {
-    setSnapshotRunId(null);
-    setSnapshot(null);
-    setSnapshotError(null);
-  };
-
-  const filteredRows = (snapshot?.rows ?? []).filter((r) => {
-    if (!snapshotFilter.trim()) return true;
-    const q = snapshotFilter.toLowerCase();
-    return (
-      r.key.toLowerCase().includes(q) ||
-      r.en.toLowerCase().includes(q) ||
-      r.ko.toLowerCase().includes(q) ||
-      r.ja.toLowerCase().includes(q) ||
-      r['zh-CN'].toLowerCase().includes(q)
-    );
-  });
 
   const localeFiles = existingFiles.filter((f) => f.path.includes('locales'));
   const componentFiles = existingFiles.filter((f) => f.path.includes('generated'));
@@ -268,11 +188,11 @@ function StepInput({ onNext, onGoToPipeline }: StepInputProps) {
               <span>⚙️</span> 프로젝트 설정
             </Nav.Link>
           </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="history" className="d-flex align-items-center gap-2">
-              <span>📜</span> 실행 히스토리
-            </Nav.Link>
-          </Nav.Item>
+          {/*
+            '실행 히스토리' 탭은 제거했다. 실행 요약(pipeline-history.json)은 실제
+            번역 결과와 별개로 관리되던 두 번째 기록이라 서로 어긋났다.
+            실행 이력은 Step 5(코드 생성)의 locale 실행 이력 하나로만 본다.
+          */}
         </Nav>
 
         <Tab.Content>
@@ -613,188 +533,8 @@ function StepInput({ onNext, onGoToPipeline }: StepInputProps) {
             </Row>
           </Tab.Pane>
 
-          {/* History Tab */}
-          <Tab.Pane eventKey="history">
-            {historyLoading ? (
-              <SkeletonRegion label="실행 히스토리를 불러오는 중">
-                <Card className="ux-card">
-                  <Card.Header className="ux-card-header d-flex align-items-center gap-2">
-                    <span>📜</span> 파이프라인 실행 히스토리
-                  </Card.Header>
-                  {/* 실제 표와 동일한 7열 */}
-                  <SkeletonTable rows={4} columns={7} />
-                </Card>
-              </SkeletonRegion>
-            ) : history.length > 0 ? (
-              <Card className="ux-card">
-                <Card.Header className="ux-card-header d-flex align-items-center gap-2">
-                  <span>📜</span> 파이프라인 실행 히스토리
-                </Card.Header>
-                <div className="table-responsive">
-                  <Table className="ux-table mb-0">
-                    <thead>
-                      <tr>
-                        <th>실행 시간</th>
-                        <th>Figma 파일</th>
-                        <th>추출</th>
-                        <th>번역</th>
-                        <th>컴포넌트</th>
-                        <th>언어</th>
-                        <th>번역 결과</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {history.map((item) => (
-                        <tr key={item.id}>
-                          <td className="small">{new Date(item.timestamp).toLocaleString()}</td>
-                          <td>
-                            <code className="small text-primary">{item.figmaFileKey.slice(0, 8)}...</code>
-                          </td>
-                          <td>
-                            <Badge className="ux-badge ux-badge-primary">{item.extractedCount}개</Badge>
-                          </td>
-                          <td>
-                            <Badge className="ux-badge ux-badge-success">{item.translatedCount}개</Badge>
-                          </td>
-                          <td>
-                            <Badge className="ux-badge ux-badge-info">{item.componentsCount}개</Badge>
-                          </td>
-                          <td>
-                            <div className="d-flex gap-1 flex-wrap">
-                              {item.languages.map((l) => (
-                                <Badge key={l} bg="secondary" className="fw-normal">
-                                  {l}
-                                </Badge>
-                              ))}
-                            </div>
-                          </td>
-                          <td>
-                            {/* 스냅샷은 이번 변경 이후 실행에만 존재한다. 구버전 항목은 비활성 처리 */}
-                            {item.hasTranslations === false || item.hasTranslations === undefined ? (
-                              <span className="text-muted small" title="이 실행에는 번역 스냅샷이 없습니다">
-                                —
-                              </span>
-                            ) : (
-                              <div className="d-flex gap-1">
-                                <Button
-                                  size="sm"
-                                  variant="outline-primary"
-                                  onClick={() => void openSnapshot(item.id)}
-                                >
-                                  📋 보기
-                                  {item.keyCount ? ` (${item.keyCount})` : ''}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline-secondary"
-                                  href={translationsCsvUrl(item.id)}
-                                >
-                                  ⬇ CSV
-                                </Button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </div>
-              </Card>
-            ) : (
-              <Card className="ux-card text-center py-5">
-                <Card.Body>
-                  <div className="fs-1 mb-3">📜</div>
-                  <h5 className="fw-bold mb-2">실행 히스토리가 없습니다</h5>
-                  <p className="text-muted">파이프라인을 실행하면 히스토리가 기록됩니다.</p>
-                </Card.Body>
-              </Card>
-            )}
-          </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
-
-      {/* 실행별 번역 결과 (다국어 테이블) */}
-      <Modal show={snapshotRunId !== null} onHide={closeSnapshot} size="xl" scrollable>
-        <Modal.Header closeButton>
-          <Modal.Title className="h6">
-            번역 결과 (다국어 테이블)
-            {snapshot && (
-              <span className="text-muted small ms-2">
-                {new Date(snapshot.at).toLocaleString()} · {snapshot.rowCount}건
-              </span>
-            )}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {snapshotLoading && (
-            <div className="text-center py-4">
-              <Spinner animation="border" className="mb-2" />
-              <div className="text-muted small">번역 결과를 불러오는 중...</div>
-            </div>
-          )}
-          {snapshotError && <Alert variant="danger">{snapshotError}</Alert>}
-          {snapshot && (
-            <>
-              <Form.Control
-                size="sm"
-                className="mb-3"
-                placeholder="키 또는 번역문으로 검색..."
-                value={snapshotFilter}
-                onChange={(e) => setSnapshotFilter(e.target.value)}
-              />
-              <div className="text-muted small mb-2">
-                {filteredRows.length}/{snapshot.rowCount}건 표시
-              </div>
-              <Table size="sm" striped hover responsive className="mb-0">
-                <thead>
-                  <tr>
-                    <th>i18n Key</th>
-                    <th>🇺🇸 en</th>
-                    <th>🇰🇷 ko</th>
-                    <th>🇯🇵 ja</th>
-                    <th>🇨🇳 zh-CN</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRows.map((r) => (
-                    <tr key={r.key}>
-                      <td>
-                        <code className="small">{r.key}</code>
-                      </td>
-                      <td className="small">{r.en}</td>
-                      {/* 번역이 원문과 같으면 미번역 상태다. 회색으로 구분한다 */}
-                      <td className={`small ${r.ko === r.en ? 'text-muted' : ''}`}>{r.ko}</td>
-                      <td className={`small ${r.ja === r.en ? 'text-muted' : ''}`}>{r.ja}</td>
-                      <td className={`small ${r['zh-CN'] === r.en ? 'text-muted' : ''}`}>
-                        {r['zh-CN']}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </>
-          )}
-        </Modal.Body>
-        <Modal.Footer className="justify-content-between">
-          <span className="text-muted small">
-            회색 = 원문과 동일 (미번역)
-          </span>
-          <div className="d-flex gap-2">
-            {snapshotRunId && (
-              <Button
-                variant="outline-primary"
-                size="sm"
-                href={translationsCsvUrl(snapshotRunId)}
-              >
-                ⬇ CSV 다운로드
-              </Button>
-            )}
-            <Button variant="secondary" size="sm" onClick={closeSnapshot}>
-              닫기
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
 
       {/* Next Button */}
       <div className="d-flex justify-content-end gap-2 mt-4">

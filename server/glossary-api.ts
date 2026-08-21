@@ -16,8 +16,10 @@ const GLOSSARY_PATH = path.join(__dirname, '../src/data/glossary.json');
 const LOCALES_DIR = path.join(__dirname, '../src/locales');
 const COMPONENTS_MAP_PATH = path.join(__dirname, '../src/components-map.json');
 const GENERATED_COMPONENTS_DIR = path.join(__dirname, '../src/components/generated');
-const HISTORY_PATH = path.join(__dirname, '../src/data/pipeline-history.json');
 const CONFIG_PATH = path.join(__dirname, '../src/data/project-config.json');
+// 파이프라인(writeLocaleFiles)이 실행 시점 locale 사본을 남기는 곳.
+// 실행 이력은 이 디렉터리 하나만 본다 — 별도 실행 요약 기록은 두지 않는다.
+const LOCALE_HISTORY_DIR = path.join(__dirname, '../src/data/locale-history');
 
 const app = express();
 app.use(cors());
@@ -55,43 +57,14 @@ app.put('/api/config', async (req, res) => {
   }
 });
 
-// ============ 히스토리 API ============
-
-// GET /api/pipeline/history - 실행 히스토리 조회
-app.get('/api/pipeline/history', async (_req, res) => {
-  try {
-    const data = await fs.readFile(HISTORY_PATH, 'utf-8');
-    res.json(JSON.parse(data));
-  } catch {
-    res.json({ history: [] });
-  }
-});
-
-// POST /api/pipeline/history - 히스토리 추가
-app.post('/api/pipeline/history', async (req, res) => {
-  try {
-    let data: { history: any[] } = { history: [] };
-    try {
-      data = JSON.parse(await fs.readFile(HISTORY_PATH, 'utf-8'));
-    } catch {}
-    
-    const entry = {
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      ...req.body,
-    };
-    
-    data.history.unshift(entry); // 최신이 위로
-    data.history = data.history.slice(0, 50); // 최대 50개 유지
-    
-    await fs.mkdir(path.dirname(HISTORY_PATH), { recursive: true });
-    await fs.writeFile(HISTORY_PATH, JSON.stringify(data, null, 2), 'utf-8');
-    res.json({ success: true, entry });
-  } catch (error) {
-    console.error('히스토리 저장 실패:', error);
-    res.status(500).json({ error: '히스토리를 저장할 수 없습니다.' });
-  }
-});
+// ============ 실행 히스토리 API — 제거됨 ============
+//
+// 예전에는 `src/data/pipeline-history.json`에 실행 요약을 따로 쌓고
+// GET/POST /api/pipeline/history로 읽고 썼다. 실제 번역 결과(locale 사본)와 별개로
+// 관리되는 두 번째 기록이라 한쪽만 적재되는 상태가 실제로 발생했다
+// (서버 내 /translate 경로는 요약을 남기지 않았다).
+//
+// 실행 이력은 locale 사본 하나로만 본다: GET /api/pipeline/locale-history
 
 // ============ 용어집 API ============
 
@@ -332,6 +305,72 @@ app.put('/api/pipeline/locales/:lang', async (req, res) => {
   }
 });
 
+// ============ locale 실행 이력 ============
+// src/locales/*.json은 실행마다 갱신되므로 과거 결과는 파이프라인이 남긴
+// src/data/locale-history/<runId>/ 사본으로만 볼 수 있다.
+
+/** runId는 파이프라인이 만드는 `20260821-110433` 형식만 허용한다 (경로 이탈 차단) */
+const LOCALE_RUN_ID_RE = /^\d{8}-\d{6}$/;
+
+/** `20260821-110433` → ISO 문자열 (meta.json이 없는 이력도 시각을 보여주기 위한 폴백) */
+function runIdToIso(runId: string): string | null {
+  const m = runId.match(/^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})$/);
+  if (!m) return null;
+  const [, y, mo, d, h, mi, s] = m;
+  return new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}`).toISOString();
+}
+
+// GET /api/pipeline/locale-history - 실행 이력 목록 (최신순)
+app.get('/api/pipeline/locale-history', async (_req, res) => {
+  try {
+    const entries = await fs.readdir(LOCALE_HISTORY_DIR, { withFileTypes: true });
+    const runs = [];
+
+    for (const dir of entries.filter((d) => d.isDirectory() && LOCALE_RUN_ID_RE.test(d.name))) {
+      const runDir = path.join(LOCALE_HISTORY_DIR, dir.name);
+      let meta: any = {};
+      try {
+        meta = JSON.parse(await fs.readFile(path.join(runDir, 'meta.json'), 'utf-8'));
+      } catch {
+        /* meta가 없으면 디렉터리 이름에서 시각을 유추한다 */
+      }
+      const files = await fs.readdir(runDir);
+      runs.push({
+        runId: dir.name,
+        at: meta.at ?? runIdToIso(dir.name),
+        languages: meta.languages ?? files.filter((f) => f !== 'meta.json').map((f) => f.replace('.json', '')),
+        keyCount: meta.keyCount ?? 0,
+      });
+    }
+
+    runs.sort((a, b) => b.runId.localeCompare(a.runId));
+    res.json({ runs });
+  } catch {
+    // 아직 파이프라인을 돌린 적이 없으면 디렉터리가 없다. 빈 목록이 정상 응답이다.
+    res.json({ runs: [] });
+  }
+});
+
+// GET /api/pipeline/locale-history/:runId/:lang - 특정 실행 시점의 locale JSON
+app.get('/api/pipeline/locale-history/:runId/:lang', async (req, res) => {
+  const { runId, lang } = req.params;
+  if (!LOCALE_RUN_ID_RE.test(runId)) {
+    return res.status(400).json({ error: `잘못된 runId 형식: ${runId}` });
+  }
+  if (!(SUPPORTED_LANGS as readonly string[]).includes(lang)) {
+    return res.status(400).json({ error: `지원하지 않는 언어: ${lang}` });
+  }
+  try {
+    const content = await fs.readFile(
+      path.join(LOCALE_HISTORY_DIR, runId, `${lang}.json`),
+      'utf-8'
+    );
+    res.json(JSON.parse(content));
+  } catch {
+    res.status(404).json({ error: '해당 실행 이력을 찾을 수 없습니다.' });
+  }
+});
+
 // GET /api/pipeline/components-map - Components Map 조회
 app.get('/api/pipeline/components-map', async (_req, res) => {
   try {
@@ -420,6 +459,9 @@ app.post('/api/pipeline/run', async (req, res) => {
     let output = '';
     let extractedCount = 0;
     let translatedCount = 0;
+    let componentCount = 0;
+    /** exit code 0인데도 실패한 단계가 있으면 여기에 모아 complete 이벤트로 함께 보낸다 */
+    const pipelineErrors: string[] = [];
     
     child.stdout.on('data', (data: Buffer) => {
       const text = data.toString();
@@ -427,24 +469,27 @@ app.post('/api/pipeline/run', async (req, res) => {
       console.log(text);
       
       // 진행 단계 파싱
-      if (text.includes('Step 1')) {
-        sendEvent('progress', { step: 1, message: 'Figma 텍스트 추출 중...' });
-      } else if (text.includes('Step 2')) {
-        sendEvent('progress', { step: 2, message: 'UX 흐름 문맥 분석 중...' });
-      } else if (text.includes('Step 3')) {
-        sendEvent('progress', { step: 3, message: 'i18n Key 생성 중...' });
-      } else if (text.includes('Step 4')) {
-        sendEvent('progress', { step: 4, message: 'EXAONE 문맥 기반 번역 중...' });
-      } else if (text.includes('Step 5')) {
-        sendEvent('progress', { step: 5, message: 'Locale JSON 출력 중...' });
-      } else if (text.includes('Step 6')) {
-        sendEvent('progress', { step: 6, message: 'Components Map 생성 중...' });
-      } else if (text.includes('Step 7')) {
-        sendEvent('progress', { step: 7, message: '용어집 등록 제안 생성 중...' });
-      } else if (text.includes('Step 8')) {
-        sendEvent('progress', { step: 8, message: 'EXAONE React 컴포넌트 생성 중...' });
+      //
+      // 주의: 한 청크에 여러 Step 로그가 함께 담기면 아래 else-if 체인은 첫 번째만
+      // 반영한다. 마지막으로 등장한 단계를 우선하도록 먼저 훑는다.
+      const stepMatches = [...text.matchAll(/Step ([1-8])/g)];
+      const lastStep = stepMatches.length > 0
+        ? Number(stepMatches[stepMatches.length - 1][1])
+        : null;
+      const STEP_MESSAGES: Record<number, string> = {
+        1: 'Figma 텍스트 추출 중...',
+        2: 'UX 흐름 문맥 분석 중...',
+        3: 'i18n Key 생성 중...',
+        4: 'EXAONE 문맥 기반 번역 중...',
+        5: 'Locale JSON 출력 중...',
+        6: 'Components Map 생성 중...',
+        7: '용어집 등록 제안 생성 중...',
+        8: 'EXAONE React 컴포넌트 생성 중...',
+      };
+      if (lastStep !== null) {
+        sendEvent('progress', { step: lastStep, message: STEP_MESSAGES[lastStep] });
       }
-      
+
       // 추출된 텍스트 수 파싱
       const textMatch = text.match(/추출된 텍스트 노드: (\d+)개/);
       if (textMatch) {
@@ -458,11 +503,25 @@ app.post('/api/pipeline/run', async (req, res) => {
         translatedCount = parseInt(translateMatch[1]);
         sendEvent('info', { type: 'translated', count: translatedCount });
       }
+
+      // 생성된 컴포넌트 수 파싱.
+      // 이 값이 오지 않으면 Step 8이 아무것도 만들지 못한 것이다 —
+      // 화면이 "완료"만 보여주고 끝나지 않도록 별도 이벤트로 알린다.
+      const componentMatch = text.match(/생성된 컴포넌트: (\d+)개/);
+      if (componentMatch) {
+        componentCount = parseInt(componentMatch[1]);
+        sendEvent('info', { type: 'components', count: componentCount });
+      }
     });
     
     child.stderr.on('data', (data: Buffer) => {
       const text = data.toString();
       console.error('   [STDERR]', text);
+      // 파이프라인은 자격증명 누락·Step 8 실패를 stderr로 알린다.
+      // exit code는 0이므로 이 메시지가 유일한 단서다.
+      if (text.includes('FRIENDLI_API_KEY') || text.includes('Step 8 실패')) {
+        pipelineErrors.push(text.trim());
+      }
       sendEvent('error', { message: text });
     });
     
@@ -477,25 +536,21 @@ app.post('/api/pipeline/run', async (req, res) => {
         const files = await getGeneratedFiles();
         console.log(`   생성된 파일: ${files.length}개`);
         
-        // 히스토리 저장
-        try {
-          const componentsCount = files.filter(f => f.path.includes('generated') && f.path.endsWith('.tsx')).length;
-          await saveHistory({
-            figmaFileKey: figmaFileKey || 'zdG3CHXVU6TzD4cc28o5Yb',
-            figmaFileName: 'LG Business Cloud Console',
-            extractedCount,
-            translatedCount,
-            componentsCount,
-            languages: ['en', 'ko', 'ja', 'zh-CN'],
-          });
-        } catch (e) {
-          console.error('히스토리 저장 실패:', e);
-        }
-        
-        sendEvent('complete', { 
-          success: true, 
+        // 실행 요약 기록은 남기지 않는다. 파이프라인이 이미
+        // src/data/locale-history/<runId>/ 에 실행 시점 사본 + meta.json을 남기며,
+        // 그게 이 실행에 대한 유일한 기록이다 (GET /api/pipeline/locale-history).
+
+        // exit code 0이어도 컴포넌트 생성은 실패할 수 있다(파이프라인이 삼키고 계속 진행).
+        // "완료"라고만 말하면 화면이 거짓말을 하게 되므로 부분 실패를 명시한다.
+        sendEvent('complete', {
+          success: true,
           files,
-          message: '파이프라인 완료!' 
+          componentCount,
+          warnings: pipelineErrors,
+          message:
+            pipelineErrors.length > 0
+              ? '파이프라인은 끝났지만 일부 단계가 실패했습니다 (컴포넌트 생성 확인 필요)'
+              : '파이프라인 완료!',
         });
       } else {
         console.log(`   ❌ 파이프라인 실패`);
@@ -510,6 +565,9 @@ app.post('/api/pipeline/run', async (req, res) => {
     child.on('error', (err) => {
       console.error('   [SPAWN ERROR]', err);
       sendEvent('error', { message: err.message });
+      // 이 핸들러에서 res.end()를 하지 않으면 클라이언트가 무한 대기한다
+      // (spawn 자체가 실패하면 close 이벤트가 오지 않는다).
+      res.end();
     });
     
   } catch (error: any) {
@@ -560,23 +618,6 @@ app.use('/api/pipeline', pipelineRouter);
 
 
 // 헬퍼 함수들
-async function saveHistory(entry: any) {
-  let data = { history: [] as any[] };
-  try {
-    data = JSON.parse(await fs.readFile(HISTORY_PATH, 'utf-8'));
-  } catch {}
-  
-  data.history.unshift({
-    id: Date.now().toString(),
-    timestamp: new Date().toISOString(),
-    ...entry,
-  });
-  data.history = data.history.slice(0, 50);
-  
-  await fs.mkdir(path.dirname(HISTORY_PATH), { recursive: true });
-  await fs.writeFile(HISTORY_PATH, JSON.stringify(data, null, 2), 'utf-8');
-}
-
 function countKeys(obj: any, prefix = ''): number {
   let count = 0;
   for (const key in obj) {
@@ -628,7 +669,10 @@ async function getGeneratedFiles() {
   return files;
 }
 
-const PORT = 3001;
+// 포트를 고정하면 이미 3001을 쓰는 프로세스가 있을 때 두 번째 인스턴스가
+// 조용히 같은 포트를 잡으려 하고, 요청이 어느 쪽으로 가는지 알 수 없다.
+// PORT로 덮어쓸 수 있게 두면 별도 인스턴스로 검증할 수 있다.
+const PORT = Number(process.env.PORT) || 3001;
 app.listen(PORT, () => {
   console.log(`🚀 UX DLC API 서버 실행 중: http://localhost:${PORT}`);
   console.log('   - 용어집 API: /api/glossary');

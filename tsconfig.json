@@ -19,5 +19,11 @@
     "esModuleInterop": true,
     "types": ["vite/client", "node"]
   },
-  "include": ["src", "scripts", "server"]
+  "include": ["src", "scripts", "server"],
+  // EXAONE이 생성한 초안 코드는 타입 검사 대상에서 뺀다.
+  // 이 파일들을 import하는 코드는 없고(화면은 /api/pipeline/components로 텍스트로 읽어 보여준다),
+  // LLM 출력이 항상 컴파일 가능하다고 보장할 수 없다. 포함시키면 파이프라인 실행 한 번으로
+  // 프로젝트 전체 typecheck/build가 깨진다(실측: 미사용 import, 누락된 Form import).
+  // 생성 결과를 실제로 쓸 때는 이 디렉터리에서 꺼내 검토·수정한 뒤 src로 옮기는 흐름이다.
+  "exclude": ["src/components/generated"]
 }

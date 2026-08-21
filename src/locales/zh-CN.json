@@ -2,11 +2,16 @@
   "console": {
     "setting": {
       "group": {
+        "title": {
+          "workspaceGroupSettings": "工作区/组设置",
+          "businessSiteName": "业务站点名称",
+          "apiAccess": "API 访问",
+          "automaticLicenseAssignment": "自动许可证分配",
+          "automaticDeviceApproval": "自动设备批准",
+          "singleSignOnSso": "单点登录 (SSO)",
+          "console": "管理控制台"
+        },
         "label": {
-          "content": "内容",
-          "schedule": "日程",
-          "device": "设备",
-          "settings": "设置",
           "signage": "数字标牌",
           "isRequired": "必填",
           "calendar": "日历",
@@ -55,12 +60,14 @@
           "deviceCount": "设备数",
           "userCount": "用户数",
           "licensedProduct": "许可产品",
-          "timeZone2": "Time Zone",
-          "dashboard": "仪表板",
+          "timeZone2": "时区",
+          "dashboard": "管理界面",
           "space": "空间",
           "devices": "设备",
           "data": "数据",
+          "content": "多媒体",
           "rules": "规则",
+          "schedule": "日程",
           "addOnService": "附加服务",
           "siteMap": "站点地图",
           "floorPlan": "平面图",
@@ -69,22 +76,15 @@
           "analytics": "分析",
           "library": "库",
           "videowall": "视频墙",
-          "contentSchedule": "内容日程",
+          "contentSchedule": "多媒体日程",
           "controlSchedule": "控制日程",
           "artLounge": "Art Lounge",
           "hotelMobileApp": "Hotel Mobile App",
+          "device": "设备",
           "site": "站点",
           "ads": "广告",
-          "setting": "设置"
-        },
-        "title": {
-          "console": "控制台",
-          "workspaceGroupSettings": "工作区/组设置",
-          "businessSiteName": "业务站点名称",
-          "apiAccess": "API 访问",
-          "automaticLicenseAssignment": "自动许可证分配",
-          "automaticDeviceApproval": "自动设备批准",
-          "singleSignOnSso": "单点登录 (SSO)"
+          "setting": "设置",
+          "settings": "设置"
         },
         "button": {
           "publish": "发布",

@@ -24,6 +24,8 @@ const MCP_STYLES = {
     dimensions: { width: 400, height: 40 },
     gap: '8px',
     justifyContent: 'space-between',
+    // simplified 형식이 주는 부모 기준 상대 좌표 (픽셀 미리보기의 입력)
+    locationRelativeToParent: { x: 32, y: 24 },
   },
   style_TITLE: { fontFamily: 'Inter', fontSize: 24, fontWeight: 700 },
   style_BTN: { fontFamily: 'Inter', fontSize: 14, fontWeight: 600 },
@@ -117,6 +119,15 @@ describe('normalizeMcpNode', () => {
     expect(title.backgroundColor).toBeUndefined();
   });
 
+  it('부모 기준 상대 좌표를 그대로 옮긴다 (Figma 픽셀 미리보기 입력)', () => {
+    const header = view.children![0];
+    expect(header.x).toBe(32);
+    expect(header.y).toBe(24);
+    // 좌표가 없는 노드는 undefined로 남아야 한다 (렌더러가 흐름 배치로 폴백한다)
+    expect(view.x).toBeUndefined();
+    expect(header.children![0].x).toBeUndefined();
+  });
+
   it('텍스트 스타일과 트리 구조를 유지한다', () => {
     const header = view.children![0];
     expect(header.layoutMode).toBe('row');
@@ -151,6 +162,15 @@ describe('normalizeRestNode', () => {
   it('characters의 앞뒤 공백을 정규화한다', () => {
     // Figma 텍스트에는 선행/후행 공백이 흔하다. 정규화하지 않으면 i18n 키 매핑이 실패한다.
     expect(view.children![0].text).toBe('Workspace/Group Settings');
+  });
+
+  it('절대 좌표를 부모 기준 상대 좌표로 변환한다 (MCP와 같은 기준)', () => {
+    // REST는 absoluteBoundingBox(절대)만 준다. 부모 좌표를 빼야 left/top으로 쓸 수 있다.
+    const title = view.children![0];
+    expect(title.x).toBe(32); // 32 - 0
+    expect(title.y).toBe(24); // 24 - 0
+    // 루트는 기준이 될 부모가 없으므로 좌표를 갖지 않는다
+    expect(view.x).toBeUndefined();
   });
 });
 

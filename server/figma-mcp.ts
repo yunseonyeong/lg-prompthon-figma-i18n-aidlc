@@ -51,6 +51,14 @@ export interface FigmaNodeView {
   layoutMode: 'none' | 'row' | 'column';
   width?: number;
   height?: number;
+  /**
+   * 부모 기준 상대 좌표(px). Figma 픽셀 그대로 미리보기를 그릴 때 쓴다.
+   *
+   * MCP는 layout.locationRelativeToParent로 이미 상대 좌표를 주고,
+   * REST는 absoluteBoundingBox 절대 좌표라 부모 좌표를 빼서 맞춘다.
+   */
+  x?: number;
+  y?: number;
   padding?: string;
   gap?: string;
   alignItems?: string;
@@ -244,6 +252,14 @@ export function normalizeMcpNode(node: any, styles: Record<string, unknown>): Fi
   const dims = layout.dimensions ?? {};
   if (isNum(dims.width)) view.width = Math.round(dims.width);
   if (isNum(dims.height)) view.height = Math.round(dims.height);
+
+  // simplified 형식은 부모 기준 상대 좌표를 그대로 준다
+  const loc = layout.locationRelativeToParent;
+  if (loc && isNum(loc.x) && isNum(loc.y)) {
+    view.x = Math.round(loc.x);
+    view.y = Math.round(loc.y);
+  }
+
   if (typeof layout.padding === 'string') view.padding = layout.padding;
   if (typeof layout.gap === 'string') view.gap = layout.gap;
   if (typeof layout.alignItems === 'string') view.alignItems = cssAlign(layout.alignItems);
@@ -306,8 +322,16 @@ async function fetchViaRest(
   return { frames: roots.filter(Boolean).map((n) => normalizeRestNode(n)) };
 }
 
-/** Figma raw 노드 → FigmaNodeView */
-export function normalizeRestNode(node: any): FigmaNodeView {
+/**
+ * Figma raw 노드 → FigmaNodeView
+ *
+ * parentBox는 상대 좌표 계산용이다. REST는 절대 좌표(absoluteBoundingBox)만 주므로
+ * 부모 좌표를 빼서 MCP의 locationRelativeToParent와 같은 기준으로 맞춘다.
+ */
+export function normalizeRestNode(
+  node: any,
+  parentBox?: { x: number; y: number }
+): FigmaNodeView {
   const view: FigmaNodeView = {
     id: String(node.id ?? ''),
     name: String(node.name ?? ''),
@@ -324,6 +348,10 @@ export function normalizeRestNode(node: any): FigmaNodeView {
   if (box) {
     if (isNum(box.width)) view.width = Math.round(box.width);
     if (isNum(box.height)) view.height = Math.round(box.height);
+    if (parentBox && isNum(box.x) && isNum(box.y)) {
+      view.x = Math.round(box.x - parentBox.x);
+      view.y = Math.round(box.y - parentBox.y);
+    }
   }
 
   const pt = node.paddingTop ?? 0;
@@ -352,7 +380,10 @@ export function normalizeRestNode(node: any): FigmaNodeView {
   if (isNum(node.opacity) && node.opacity < 1) view.opacity = node.opacity;
 
   if (Array.isArray(node.children) && node.children.length > 0) {
-    view.children = node.children.map((c: any) => normalizeRestNode(c));
+    // 자식의 상대 좌표는 이 노드의 절대 좌표 기준이다
+    const selfBox =
+      box && isNum(box.x) && isNum(box.y) ? { x: box.x, y: box.y } : parentBox;
+    view.children = node.children.map((c: any) => normalizeRestNode(c, selfBox));
   }
 
   return view;

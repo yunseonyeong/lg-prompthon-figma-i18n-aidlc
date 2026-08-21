@@ -10,8 +10,9 @@ import { useMemo, useState } from 'react';
 import { Card, Row, Col, Table, Button, Badge, Alert, Spinner, Form } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../LanguageSwitcher';
-import FigmaFrameRenderer from '../FigmaFrameRenderer';
+import FigmaFrameRenderer, { type FigmaRenderMode } from '../FigmaFrameRenderer';
 import { useComponentsMap, useFigmaMcpStatus, useFigmaStructure } from '../../hooks/useFigmaData';
+import { stripUxDocNodes } from '../../utils/figmaPreview';
 import { SkeletonPanel, SkeletonRegion, SkeletonTable } from '../Skeleton';
 import type { FigmaNodeView, FigmaSource } from '../../types/figma';
 
@@ -53,10 +54,25 @@ function StepPreview({ onBack, onNext }: StepPreviewProps) {
 
   const [selectedFrameIdx, setSelectedFrameIdx] = useState(0);
   const [highlight, setHighlight] = useState(true);
+  // 기본은 Figma 좌표 그대로(pixel). flow는 Auto Layout으로 흐르게 두는 비교용 모드로,
+  // 번역이 길어져 상자를 넘칠 때 어떻게 밀리는지 확인할 때 쓴다.
+  const [renderMode, setRenderMode] = useState<FigmaRenderMode>('pixel');
+  // UX 시나리오 장표의 문서 요소(설명 표 / 장표 제목)를 숨긴다. 기본 켜짐.
+  const [hideDocNodes, setHideDocNodes] = useState(true);
 
   const frames = structure.data?.frames ?? [];
-  const frame: FigmaNodeView | undefined = frames[selectedFrameIdx];
+  const rawFrame: FigmaNodeView | undefined = frames[selectedFrameIdx];
   const stats = structure.data?.stats;
+
+  /**
+   * 대상 프레임은 UX 시나리오 장표라 실제 화면과 문서 부속물(No/Classification/Description
+   * 설명 표, 장표 제목)이 형제로 들어 있다. 기본은 화면만 보여준다.
+   * (서버 응답은 그대로 두고 화면에서만 걸러낸다 — src/utils/figmaPreview.ts)
+   */
+  const stripped = useMemo(() => (rawFrame ? stripUxDocNodes(rawFrame) : null), [rawFrame]);
+  const frame: FigmaNodeView | undefined = hideDocNodes
+    ? stripped?.frame ?? rawFrame
+    : rawFrame;
 
   // 미리보기에 실제로 등장하는 키만 매핑 표에 보여준다 (하드코딩 5개 목록 대체)
   const renderedKeys = useMemo(() => {
@@ -161,6 +177,19 @@ function StepPreview({ onBack, onNext }: StepPreviewProps) {
             onChange={(e) => setHighlight(e.target.checked)}
             className="ms-2"
           />
+          <div className="d-flex align-items-center gap-2 ms-2">
+            <span className="text-muted small">배치:</span>
+            <Form.Select
+              size="sm"
+              style={{ width: 'auto' }}
+              value={renderMode}
+              onChange={(e) => setRenderMode(e.target.value as FigmaRenderMode)}
+              title="Figma 픽셀 좌표로 배치하거나, Auto Layout으로 흐르게 배치합니다"
+            >
+              <option value="pixel">Figma 픽셀 (좌표 그대로)</option>
+              <option value="flow">Auto Layout (흐름)</option>
+            </Form.Select>
+          </div>
           <span className="text-muted ms-auto">
             현재: <strong>{LANG_LABELS[i18n.language] || i18n.language}</strong>
           </span>
@@ -229,7 +258,14 @@ function StepPreview({ onBack, onNext }: StepPreviewProps) {
             </Alert>
           )}
 
-          {frame && <FigmaFrameRenderer node={frame} highlightMapped={highlight} fitWidth={1040} />}
+          {frame && (
+            <FigmaFrameRenderer
+              node={frame}
+              highlightMapped={highlight}
+              fitWidth={1040}
+              mode={renderMode}
+            />
+          )}
         </Card.Body>
         {highlight && frame && (
           <Card.Footer className="small text-muted d-flex gap-4 flex-wrap">

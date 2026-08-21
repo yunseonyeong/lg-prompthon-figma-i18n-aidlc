@@ -197,3 +197,121 @@ describe('FigmaFrameRenderer', () => {
     expect(title.style.height).toBe('');
   });
 });
+
+/**
+ * Figma 좌표(x/y)가 있는 구조. 서버가 MCP locationRelativeToParent /
+ * REST absoluteBoundingBox 차이로 채워 보내는 값이다.
+ */
+const POSITIONED_FRAME: FigmaNodeView = {
+  id: 'root',
+  name: 'Screen',
+  type: 'FRAME',
+  layoutMode: 'column',
+  width: 1440,
+  height: 900,
+  gap: '16px',
+  children: [
+    {
+      id: 'card',
+      name: 'Card',
+      type: 'FRAME',
+      layoutMode: 'none',
+      x: 32,
+      y: 64,
+      width: 400,
+      height: 200,
+      backgroundColor: '#FFFFFF',
+      children: [
+        {
+          id: 'title',
+          name: 'title',
+          type: 'TEXT',
+          layoutMode: 'none',
+          x: 16,
+          y: 12,
+          width: 300,
+          height: 32,
+          text: 'Workspace/Group Settings',
+          i18nKey: 'console.setting.group.title.workspaceGroupSettings',
+          fontSize: 24,
+        },
+      ],
+    },
+    {
+      // 좌표가 없는 노드 — 픽셀 모드에서도 흐름 배치로 폴백해야 한다
+      id: 'floating',
+      name: 'NoCoords',
+      type: 'FRAME',
+      layoutMode: 'row',
+      backgroundColor: '#EEEEEE',
+      children: [
+        { id: 'plain', name: 'plain', type: 'TEXT', layoutMode: 'none', text: 'Classification' },
+      ],
+    },
+  ],
+};
+
+function renderPositioned(mode: 'pixel' | 'flow' = 'pixel') {
+  return render(
+    <I18nextProvider i18n={i18next}>
+      <FigmaFrameRenderer node={POSITIONED_FRAME} mode={mode} />
+    </I18nextProvider>
+  );
+}
+
+describe('FigmaFrameRenderer — Figma 픽셀 배치', () => {
+  it('좌표가 있는 노드를 Figma px 그대로 absolute 배치한다', () => {
+    const { container } = renderPositioned();
+
+    const card = container.querySelector('[data-figma-id="card"]') as HTMLElement;
+    expect(card.style.position).toBe('absolute');
+    expect(card.style.left).toBe('32px');
+    expect(card.style.top).toBe('64px');
+    expect(card.style.width).toBe('400px');
+    expect(card.style.height).toBe('200px');
+
+    // 자식 좌표는 부모(card) 기준이다
+    const title = container.querySelector('[data-figma-id="title"]') as HTMLElement;
+    expect(title.style.left).toBe('16px');
+    expect(title.style.top).toBe('12px');
+  });
+
+  it('absolute 자식을 두는 컨테이너는 위치 기준(relative)이 된다', () => {
+    const { container } = renderPositioned();
+    const root = container.querySelector('[data-figma-id="root"]') as HTMLElement;
+    const card = container.querySelector('[data-figma-id="card"]') as HTMLElement;
+    expect(root.style.position).toBe('relative');
+    expect(card.style.position).toBe('absolute');
+    // 자식을 절대 배치하는 컨테이너에 flex/gap을 남기면 gap이 무의미하게 붙는다
+    expect(root.style.display).toBe('');
+    expect(root.style.gap).toBe('');
+  });
+
+  it('TEXT는 height를 고정하지 않아 번역이 길어져도 잘리지 않는다', () => {
+    const { container } = renderPositioned();
+    const title = container.querySelector('[data-figma-id="title"]') as HTMLElement;
+    expect(title.style.height).toBe('');
+    expect(title.style.minHeight).toBe('32px');
+    expect(title.style.width).toBe('300px');
+  });
+
+  it('좌표가 없는 노드는 픽셀 모드에서도 흐름 배치로 폴백한다', () => {
+    const { container } = renderPositioned();
+    const floating = container.querySelector('[data-figma-id="floating"]') as HTMLElement;
+    expect(floating.style.position).toBe('');
+    expect(floating.style.left).toBe('');
+    // Auto Layout 정보는 그대로 살아 있다
+    expect(floating.style.display).toBe('flex');
+    expect(floating.style.flexDirection).toBe('row');
+  });
+
+  it('flow 모드에서는 좌표를 무시하고 Auto Layout으로 배치한다', () => {
+    const { container } = renderPositioned('flow');
+    const root = container.querySelector('[data-figma-id="root"]') as HTMLElement;
+    const card = container.querySelector('[data-figma-id="card"]') as HTMLElement;
+    expect(root.style.display).toBe('flex');
+    expect(root.style.gap).toBe('16px');
+    expect(card.style.position).toBe('');
+    expect(card.style.left).toBe('');
+  });
+});

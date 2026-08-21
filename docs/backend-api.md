@@ -20,12 +20,17 @@ DB가 없습니다. 모든 상태는 워크스페이스의 JSON 파일입니다.
 |---|---|---|
 | `CONFIG_PATH` | `src/data/project-config.json` | 프로젝트 설정 |
 | `GLOSSARY_PATH` | `src/data/glossary.json` | 용어집 |
-| `HISTORY_PATH` | `src/data/pipeline-history.json` | 파이프라인 실행 히스토리 (최대 50건) |
-| `TRANSLATIONS_DIR` | `src/data/translations/{runId}.json` | 실행별 번역 스냅샷 |
-| `LOCALES_DIR` | `src/locales/{lang}.json` | i18n locale 산출물 |
+| `LOCALES_DIR` | `src/locales/{lang}.json` | i18n locale 산출물 (최신본) |
+| `LOCALE_HISTORY_DIR` | `src/data/locale-history/{runId}/{lang}.json` | 실행 시점 locale 사본 + `meta.json` |
 | `COMPONENTS_MAP_PATH` | `src/components-map.json` | 텍스트↔키 매핑 산출물 |
 | `GENERATED_COMPONENTS_DIR` | `src/components/generated/*.tsx` | 생성된 React 컴포넌트 |
 | (figma-mcp.ts) | `src/figma-structure.json` | Figma 구조 캐시 |
+
+실행 요약 기록(`src/data/pipeline-history.json`)과 실행별 번역 스냅샷
+(`src/data/translations/{runId}.json`)은 **제거되었습니다**. 실제 번역 결과와 별개로
+관리되는 두 번째 기록이라 서로 어긋났습니다(서버 내 `/translate` 경로는 요약을 남기지
+않아 실행기록이 비어 있었습니다). 남아 있는 두 파일/디렉터리는 옛 실행분으로,
+읽는 코드가 없습니다.
 
 지원 언어는 `en`, `ko`, `ja`, `zh-CN` 4개로 서버 전역에 하드코딩되어 있습니다.
 
@@ -73,12 +78,13 @@ DB가 없습니다. 모든 상태는 워크스페이스의 JSON 파일입니다.
 | 13 | GET | `/api/pipeline/components` | 생성 컴포넌트 목록 + 코드 |
 | 14 | GET | `/api/pipeline/components/:name` | 특정 컴포넌트 코드 |
 | 15 | GET | `/api/pipeline/download/:name` | 산출물 파일 다운로드 |
-| 16 | GET | `/api/pipeline/history` | 실행 히스토리 조회 |
-| 17 | POST | `/api/pipeline/history` | 히스토리 수동 추가 |
-| 18 | GET | `/api/pipeline/history/:id/translations` | 실행별 번역 스냅샷 (JSON) |
-| 19 | GET | `/api/pipeline/history/:id/translations.csv` | 실행별 번역 스냅샷 (CSV) |
-| 20 | GET | `/api/figma/status` | MCP 연결 상태 |
-| 21 | GET | `/api/figma/structure` | Figma 프레임 구조 조회 |
+| 16 | GET | `/api/pipeline/locale-history` | locale 실행 이력 목록 (최신순) |
+| 17 | GET | `/api/pipeline/locale-history/:runId/:lang` | 특정 실행 시점 locale JSON |
+| 18 | GET | `/api/figma/status` | MCP 연결 상태 |
+| 19 | GET | `/api/figma/structure` | Figma 프레임 구조 조회 |
+
+실행 히스토리 API 4개(`GET`/`POST /api/pipeline/history`,
+`/api/pipeline/history/:id/translations{,.csv}`)는 제거되었습니다.
 
 ---
 
@@ -201,12 +207,8 @@ step 번호와 의미는 다음과 같습니다.
 
 진행률은 자식 프로세스의 **stdout 문자열을 정규식으로 파싱**해 산출합니다. 파이프라인의 로그 문구를 바꾸면 진행 표시가 조용히 깨집니다. 구조화된 채널이 아니라는 점을 알고 계셔야 합니다.
 
-`exit code === 0`이면 종료 시 서버가 추가로 다음을 수행합니다.
-
-1. `getGeneratedFiles()`로 산출물 목록 수집
-2. `buildTranslationRows()`로 현재 locale 4개를 평탄화해 번역 행 생성
-3. `saveHistory()`로 히스토리 추가 → `runId` 획득
-4. 행이 1건 이상이면 `saveTranslationSnapshot(runId, rows)`로 `src/data/translations/{runId}.json` 기록
+`exit code === 0`이면 종료 시 서버가 `getGeneratedFiles()`로 산출물 목록을 수집해
+`complete` 이벤트에 담아 보냅니다. 실행 요약 기록은 남기지 않습니다.
 
 호출 예:
 
@@ -246,6 +248,27 @@ locale 4개 + `components-map.json` + 생성 컴포넌트 `.tsx` 전부를 스�
 ### GET /api/pipeline/locales/:lang
 
 `:lang`은 `en` | `ko` | `ja` | `zh-CN` allowlist입니다. 그 외는 400, 파일 없으면 404. 응답은 locale JSON 원문(중첩 객체)입니다.
+
+### locale 실행 이력 (GET /api/pipeline/locale-history)
+
+`src/locales/*.json`은 파이프라인/`/translate` 실행마다 갱신됩니다. `writeLocaleFiles()`가 최신본을 쓴 직후 같은 내용을 실행별 디렉터리로 복사해 둡니다.
+
+```text
+src/data/locale-history/
+└── 20260821-111806/          # runId = 생성 시각(로컬). 문자열 정렬 = 시간순
+    ├── en.json  ko.json  ja.json  zh-CN.json
+    └── meta.json             # { runId, at(ISO), languages, keyCount }
+```
+
+- 보관 한도 30개. 넘으면 오래된 실행부터 디렉터리째 삭제합니다.
+- `src/data/`는 `.gitignore` 대상이라 저장소에 쌓이지 않습니다.
+- 이력에 남는 내용은 "실제로 파일에 쓴 병합 결과"입니다. `writeLocaleFiles()`가 기존 키를 보존하며 병합하므로, 요청으로 들어온 locale이 아니라 병합 후 스냅샷을 남깁니다.
+
+`GET /api/pipeline/locale-history` → `{ "runs": [{ "runId", "at", "languages", "keyCount" }] }` (최신순, 이력이 없으면 빈 배열)
+
+`GET /api/pipeline/locale-history/:runId/:lang` → 해당 시점 locale JSON. `runId`는 `\d{8}-\d{6}` 형식만, `lang`은 allowlist만 허용합니다(경로 이탈 차단 — 실측: `../../../package` → 400).
+
+화면에서는 Step 5의 "🗂️ Locale JSON" 탭 상단 "생성 시점" 드롭다운으로 현재본과 과거 실행을 바꿔 볼 수 있습니다(과거 사본은 읽기 전용).
 
 ### PUT /api/pipeline/locales/:lang
 
@@ -326,67 +349,25 @@ locale 4개 + `components-map.json` + 생성 컴포넌트 `.tsx` 전부를 스�
 
 ---
 
-## 5. 실행 히스토리와 번역 스냅샷
+## 5. 실행 히스토리 (제거됨)
 
-### GET /api/pipeline/history
+실행 요약 기록과 그에 딸린 번역 스냅샷/CSV API는 제거되었습니다.
 
-파일이 없으면 200 + `{ "history": [] }`입니다.
+제거된 것:
 
-```json
-{
-  "history": [
-    {
-      "id": "1787229084811",
-      "timestamp": "2026-08-20T12:31:24.811Z",
-      "figmaFileKey": "zdG3CHXVU6TzD4cc28o5Yb",
-      "figmaFileName": "LG Business Cloud Console",
-      "extractedCount": 139,
-      "translatedCount": 139,
-      "componentsCount": 0,
-      "languages": ["en", "ko", "ja", "zh-CN"]
-    }
-  ]
-}
-```
+- `GET`/`POST /api/pipeline/history`
+- `GET /api/pipeline/history/:id/translations`
+- `GET /api/pipeline/history/:id/translations.csv`
+- 저장 파일 `src/data/pipeline-history.json`, `src/data/translations/{runId}.json`
+- 대시보드(Step 1)의 "📜 실행 히스토리" 탭과 번역 스냅샷 모달
 
-최신 항목이 배열 앞(`unshift`)에 오고, **최대 50건**만 유지됩니다(초과분은 잘려나감). `id`는 `Date.now()` 문자열입니다.
+제거 이유: 실행 요약이 실제 번역 결과와 **별개로** 관리되는 두 번째 기록이었고, 두
+실행 경로 중 하나만 요약을 적재했습니다. `POST /api/pipeline/run`(CLI spawn)은 기록을
+남겼지만 `POST /api/pipeline/translate`(서버 내 Step 4~7)는 남기지 않아, UI에서 번역을
+돌려도 히스토리가 늘지 않았습니다. 두 기록의 id 체계도 달라서(`Date.now()` vs
+`20260821-113139`) 서로 연결할 키가 없었습니다.
 
-`/api/pipeline/run`이 저장하는 항목에는 `keyCount`, `hasTranslations` 필드가 추가로 붙습니다. 위 예시처럼 이 필드가 없는 항목은 스냅샷 기능 도입 이전에 기록된 것입니다.
-
-### POST /api/pipeline/history
-
-본문에 `id`와 `timestamp`를 서버가 붙여 히스토리에 추가합니다. 파이프라인 실행과 무관하게 수동으로 항목을 넣는 용도입니다.
-
-응답: `{ "success": true, "entry": { "id": "...", "timestamp": "...", ...본문 } }`
-
-### GET /api/pipeline/history/:id/translations
-
-해당 실행 시점의 4개 언어 번역을 한 테이블로 반환합니다. `src/locales/*.json`은 다음 실행에서 덮어써지므로, 과거 실행 결과를 보려면 이 스냅샷이 필요합니다.
-
-`:id`는 `/^[A-Za-z0-9_-]+$/`만 허용합니다(파일명으로 쓰이므로 경로 문자 차단). 위반 시 400, 스냅샷 파일이 없으면 404.
-
-```json
-{
-  "runId": "1787229084811",
-  "at": "2026-08-20T12:31:24.900Z",
-  "rowCount": 139,
-  "rows": [
-    { "key": "console.setting.group.label.device", "en": "Device", "ko": "장치", "ja": "デバイス", "zh-CN": "设备" }
-  ]
-}
-```
-
-행 집합은 **`en.json`의 키를 기준**으로 만들어집니다. 다른 언어에만 있는 키는 테이블에 나타나지 않고, en에만 있는 키는 나머지 언어가 빈 문자열로 채워집니다.
-
-### GET /api/pipeline/history/:id/translations.csv
-
-같은 데이터를 CSV로 내려줍니다.
-
-- 헤더: `key,en,ko,ja,zh-CN`
-- 전 필드를 따옴표로 감싸고 내부 `"`는 `""`로 이스케이프 (RFC 4180)
-- 줄바꿈 `\r\n`
-- **UTF-8 BOM(`\uFEFF`) 선행** — Excel에서 한중일 문자가 깨지지 않게 하기 위함
-- `Content-Disposition: attachment; filename="translations-{runId}.csv"`
+실행 이력은 locale 사본(`GET /api/pipeline/locale-history`) 하나만 사용합니다.
 
 ---
 
@@ -457,6 +438,12 @@ MCP 연결을 시도(lazy, 1회)하고 상태를 반환합니다. **Figma 토큰
 
 `FigmaNodeView`는 CSS 친화적 값으로 정규화된 노드입니다. 전체 필드는 `src/types/figma.ts`를 참고하세요. 텍스트 노드에는 `components-map.json` 역인덱스로 매칭한 `i18nKey`가 붙습니다(원문 문자열 완전일치 기준).
 
+**좌표(`x`/`y`)** — 미리보기를 Figma 픽셀 그대로 그리기 위해 부모 기준 상대 좌표를 함께 내려줍니다.
+
+- MCP: `layout.locationRelativeToParent`를 그대로 사용
+- REST: `absoluteBoundingBox`가 절대 좌표라 부모 좌표를 빼서 같은 기준으로 변환
+- Auto Layout으로 흐르는 자식에는 MCP가 좌표를 주지 않습니다. 실측(프레임 `15682:100905`)에서 857개 노드 중 156개(18.2%)만 좌표를 가졌고, 나머지는 Auto Layout 배치입니다. 렌더러는 좌표가 있는 노드만 `position:absolute`로 놓고 나머지는 flex 흐름으로 폴백합니다 — Figma 자체 동작과 같은 규칙입니다.
+
 ---
 
 ## 프론트엔드 클라이언트 커버리지
@@ -480,12 +467,13 @@ MCP 연결을 시도(lazy, 1회)하고 상태를 반환합니다. **Figma 토큰
 
 - Step 2 텍스트 추출 → `useExtraction()`이 `extractTexts()` 호출. 결과(`translationTargets`, `relevantGlossary`)를 모듈 캐시에 보관해 Step 3이 재사용합니다.
 - Step 3 용어집 → `relevantGlossary`를 표로 보여주고, 편집·번역 여부 토글은 **로컬 상태로만** 반영합니다. 서버 호출은 "EXAONE 번역 시작"에서 한 번뿐입니다. 이때 **번역 금지로 표시한 용어는 제외**해서 보냅니다.
+- Step 4의 "코드 생성" → `POST /pipeline/generate-components`. Step 8만 단독 실행합니다. 번역 응답의 `componentsMap`을 그대로 보내므로 재추출·재번역이 없고, 생략하면 서버가 `src/components-map.json`을 씁니다. Figma 프레임 구조 캐시(같은 프로세스의 extract 결과)가 비어 있으면 서버가 Figma에서 자동 재추출합니다. 한 건도 만들지 못하면 502로 실패합니다 — "완료"로 위장하지 않습니다. 실행 상태는 `src/state/componentRun.ts` 스토어가 들고 있어 Step을 옮겨도 유지됩니다.
 - `POST /pipeline/translate`의 요청 필드는 extract 응답과 같은 이름을 씁니다: `translationTargets`, `relevantGlossary`. 이전 이름 `entries` / `glossary`도 폴백으로 남겨뒀습니다(`translationTargets || entries`, `relevantGlossary || glossary || {}`).
 - Step 4 번역 리뷰 → `src/state/translationRun.ts` 스토어가 실행 상태(idle/running/done/error)와 응답을 보관합니다. Step 이동으로 언마운트돼도 실행이 유지됩니다.
 
 주의: `/translate`는 EXAONE 호출이 실패해도 `success: true`로 응답하고 번역이 비어 있는 엔트리를 그대로 돌려줍니다(실측: Friendli 401). Step 4가 "번역 없는 항목 N건"으로 이를 드러냅니다.
 
-용어집 카탈로그(`/glossary`), 히스토리, 파이프라인 SSE 실행은 이 모듈을 거치지 않습니다. 해당 화면들이 `fetch`를 직접 호출하고 있으므로, 새 호출을 추가할 때는 이 클라이언트에 모으는 편이 에러 처리(`getJson`의 `detail` 추출)를 재사용할 수 있어 유리합니다.
+용어집 카탈로그(`/glossary`)와 파이프라인 SSE 실행은 이 모듈을 거치지 않습니다. 해당 화면들이 `fetch`를 직접 호출하고 있으므로, 새 호출을 추가할 때는 이 클라이언트에 모으는 편이 에러 처리(`getJson`의 `detail` 추출)를 재사용할 수 있어 유리합니다.
 
 ---
 
@@ -510,7 +498,7 @@ MCP 연결을 시도(lazy, 1회)하고 상태를 반환합니다. **Figma 토큰
 
 - `PUT /api/pipeline/locales/:lang` — 언어 allowlist + 프로토타입 오염(`__proto__` 등) 차단
 - `GET /api/pipeline/download/:name` — 이름→절대경로 고정 allowlist로 `../../.env` 류 차단
-- `GET /api/pipeline/history/:id/*` — `runId` 정규식 검증
+- `GET /api/pipeline/locale-history/:runId/:lang` — `runId` 정규식(`\d{8}-\d{6}`) + 언어 allowlist
 - `POST /api/pipeline/run` — `spawn` 배열 인자 전달로 셸 인젝션 없음
 - `GET /api/figma/status` — 토큰 값 대신 보유 여부(`tokenPresent`)만 노출
 
@@ -534,8 +522,7 @@ MCP 연결을 시도(lazy, 1회)하고 상태를 반환합니다. **Figma 토큰
 
 ## 알려진 제약
 
-- `src/data/project-config.json`과 `src/data/translations/`는 현재 워크스페이스에 존재하지 않습니다. 각각 `PUT /api/config`와 파이프라인 성공 실행 시 생성됩니다.
-- 기존 히스토리 항목(`keyCount`/`hasTranslations` 없는 항목)은 스냅샷 파일이 없으므로 `/translations`가 404를 반환합니다. 스냅샷은 도입 이후 실행분부터 쌓입니다.
+- `src/data/project-config.json`은 `PUT /api/config` 호출 시 생성됩니다.
 - 파이프라인 진행률은 stdout 문자열 파싱에 의존합니다. 로그 문구 변경 시 SSE `progress`/`info` 이벤트가 조용히 멈춥니다.
 - Figma 429 응답의 `Retry-After`, `X-Figma-Plan-Tier`, `X-Figma-Rate-Limit-Type`, `X-Figma-Upgrade-Link` 헤더를 `fetchViaRest`가 버리고 상태 코드만 메시지에 담습니다. 429 원인 진단에 필요한 정보라 보존할 여지가 있습니다.
 - 포트 3001이 하드코딩되어 있어 환경변수로 바꿀 수 없습니다.

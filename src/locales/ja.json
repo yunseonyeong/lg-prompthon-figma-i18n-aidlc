@@ -2,11 +2,16 @@
   "console": {
     "setting": {
       "group": {
+        "title": {
+          "workspaceGroupSettings": "ワークスペース/グループ設定",
+          "businessSiteName": "ビジネスサイト名",
+          "apiAccess": "APIアクセス",
+          "automaticLicenseAssignment": "自動ライセンス割り当て",
+          "automaticDeviceApproval": "自動デバイス承認",
+          "singleSignOnSso": "シングルサインオン (SSO)",
+          "console": "コンソール"
+        },
         "label": {
-          "content": "コンテンツ",
-          "schedule": "スケジュール",
-          "device": "デバイス",
-          "settings": "設定",
           "signage": "サイネージ",
           "isRequired": "必須です",
           "calendar": "カレンダー",
@@ -55,12 +60,14 @@
           "deviceCount": "デバイス数",
           "userCount": "ユーザー数",
           "licensedProduct": "ライセンス製品",
-          "timeZone2": "Time Zone",
+          "timeZone2": "タイムゾーン",
           "dashboard": "ダッシュボード",
           "space": "スペース",
           "devices": "デバイス",
           "data": "データ",
+          "content": "コンテンツ",
           "rules": "ルール",
+          "schedule": "スケジュール",
           "addOnService": "アドオンサービス",
           "siteMap": "サイトマップ",
           "floorPlan": "フロアプラン",
@@ -73,18 +80,11 @@
           "controlSchedule": "制御スケジュール",
           "artLounge": "Art Lounge",
           "hotelMobileApp": "Hotel Mobile App",
+          "device": "デバイス",
           "site": "サイト",
           "ads": "広告",
-          "setting": "設定"
-        },
-        "title": {
-          "console": "コンソール",
-          "workspaceGroupSettings": "ワークスペース/グループ設定",
-          "businessSiteName": "ビジネスサイト名",
-          "apiAccess": "APIアクセス",
-          "automaticLicenseAssignment": "自動ライセンス割り当て",
-          "automaticDeviceApproval": "自動デバイス承認",
-          "singleSignOnSso": "シングルサインオン (SSO)"
+          "setting": "設定",
+          "settings": "設定"
         },
         "button": {
           "publish": "配信",

@@ -3,6 +3,7 @@
  *
  * POST /api/pipeline/extract   - Step 1~3: Figma 텍스트 추출 → 문맥 분석 → i18n Key 생성
  * POST /api/pipeline/translate  - Step 4~7: EXAONE 번역 → Locale JSON → Components Map → 용어집 제안
+ * POST /api/pipeline/generate-components - Step 8: EXAONE React 컴포넌트 생성
  */
 
 import { Router, Request, Response } from 'express';
@@ -17,6 +18,9 @@ import {
   writeComponentsMap,
   generateGlossaryProposal,
   writeGlossaryProposal,
+  generateComponentsWithExaone,
+  writeGeneratedComponents,
+  getCachedFrameStructures,
 } from '../../src/pipeline/figma-i18n-pipeline.js';
 import { initRetriever, retrieverStatus } from '../../src/retrieval/index.js';
 import * as fs from 'fs';
@@ -500,6 +504,141 @@ locale, term, reason은 FAIL인 경우에만 포함하세요.`;
   } catch (error) {
     console.error('Glossary validation error:', error);
     return [];
+  }
+}
+
+// ===== API 3: POST /generate-components =====
+// Step 8: Figma 구조 + i18n 키 매핑 → EXAONE React 컴포넌트 코드
+//
+// 전체 파이프라인(/pipeline/run)을 다시 돌리지 않고 이 단계만 실행한다.
+// 화면에서 확인한 번역 결과(componentsMap)를 그대로 입력으로 받기 때문에
+// 재추출·재번역 없이 "코드 생성"만 눌러도 결과가 나온다.
+
+interface GenerateComponentsRequest {
+  /** translate 응답의 componentsMap. 없으면 디스크의 components-map.json을 쓴다 */
+  componentsMap?: ComponentMapFrame[];
+  /** 프레임 구조 캐시가 비었을 때 재추출에 사용할 파일 키 */
+  fileKey?: string;
+}
+
+interface ComponentMapFrame {
+  frame: string;
+  frameId: string;
+  children: { type: string; key: string; originalText: string }[];
+}
+
+pipelineRouter.post(
+  '/generate-components',
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { componentsMap, fileKey } = req.body as GenerateComponentsRequest;
+
+      // 1) i18n 키 매핑 확보 (요청 → 디스크 산출물)
+      let map: ComponentMapFrame[] | null =
+        Array.isArray(componentsMap) && componentsMap.length > 0 ? componentsMap : null;
+      if (!map) {
+        map = loadComponentsMapFromDisk();
+        console.log(`🗺️  [API] components-map.json 사용 (${map?.length ?? 0} 프레임)`);
+      }
+      if (!map || map.length === 0) {
+        res.status(400).setHeader('Content-Type', 'application/json');
+        res.send(
+          JSON.stringify(
+            {
+              success: false,
+              error:
+                'i18n 키 매핑이 없습니다. 번역을 먼저 실행하거나 componentsMap을 함께 전달하세요.',
+            },
+            null,
+            2
+          )
+        );
+        return;
+      }
+
+      // 2) Figma 프레임 구조 확보.
+      //    generateComponentsWithExaone은 같은 프로세스에서 채워진 캐시를 읽는다.
+      //    서버가 재시작됐거나 extract를 거치지 않았으면 비어 있으므로 여기서 추출한다.
+      if (getCachedFrameStructures().length === 0) {
+        const targetFileKey = fileKey || process.env.FIGMA_FILE_KEY || 'zdG3CHXVU6TzD4cc28o5Yb';
+        console.log(`📄 [API] 프레임 구조 캐시가 비어 Figma에서 재추출 (${targetFileKey})`);
+        await extractTextsFromFigma(targetFileKey);
+        console.log(`   프레임 구조: ${getCachedFrameStructures().length}개`);
+      }
+
+      // 3) Step 8 실행
+      console.log('⚛️  [API] Step 8: EXAONE React 컴포넌트 생성...');
+      const result = await generateComponentsWithExaone(map as any[]);
+
+      if (result.components.length > 0) {
+        writeGeneratedComponents(result.components);
+      }
+      for (const f of result.failures) console.error(`   ❌ ${f}`);
+      console.log(
+        `   생성 ${result.components.length}개 / 실패 ${result.failures.length}개`
+      );
+
+      // 한 건도 못 만들었으면 성공으로 응답하지 않는다.
+      // (파이프라인은 실패를 삼키고 계속 진행하지만, 이 엔드포인트의 목적은 생성 그 자체다)
+      if (result.components.length === 0) {
+        res.status(502).setHeader('Content-Type', 'application/json');
+        res.send(
+          JSON.stringify(
+            {
+              success: false,
+              error: `컴포넌트를 생성하지 못했습니다: ${result.failures.join(' | ') || '알 수 없는 원인'}`,
+            },
+            null,
+            2
+          )
+        );
+        return;
+      }
+
+      res.setHeader('Content-Type', 'application/json');
+      res.send(
+        JSON.stringify(
+          {
+            success: true,
+            data: {
+              components: result.components,
+              failures: result.failures,
+              summary: {
+                generated: result.components.length,
+                failed: result.failures.length,
+                frames: map.length,
+              },
+            },
+          },
+          null,
+          2
+        )
+      );
+    } catch (error) {
+      console.error('[API] Generate components error:', error);
+      res.status(500).setHeader('Content-Type', 'application/json');
+      res.send(
+        JSON.stringify(
+          {
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          },
+          null,
+          2
+        )
+      );
+    }
+  }
+);
+
+// ===== Helper: components-map.json 로드 =====
+function loadComponentsMapFromDisk(): ComponentMapFrame[] | null {
+  const mapPath = path.resolve(__dirname, '../../src/components-map.json');
+  try {
+    if (!fs.existsSync(mapPath)) return null;
+    return JSON.parse(fs.readFileSync(mapPath, 'utf-8'));
+  } catch {
+    return null;
   }
 }
 

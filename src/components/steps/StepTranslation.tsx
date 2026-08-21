@@ -4,6 +4,7 @@ import Pagination, { usePagination } from '../Pagination';
 import { SkeletonRegion, SkeletonStatCards, SkeletonTable } from '../Skeleton';
 import { updateLocaleEntry } from '../../api/client';
 import { retryTranslationRun, useTranslationRun } from '../../state/translationRun';
+import { startComponentRun, useComponentRun } from '../../state/componentRun';
 import i18n from '../../i18n';
 
 interface StepTranslationProps {
@@ -43,6 +44,7 @@ function StepTranslation({ onNext, onBack, onGoToPipeline }: StepTranslationProp
   // 이전에는 components-map.json + locale 파일(i18next)을 조합해 보여줬는데,
   // 그건 "지난 실행 산출물"이라 방금 확인한 용어집이 반영됐는지 알 수 없었다.
   const run = useTranslationRun();
+  const componentRun = useComponentRun();
   const elapsed = useElapsedSeconds(run.startedAt, run.status === 'running');
 
   const [reviewLang, setReviewLang] = useState<'ko' | 'ja' | 'zh-CN'>('ko');
@@ -463,8 +465,23 @@ function StepTranslation({ onNext, onBack, onGoToPipeline }: StepTranslationProp
         <Button variant="outline-secondary" onClick={onBack}>
           ← 이전
         </Button>
-        <Button variant="primary" size="lg" onClick={onNext}>
-          ⚡ 코드 생성
+        {/*
+          이 버튼은 다음 화면으로 넘어가기만 하던 자리였다. 지금은 눌렀을 때
+          POST /api/pipeline/generate-components를 실제로 호출한다 —
+          방금 검토한 번역 결과(componentsMap)의 i18n 키로 컴포넌트를 만든다.
+          진행 상황과 결과는 Step 5에서 이어서 보여준다.
+        */}
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={() => {
+            if (componentRun.status !== 'running') {
+              void startComponentRun({ componentsMap: run.data?.componentsMap });
+            }
+            onNext();
+          }}
+        >
+          {componentRun.status === 'running' ? '진행 중인 코드 생성 보기 →' : '⚡ 코드 생성'}
         </Button>
       </div>
     </>

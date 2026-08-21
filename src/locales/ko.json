@@ -2,11 +2,16 @@
   "console": {
     "setting": {
       "group": {
+        "title": {
+          "workspaceGroupSettings": "워크스페이스/그룹 설정",
+          "businessSiteName": "비즈니스 사이트 이름",
+          "apiAccess": "API 액세스",
+          "automaticLicenseAssignment": "자동 라이선스 할당",
+          "automaticDeviceApproval": "자동 장치 승인",
+          "singleSignOnSso": "싱글 사인온 (SSO)",
+          "console": "콘솔"
+        },
         "label": {
-          "content": "콘텐츠",
-          "schedule": "스케줄",
-          "device": "장치",
-          "settings": "설정",
           "signage": "사이니지",
           "isRequired": "필수입니다",
           "calendar": "캘린더",
@@ -25,7 +30,7 @@
           "korea": "한국",
           "timeZone": "시간대",
           "utc0900AsiaSeoul": "(UTC+09:00) 아시아/서울",
-          "verticalType": "산업 분야 *",
+          "verticalType": "버티컬 타입 *",
           "systemIntegrator": "시스템 통합업체",
           "businessType": "비즈니스 유형 *",
           "endCustomer": "최종 고객",
@@ -54,13 +59,15 @@
           "workspaceName": "워크스페이스 이름",
           "deviceCount": "장치 수",
           "userCount": "사용자 수",
-          "licensedProduct": "라이선스 제품",
-          "timeZone2": "Time Zone",
+          "licensedProduct": "라이선스 솔루션",
+          "timeZone2": "시간대",
           "dashboard": "대시보드",
           "space": "공간",
           "devices": "장치",
           "data": "데이터",
+          "content": "콘텐츠",
           "rules": "규칙",
+          "schedule": "스케줄",
           "addOnService": "애드온 서비스",
           "siteMap": "사이트 맵",
           "floorPlan": "평면도",
@@ -73,18 +80,11 @@
           "controlSchedule": "제어 스케줄",
           "artLounge": "Art Lounge",
           "hotelMobileApp": "Hotel Mobile App",
+          "device": "장치",
           "site": "사이트",
           "ads": "광고",
-          "setting": "설정"
-        },
-        "title": {
-          "console": "콘솔",
-          "workspaceGroupSettings": "워크스페이스/그룹 설정",
-          "businessSiteName": "비즈니스 사이트 이름",
-          "apiAccess": "API 액세스",
-          "automaticLicenseAssignment": "자동 라이선스 할당",
-          "automaticDeviceApproval": "자동 장치 승인",
-          "singleSignOnSso": "싱글 사인온 (SSO)"
+          "setting": "설정",
+          "settings": "설정"
         },
         "button": {
           "publish": "배포",

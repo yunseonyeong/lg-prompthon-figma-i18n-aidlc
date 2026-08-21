@@ -2,7 +2,7 @@
   "source": "mcp",
   "fileKey": "zdG3CHXVU6TzD4cc28o5Yb",
   "nodeId": "15682:100905",
-  "fetchedAt": "2026-08-20T13:54:46.016Z",
+  "fetchedAt": "2026-08-21T03:56:18.607Z",
   "frames": [
     {
       "id": "15682:100905",
@@ -19,6 +19,8 @@
           "type": "FRAME",
           "layoutMode": "column",
           "width": 519,
+          "x": 1369,
+          "y": 126,
           "backgroundColor": "#FFFFFF",
           "borderColor": "#B9B9B9",
           "borderRadius": "2.594594717025757px",
@@ -352,6 +354,8 @@
           "layoutMode": "none",
           "width": 1245,
           "height": 701,
+          "x": 36,
+          "y": 133,
           "backgroundColor": "#FFFFFF",
           "borderColor": "#8D8D8D",
           "children": [
@@ -361,6 +365,8 @@
               "type": "FRAME",
               "layoutMode": "row",
               "width": 1245,
+              "x": 0,
+              "y": 78,
               "gap": "5.189189434051514px",
               "alignItems": "stretch",
               "justifyContent": "stretch",
@@ -556,6 +562,8 @@
                                                           "layoutMode": "none",
                                                           "width": 12,
                                                           "height": 12,
+                                                          "x": 2,
+                                                          "y": 2,
                                                           "backgroundColor": "#697387"
                                                         }
                                                       ]
@@ -617,6 +625,8 @@
                                                               "layoutMode": "none",
                                                               "width": 8,
                                                               "height": 4,
+                                                              "x": 6,
+                                                              "y": 8,
                                                               "backgroundColor": "#FFFFFF",
                                                               "children": [
                                                                 {
@@ -626,6 +636,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 7,
                                                                   "height": 4,
+                                                                  "x": 1,
+                                                                  "y": 0,
                                                                   "backgroundColor": "#333333"
                                                                 }
                                                               ]
@@ -683,8 +695,7 @@
                                                                   "text": "Business A",
                                                                   "fontSize": 11.675676345825195,
                                                                   "fontWeight": 500,
-                                                                  "textColor": "#333333",
-                                                                  "i18nKey": "console.setting.group.label.businessA"
+                                                                  "textColor": "#333333"
                                                                 }
                                                               ]
                                                             }
@@ -707,6 +718,8 @@
                                                           "layoutMode": "none",
                                                           "width": 10,
                                                           "height": 2,
+                                                          "x": 5,
+                                                          "y": 9,
                                                           "backgroundColor": "#666666"
                                                         }
                                                       ]
@@ -747,6 +760,8 @@
                                                               "layoutMode": "none",
                                                               "width": 8,
                                                               "height": 4,
+                                                              "x": 6,
+                                                              "y": 8,
                                                               "backgroundColor": "#FFFFFF",
                                                               "children": [
                                                                 {
@@ -756,6 +771,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 7,
                                                                   "height": 4,
+                                                                  "x": 1,
+                                                                  "y": 0,
                                                                   "backgroundColor": "#333333"
                                                                 }
                                                               ]
@@ -813,8 +830,7 @@
                                                                   "text": "Workspace A1",
                                                                   "fontSize": 11.675676345825195,
                                                                   "fontWeight": 500,
-                                                                  "textColor": "#333333",
-                                                                  "i18nKey": "console.setting.group.label.workspaceA1"
+                                                                  "textColor": "#333333"
                                                                 }
                                                               ]
                                                             }
@@ -837,6 +853,8 @@
                                                           "layoutMode": "none",
                                                           "width": 10,
                                                           "height": 2,
+                                                          "x": 5,
+                                                          "y": 9,
                                                           "backgroundColor": "#666666"
                                                         }
                                                       ]
@@ -897,6 +915,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 2,
+                                                                  "x": 5,
+                                                                  "y": 9,
                                                                   "backgroundColor": "#666666"
                                                                 }
                                                               ]
@@ -910,6 +930,8 @@
                                                           "layoutMode": "none",
                                                           "width": 8,
                                                           "height": 4,
+                                                          "x": 10,
+                                                          "y": 12,
                                                           "backgroundColor": "#FFFFFF",
                                                           "children": [
                                                             {
@@ -919,6 +941,8 @@
                                                               "layoutMode": "none",
                                                               "width": 7,
                                                               "height": 4,
+                                                              "x": 1,
+                                                              "y": 0,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -969,6 +993,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 2,
+                                                                  "x": 5,
+                                                                  "y": 9,
                                                                   "backgroundColor": "#666666"
                                                                 }
                                                               ]
@@ -982,6 +1008,8 @@
                                                           "layoutMode": "none",
                                                           "width": 8,
                                                           "height": 4,
+                                                          "x": 23,
+                                                          "y": 12,
                                                           "backgroundColor": "#FFFFFF",
                                                           "children": [
                                                             {
@@ -991,6 +1019,8 @@
                                                               "layoutMode": "none",
                                                               "width": 7,
                                                               "height": 4,
+                                                              "x": 1,
+                                                              "y": 0,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -1041,6 +1071,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 2,
+                                                                  "x": 5,
+                                                                  "y": 9,
                                                                   "backgroundColor": "#666666"
                                                                 }
                                                               ]
@@ -1054,6 +1086,8 @@
                                                           "layoutMode": "none",
                                                           "width": 8,
                                                           "height": 4,
+                                                          "x": 34,
+                                                          "y": 12,
                                                           "backgroundColor": "#FFFFFF",
                                                           "children": [
                                                             {
@@ -1063,6 +1097,8 @@
                                                               "layoutMode": "none",
                                                               "width": 7,
                                                               "height": 4,
+                                                              "x": 1,
+                                                              "y": 0,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -1113,6 +1149,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 2,
+                                                                  "x": 5,
+                                                                  "y": 9,
                                                                   "backgroundColor": "#666666"
                                                                 }
                                                               ]
@@ -1126,6 +1164,8 @@
                                                           "layoutMode": "none",
                                                           "width": 8,
                                                           "height": 4,
+                                                          "x": 49,
+                                                          "y": 12,
                                                           "backgroundColor": "#FFFFFF",
                                                           "children": [
                                                             {
@@ -1135,6 +1175,8 @@
                                                               "layoutMode": "none",
                                                               "width": 7,
                                                               "height": 4,
+                                                              "x": 1,
+                                                              "y": 0,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -1185,6 +1227,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 2,
+                                                                  "x": 5,
+                                                                  "y": 9,
                                                                   "backgroundColor": "#666666"
                                                                 }
                                                               ]
@@ -1198,6 +1242,8 @@
                                                           "layoutMode": "none",
                                                           "width": 8,
                                                           "height": 4,
+                                                          "x": 62,
+                                                          "y": 12,
                                                           "backgroundColor": "#FFFFFF",
                                                           "children": [
                                                             {
@@ -1207,6 +1253,8 @@
                                                               "layoutMode": "none",
                                                               "width": 7,
                                                               "height": 4,
+                                                              "x": 1,
+                                                              "y": 0,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -1255,7 +1303,7 @@
                                           "fontSize": 12.972973823547363,
                                           "fontWeight": 700,
                                           "textColor": "#333333",
-                                          "i18nKey": "console.setting.group.label.businessSiteName"
+                                          "i18nKey": "console.setting.group.title.businessSiteName"
                                         }
                                       ]
                                     },
@@ -1515,6 +1563,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 7,
                                                                   "height": 4,
+                                                                  "x": 2,
+                                                                  "y": 4,
                                                                   "backgroundColor": "#333333"
                                                                 }
                                                               ]
@@ -1620,6 +1670,8 @@
                                                                       "layoutMode": "none",
                                                                       "width": 7,
                                                                       "height": 4,
+                                                                      "x": 2,
+                                                                      "y": 4,
                                                                       "backgroundColor": "#333333",
                                                                       "opacity": 0.30000001192092896
                                                                     }
@@ -2601,6 +2653,8 @@
                                                                                       "layoutMode": "none",
                                                                                       "width": 34,
                                                                                       "height": 28,
+                                                                                      "x": 4,
+                                                                                      "y": 7,
                                                                                       "backgroundColor": "#BEC2CB",
                                                                                       "borderRadius": "3.302668333053589px"
                                                                                     },
@@ -2611,6 +2665,8 @@
                                                                                       "layoutMode": "none",
                                                                                       "width": 33,
                                                                                       "height": 17,
+                                                                                      "x": 5,
+                                                                                      "y": 18,
                                                                                       "backgroundColor": "#DADDE2",
                                                                                       "children": [
                                                                                         {
@@ -2661,6 +2717,8 @@
                                                                                       "layoutMode": "none",
                                                                                       "width": 8,
                                                                                       "height": 8,
+                                                                                      "x": 8,
+                                                                                      "y": 11,
                                                                                       "backgroundColor": "#DADDE2"
                                                                                     }
                                                                                   ]
@@ -2683,8 +2741,7 @@
                                                                                   "text": "FileName_sample_00123.jpg",
                                                                                   "fontSize": 8.359819412231445,
                                                                                   "fontWeight": 500,
-                                                                                  "textColor": "#525252",
-                                                                                  "i18nKey": "console.setting.group.label.filenameSample00123Jpg"
+                                                                                  "textColor": "#525252"
                                                                                 },
                                                                                 {
                                                                                   "id": "15682:101008",
@@ -2860,6 +2917,8 @@
                                                                                   "layoutMode": "none",
                                                                                   "width": 13,
                                                                                   "height": 13,
+                                                                                  "x": 0,
+                                                                                  "y": 0,
                                                                                   "backgroundColor": "#1D828F"
                                                                                 },
                                                                                 {
@@ -2869,6 +2928,8 @@
                                                                                   "layoutMode": "none",
                                                                                   "width": 6,
                                                                                   "height": 6,
+                                                                                  "x": 4,
+                                                                                  "y": 4,
                                                                                   "backgroundColor": "#FFFFFF"
                                                                                 }
                                                                               ]
@@ -2902,6 +2963,8 @@
                                                                               "layoutMode": "none",
                                                                               "width": 59,
                                                                               "height": 3,
+                                                                              "x": 0,
+                                                                              "y": 0,
                                                                               "backgroundColor": "#6A6A6A"
                                                                             },
                                                                             {
@@ -2911,6 +2974,8 @@
                                                                               "layoutMode": "none",
                                                                               "width": 54,
                                                                               "height": 30,
+                                                                              "x": 3,
+                                                                              "y": 4,
                                                                               "backgroundColor": "#FFFFFF"
                                                                             },
                                                                             {
@@ -2918,6 +2983,8 @@
                                                                               "name": "Frame 2087334178",
                                                                               "type": "FRAME",
                                                                               "layoutMode": "row",
+                                                                              "x": 22,
+                                                                              "y": 30,
                                                                               "gap": "0.7788435816764832px",
                                                                               "alignItems": "center",
                                                                               "children": [
@@ -2979,6 +3046,8 @@
                                                                                   "layoutMode": "none",
                                                                                   "width": 13,
                                                                                   "height": 13,
+                                                                                  "x": 0,
+                                                                                  "y": 0,
                                                                                   "backgroundColor": "#FFFFFF",
                                                                                   "borderColor": "#848C9D"
                                                                                 }
@@ -3013,6 +3082,8 @@
                                                                               "layoutMode": "none",
                                                                               "width": 59,
                                                                               "height": 3,
+                                                                              "x": 0,
+                                                                              "y": 0,
                                                                               "backgroundColor": "#3D3D90"
                                                                             },
                                                                             {
@@ -3022,6 +3093,8 @@
                                                                               "layoutMode": "none",
                                                                               "width": 54,
                                                                               "height": 30,
+                                                                              "x": 3,
+                                                                              "y": 6,
                                                                               "backgroundColor": "#FFFFFF"
                                                                             },
                                                                             {
@@ -3029,6 +3102,8 @@
                                                                               "name": "Frame 2087334178",
                                                                               "type": "FRAME",
                                                                               "layoutMode": "row",
+                                                                              "x": 22,
+                                                                              "y": 30,
                                                                               "gap": "0.7788435816764832px",
                                                                               "alignItems": "center",
                                                                               "children": [
@@ -3159,8 +3234,7 @@
                                                               "text": "MagokJungang 10-ro, Gangseo-gu, Seoul",
                                                               "fontSize": 9.08108139038086,
                                                               "fontWeight": 400,
-                                                              "textColor": "#333333",
-                                                              "i18nKey": "console.setting.group.label.magokjungang10RoGangseoGu"
+                                                              "textColor": "#333333"
                                                             }
                                                           ]
                                                         }
@@ -3245,8 +3319,7 @@
                                                                   "text": "30, A101 bldg.",
                                                                   "fontSize": 9.08108139038086,
                                                                   "fontWeight": 400,
-                                                                  "textColor": "#333333",
-                                                                  "i18nKey": "console.setting.group.label.30A101Bldg"
+                                                                  "textColor": "#333333"
                                                                 }
                                                               ]
                                                             }
@@ -3577,8 +3650,7 @@
                                                       "text": "Workspace N",
                                                       "fontSize": 9.08108139038086,
                                                       "fontWeight": 700,
-                                                      "textColor": "#4B5468",
-                                                      "i18nKey": "console.setting.group.label.workspaceN"
+                                                      "textColor": "#4B5468"
                                                     },
                                                     {
                                                       "id": "15682:101109",
@@ -3597,8 +3669,7 @@
                                                       "text": "Device N",
                                                       "fontSize": 9.08108139038086,
                                                       "fontWeight": 700,
-                                                      "textColor": "#4B5468",
-                                                      "i18nKey": "console.setting.group.label.deviceN"
+                                                      "textColor": "#4B5468"
                                                     },
                                                     {
                                                       "id": "15682:101111",
@@ -3617,8 +3688,7 @@
                                                       "text": "User N",
                                                       "fontSize": 9.08108139038086,
                                                       "fontWeight": 700,
-                                                      "textColor": "#4B5468",
-                                                      "i18nKey": "console.setting.group.label.userN"
+                                                      "textColor": "#4B5468"
                                                     }
                                                   ]
                                                 },
@@ -3693,7 +3763,9 @@
                                                               "type": "RECTANGLE",
                                                               "layoutMode": "none",
                                                               "width": 11,
-                                                              "height": 11
+                                                              "height": 11,
+                                                              "x": 1,
+                                                              "y": 0
                                                             }
                                                           ]
                                                         },
@@ -3779,6 +3851,8 @@
                                                       "layoutMode": "none",
                                                       "width": 39,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 28,
                                                       "backgroundColor": "#EBEBF0"
                                                     },
                                                     {
@@ -3788,6 +3862,8 @@
                                                       "layoutMode": "none",
                                                       "width": 39,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 0,
                                                       "backgroundColor": "#EBEBF0"
                                                     }
                                                   ]
@@ -3868,6 +3944,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 28,
                                                       "backgroundColor": "#EBEBF0"
                                                     },
                                                     {
@@ -3877,6 +3955,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 0,
                                                       "backgroundColor": "#EBEBF0"
                                                     }
                                                   ]
@@ -3956,6 +4036,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 28,
                                                       "backgroundColor": "#EBEBF0"
                                                     },
                                                     {
@@ -3965,6 +4047,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 0,
                                                       "backgroundColor": "#EBEBF0"
                                                     }
                                                   ]
@@ -4044,6 +4128,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 28,
                                                       "backgroundColor": "#EBEBF0"
                                                     },
                                                     {
@@ -4053,6 +4139,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 0,
                                                       "backgroundColor": "#EBEBF0"
                                                     }
                                                   ]
@@ -4133,6 +4221,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 28,
                                                       "backgroundColor": "#EBEBF0"
                                                     },
                                                     {
@@ -4142,6 +4232,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 0,
                                                       "backgroundColor": "#EBEBF0"
                                                     }
                                                   ]
@@ -4209,7 +4301,7 @@
                                                               "fontSize": 9.08108139038086,
                                                               "fontWeight": 700,
                                                               "textColor": "#697387",
-                                                              "i18nKey": "console.setting.group.label.timeZone"
+                                                              "i18nKey": "console.setting.group.label.timeZone2"
                                                             }
                                                           ]
                                                         }
@@ -4222,6 +4314,8 @@
                                                       "layoutMode": "none",
                                                       "width": 150,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 28,
                                                       "backgroundColor": "#EBEBF0"
                                                     },
                                                     {
@@ -4231,6 +4325,8 @@
                                                       "layoutMode": "none",
                                                       "width": 150,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 0,
                                                       "backgroundColor": "#EBEBF0"
                                                     }
                                                   ]
@@ -4311,6 +4407,8 @@
                                                       "layoutMode": "none",
                                                       "width": 45,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 28,
                                                       "backgroundColor": "#EBEBF0"
                                                     },
                                                     {
@@ -4320,6 +4418,8 @@
                                                       "layoutMode": "none",
                                                       "width": 45,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 0,
                                                       "backgroundColor": "#EBEBF0"
                                                     }
                                                   ]
@@ -4398,6 +4498,8 @@
                                                       "layoutMode": "none",
                                                       "width": 39,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -4457,6 +4559,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -4522,6 +4626,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -4535,6 +4641,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -4600,6 +4708,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -4613,6 +4723,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -4682,7 +4794,9 @@
                                                               "type": "IMAGE-SVG",
                                                               "layoutMode": "none",
                                                               "width": 21,
-                                                              "height": 21
+                                                              "height": 21,
+                                                              "x": 0,
+                                                              "y": 0
                                                             }
                                                           ]
                                                         },
@@ -4701,6 +4815,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -4714,6 +4830,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -4774,6 +4892,8 @@
                                                       "layoutMode": "none",
                                                       "width": 150,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -4841,6 +4961,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 13,
+                                                                  "x": 3,
+                                                                  "y": 1,
                                                                   "backgroundColor": "#333333"
                                                                 }
                                                               ]
@@ -4856,6 +4978,8 @@
                                                       "layoutMode": "none",
                                                       "width": 45,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -4925,6 +5049,8 @@
                                                       "layoutMode": "none",
                                                       "width": 39,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -4984,6 +5110,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5049,6 +5177,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -5062,6 +5192,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5127,6 +5259,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -5140,6 +5274,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5209,7 +5345,9 @@
                                                               "type": "IMAGE-SVG",
                                                               "layoutMode": "none",
                                                               "width": 21,
-                                                              "height": 21
+                                                              "height": 21,
+                                                              "x": 0,
+                                                              "y": 0
                                                             }
                                                           ]
                                                         },
@@ -5228,6 +5366,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -5241,6 +5381,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5301,6 +5443,8 @@
                                                       "layoutMode": "none",
                                                       "width": 150,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5368,6 +5512,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 13,
+                                                                  "x": 3,
+                                                                  "y": 1,
                                                                   "backgroundColor": "#333333"
                                                                 }
                                                               ]
@@ -5383,6 +5529,8 @@
                                                       "layoutMode": "none",
                                                       "width": 45,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5452,6 +5600,8 @@
                                                       "layoutMode": "none",
                                                       "width": 39,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5511,6 +5661,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5576,6 +5728,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -5589,6 +5743,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5654,6 +5810,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -5667,6 +5825,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5728,7 +5888,9 @@
                                                               "type": "IMAGE-SVG",
                                                               "layoutMode": "none",
                                                               "width": 21,
-                                                              "height": 21
+                                                              "height": 21,
+                                                              "x": 0,
+                                                              "y": 0
                                                             }
                                                           ]
                                                         },
@@ -5747,6 +5909,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -5760,6 +5924,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5820,6 +5986,8 @@
                                                       "layoutMode": "none",
                                                       "width": 150,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5887,6 +6055,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 13,
+                                                                  "x": 3,
+                                                                  "y": 1,
                                                                   "backgroundColor": "#333333"
                                                                 }
                                                               ]
@@ -5902,6 +6072,8 @@
                                                       "layoutMode": "none",
                                                       "width": 45,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -5971,6 +6143,8 @@
                                                       "layoutMode": "none",
                                                       "width": 39,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6030,6 +6204,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6095,6 +6271,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -6108,6 +6286,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6173,6 +6353,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -6186,6 +6368,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6236,6 +6420,8 @@
                                                   "layoutMode": "none",
                                                   "width": 252,
                                                   "height": 1,
+                                                  "x": 0,
+                                                  "y": 36,
                                                   "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                 }
                                               ]
@@ -6294,6 +6480,8 @@
                                                       "layoutMode": "none",
                                                       "width": 150,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6361,6 +6549,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 13,
+                                                                  "x": 3,
+                                                                  "y": 1,
                                                                   "backgroundColor": "#333333"
                                                                 }
                                                               ]
@@ -6376,6 +6566,8 @@
                                                       "layoutMode": "none",
                                                       "width": 45,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6445,6 +6637,8 @@
                                                       "layoutMode": "none",
                                                       "width": 39,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6505,6 +6699,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6570,6 +6766,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -6583,6 +6781,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6648,6 +6848,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -6661,6 +6863,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6711,6 +6915,8 @@
                                                   "layoutMode": "none",
                                                   "width": 252,
                                                   "height": 1,
+                                                  "x": 0,
+                                                  "y": 36,
                                                   "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                 }
                                               ]
@@ -6769,6 +6975,8 @@
                                                       "layoutMode": "none",
                                                       "width": 150,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6836,6 +7044,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 13,
+                                                                  "x": 3,
+                                                                  "y": 1,
                                                                   "backgroundColor": "#333333"
                                                                 }
                                                               ]
@@ -6851,6 +7061,8 @@
                                                       "layoutMode": "none",
                                                       "width": 45,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6920,6 +7132,8 @@
                                                       "layoutMode": "none",
                                                       "width": 39,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -6980,6 +7194,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7045,6 +7261,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -7058,6 +7276,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7123,6 +7343,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -7136,6 +7358,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7186,6 +7410,8 @@
                                                   "layoutMode": "none",
                                                   "width": 252,
                                                   "height": 1,
+                                                  "x": 0,
+                                                  "y": 36,
                                                   "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                 }
                                               ]
@@ -7244,6 +7470,8 @@
                                                       "layoutMode": "none",
                                                       "width": 150,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7311,6 +7539,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 13,
+                                                                  "x": 3,
+                                                                  "y": 1,
                                                                   "backgroundColor": "#333333"
                                                                 }
                                                               ]
@@ -7326,6 +7556,8 @@
                                                       "layoutMode": "none",
                                                       "width": 45,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7395,6 +7627,8 @@
                                                       "layoutMode": "none",
                                                       "width": 39,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7455,6 +7689,8 @@
                                                       "layoutMode": "none",
                                                       "width": 252,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7520,6 +7756,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -7533,6 +7771,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7598,6 +7838,8 @@
                                                               "layoutMode": "none",
                                                               "width": 5,
                                                               "height": 10,
+                                                              "x": 6,
+                                                              "y": 3,
                                                               "backgroundColor": "#333333"
                                                             }
                                                           ]
@@ -7611,6 +7853,8 @@
                                                       "layoutMode": "none",
                                                       "width": 90,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7661,6 +7905,8 @@
                                                   "layoutMode": "none",
                                                   "width": 252,
                                                   "height": 1,
+                                                  "x": 0,
+                                                  "y": 36,
                                                   "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                 }
                                               ]
@@ -7719,6 +7965,8 @@
                                                       "layoutMode": "none",
                                                       "width": 150,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7786,6 +8034,8 @@
                                                                   "layoutMode": "none",
                                                                   "width": 10,
                                                                   "height": 13,
+                                                                  "x": 3,
+                                                                  "y": 1,
                                                                   "backgroundColor": "#333333"
                                                                 }
                                                               ]
@@ -7801,6 +8051,8 @@
                                                       "layoutMode": "none",
                                                       "width": 45,
                                                       "height": 1,
+                                                      "x": 0,
+                                                      "y": 36,
                                                       "backgroundColor": "rgba(53, 64, 96, 0.1)"
                                                     }
                                                   ]
@@ -7838,6 +8090,8 @@
               "layoutMode": "none",
               "width": 1245,
               "height": 78,
+              "x": 0,
+              "y": 0,
               "backgroundColor": "#FFFFFF",
               "borderColor": "#CCCCCC",
               "children": [
@@ -7848,6 +8102,8 @@
                   "layoutMode": "column",
                   "width": 1245,
                   "height": 39,
+                  "x": 0,
+                  "y": 39,
                   "padding": "0px 15.567567825317383px",
                   "alignItems": "stretch",
                   "justifyContent": "stretch",
@@ -7977,6 +8233,8 @@
                                       "layoutMode": "none",
                                       "width": 16,
                                       "height": 16,
+                                      "x": 0,
+                                      "y": 0,
                                       "backgroundColor": "#D9D9D9"
                                     },
                                     {
@@ -7986,6 +8244,8 @@
                                       "layoutMode": "none",
                                       "width": 7,
                                       "height": 4,
+                                      "x": 5,
+                                      "y": 6,
                                       "backgroundColor": "#666666"
                                     }
                                   ]
@@ -8040,6 +8300,8 @@
                                       "layoutMode": "none",
                                       "width": 16,
                                       "height": 16,
+                                      "x": 0,
+                                      "y": 0,
                                       "backgroundColor": "#D9D9D9"
                                     },
                                     {
@@ -8049,6 +8311,8 @@
                                       "layoutMode": "none",
                                       "width": 7,
                                       "height": 4,
+                                      "x": 5,
+                                      "y": 6,
                                       "backgroundColor": "#666666"
                                     }
                                   ]
@@ -8103,6 +8367,8 @@
                                       "layoutMode": "none",
                                       "width": 16,
                                       "height": 16,
+                                      "x": 0,
+                                      "y": 0,
                                       "backgroundColor": "#D9D9D9"
                                     },
                                     {
@@ -8112,6 +8378,8 @@
                                       "layoutMode": "none",
                                       "width": 7,
                                       "height": 4,
+                                      "x": 5,
+                                      "y": 6,
                                       "backgroundColor": "#666666"
                                     }
                                   ]
@@ -8201,6 +8469,8 @@
                                       "layoutMode": "none",
                                       "width": 16,
                                       "height": 16,
+                                      "x": 0,
+                                      "y": 0,
                                       "backgroundColor": "#D9D9D9"
                                     },
                                     {
@@ -8210,6 +8480,8 @@
                                       "layoutMode": "none",
                                       "width": 7,
                                       "height": 4,
+                                      "x": 5,
+                                      "y": 6,
                                       "backgroundColor": "#666666"
                                     }
                                   ]
@@ -8264,6 +8536,8 @@
                                       "layoutMode": "none",
                                       "width": 16,
                                       "height": 16,
+                                      "x": 0,
+                                      "y": 0,
                                       "backgroundColor": "#D9D9D9"
                                     },
                                     {
@@ -8273,6 +8547,8 @@
                                       "layoutMode": "none",
                                       "width": 7,
                                       "height": 4,
+                                      "x": 5,
+                                      "y": 6,
                                       "backgroundColor": "#666666"
                                     }
                                   ]
@@ -8291,6 +8567,8 @@
                   "type": "FRAME",
                   "layoutMode": "column",
                   "width": 1245,
+                  "x": 0,
+                  "y": 0,
                   "padding": "5.189189434051514px 15.567567825317383px",
                   "gap": "5.189189434051514px",
                   "children": [
@@ -8335,6 +8613,8 @@
                                       "layoutMode": "none",
                                       "width": 116,
                                       "height": 13,
+                                      "x": 29,
+                                      "y": 2,
                                       "backgroundColor": "#000000"
                                     },
                                     {
@@ -8344,6 +8624,8 @@
                                       "layoutMode": "none",
                                       "width": 21,
                                       "height": 13,
+                                      "x": 0,
+                                      "y": 1,
                                       "backgroundColor": "#000000"
                                     }
                                   ]
@@ -8421,6 +8703,8 @@
                                               "layoutMode": "none",
                                               "width": 13,
                                               "height": 13,
+                                              "x": 1,
+                                              "y": 1,
                                               "backgroundColor": "#333333"
                                             }
                                           ]
@@ -8600,6 +8884,8 @@
                                               "layoutMode": "none",
                                               "width": 21,
                                               "height": 21,
+                                              "x": 0,
+                                              "y": 0,
                                               "children": [
                                                 {
                                                   "id": "I15682:101498;5634:57213;15:17003;15:17039;15:4358;1629:157200",
@@ -8608,6 +8894,8 @@
                                                   "layoutMode": "none",
                                                   "width": 14,
                                                   "height": 16,
+                                                  "x": 3,
+                                                  "y": 2,
                                                   "backgroundColor": "#333333"
                                                 }
                                               ]
@@ -8651,6 +8939,8 @@
                                               "layoutMode": "none",
                                               "width": 21,
                                               "height": 21,
+                                              "x": 0,
+                                              "y": 0,
                                               "children": [
                                                 {
                                                   "id": "I15682:101498;5634:57214;15:17003;15:17039;15:4358;1223:92847",
@@ -8659,6 +8949,8 @@
                                                   "layoutMode": "none",
                                                   "width": 14,
                                                   "height": 16,
+                                                  "x": 3,
+                                                  "y": 2,
                                                   "backgroundColor": "#333333"
                                                 }
                                               ]
@@ -8702,6 +8994,8 @@
                                               "layoutMode": "none",
                                               "width": 21,
                                               "height": 21,
+                                              "x": 0,
+                                              "y": 0,
                                               "children": [
                                                 {
                                                   "id": "I15682:101498;5634:57215;15:17003;15:17039;15:4358;1992:153420",
@@ -8710,6 +9004,8 @@
                                                   "layoutMode": "none",
                                                   "width": 17,
                                                   "height": 17,
+                                                  "x": 2,
+                                                  "y": 2,
                                                   "backgroundColor": "#333333"
                                                 }
                                               ]
@@ -8758,6 +9054,8 @@
                                           "layoutMode": "none",
                                           "width": 15,
                                           "height": 13,
+                                          "x": 2,
+                                          "y": 3,
                                           "backgroundColor": "#FFFFFF"
                                         }
                                       ]
@@ -8783,6 +9081,8 @@
           "layoutMode": "none",
           "width": 23,
           "height": 23,
+          "x": 47,
+          "y": 204,
           "backgroundColor": "#EA4C4C",
           "borderRadius": "63.50395202636719px",
           "children": [
@@ -8794,6 +9094,8 @@
               "text": "1",
               "width": 6,
               "height": 12,
+              "x": 8,
+              "y": 6,
               "fontSize": 10.378378868103027,
               "fontWeight": 400,
               "textColor": "#FFFFFF"
@@ -8806,6 +9108,8 @@
           "type": "INSTANCE",
           "layoutMode": "column",
           "width": 1920,
+          "x": 0,
+          "y": 0,
           "padding": "28px 60px 20px",
           "justifyContent": "center",
           "backgroundColor": "#FFFFFF",
@@ -8869,7 +9173,7 @@
   ],
   "stats": {
     "textNodes": 130,
-    "mappedKeys": 76,
+    "mappedKeys": 68,
     "totalNodes": 857
   }
 }

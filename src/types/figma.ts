@@ -18,6 +18,13 @@ export interface FigmaNodeView {
   layoutMode: 'none' | 'row' | 'column';
   width?: number;
   height?: number;
+  /**
+   * 부모 기준 상대 좌표(px). Figma 픽셀 기준 미리보기에 사용한다.
+   * MCP는 locationRelativeToParent, REST는 absoluteBoundingBox 차이로 계산된다.
+   * 좌표가 없는 노드는 픽셀 모드에서도 흐름(flex) 배치로 폴백한다.
+   */
+  x?: number;
+  y?: number;
   padding?: string;
   gap?: string;
   alignItems?: string;

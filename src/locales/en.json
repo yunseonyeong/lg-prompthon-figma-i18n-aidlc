@@ -2,11 +2,16 @@
   "console": {
     "setting": {
       "group": {
+        "title": {
+          "workspaceGroupSettings": "Workspace/Group Settings",
+          "businessSiteName": "Business Site Name",
+          "apiAccess": "API Access",
+          "automaticLicenseAssignment": "Automatic license assignment",
+          "automaticDeviceApproval": "Automatic device approval",
+          "singleSignOnSso": "Single Sign-On (SSO)",
+          "console": "Console"
+        },
         "label": {
-          "content": "Content",
-          "schedule": "Schedule",
-          "device": "Device",
-          "settings": "Settings",
           "signage": "Signage",
           "isRequired": "is required",
           "calendar": "Calendar",
@@ -60,7 +65,9 @@
           "space": "Space",
           "devices": "Devices",
           "data": "Data",
+          "content": "Content",
           "rules": "Rules",
+          "schedule": "Schedule",
           "addOnService": "Add-On Service",
           "siteMap": "Site Map",
           "floorPlan": "Floor Plan",
@@ -73,18 +80,11 @@
           "controlSchedule": "Control Schedule",
           "artLounge": "Art Lounge",
           "hotelMobileApp": "Hotel Mobile App",
+          "device": "Device",
           "site": "Site",
           "ads": "Ads",
-          "setting": "Setting"
-        },
-        "title": {
-          "console": "Console",
-          "workspaceGroupSettings": "Workspace/Group Settings",
-          "businessSiteName": "Business Site Name",
-          "apiAccess": "API Access",
-          "automaticLicenseAssignment": "Automatic license assignment",
-          "automaticDeviceApproval": "Automatic device approval",
-          "singleSignOnSso": "Single Sign-On (SSO)"
+          "setting": "Setting",
+          "settings": "Settings"
         },
         "button": {
           "publish": "Publish",

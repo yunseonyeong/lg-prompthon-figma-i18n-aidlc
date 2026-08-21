@@ -1088,10 +1088,89 @@ export function generateLocaleFiles(entries: I18nEntry[]): Record<string, object
   return locales;
 }
 
-export function writeLocaleFiles(locales: Record<string, object>): void {
+/** locale 실행 이력 보관 위치. src/data/는 .gitignore 대상이라 저장소를 더럽히지 않는다 */
+const LOCALE_HISTORY_DIR = path.resolve(CONFIG.outputDir, '..', 'data', 'locale-history');
+
+/** 보관할 실행 수. 넘으면 오래된 것부터 지운다 */
+const LOCALE_HISTORY_LIMIT = 30;
+
+/** `20260821-110433` — 사람이 읽을 수 있고, 문자열 정렬만으로 시간순이 되는 형식 */
+function localeRunId(at: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return (
+    `${at.getFullYear()}${p(at.getMonth() + 1)}${p(at.getDate())}` +
+    `-${p(at.getHours())}${p(at.getMinutes())}${p(at.getSeconds())}`
+  );
+}
+
+function countLocaleKeys(obj: unknown): number {
+  if (typeof obj !== 'object' || obj === null) return 1;
+  return Object.values(obj as Record<string, unknown>).reduce<number>(
+    (n, v) => n + countLocaleKeys(v),
+    0
+  );
+}
+
+/** 보관 한도를 넘긴 오래된 이력 삭제 */
+function pruneLocaleHistory(): void {
+  try {
+    const runs = fs
+      .readdirSync(LOCALE_HISTORY_DIR, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      .sort(); // runId 형식이 시간순 정렬과 일치한다
+    for (const stale of runs.slice(0, Math.max(0, runs.length - LOCALE_HISTORY_LIMIT))) {
+      fs.rmSync(path.join(LOCALE_HISTORY_DIR, stale), { recursive: true, force: true });
+      console.log(`🧹 오래된 locale 이력 삭제: ${stale}`);
+    }
+  } catch {
+    /* 이력 정리 실패가 파이프라인을 막아서는 안 된다 */
+  }
+}
+
+/**
+ * 실행 시점의 locale을 그대로 보관한다.
+ *
+ * src/locales/*.json은 실행마다 갱신되므로 과거 결과를 되짚을 방법이 없었다.
+ * 최신본은 그대로 두고 — 앱과 i18n이 그 경로를 읽는다 — 실행별 사본을 남긴다.
+ *
+ *   src/data/locale-history/<runId>/{en,ko,ja,zh-CN}.json
+ *   src/data/locale-history/<runId>/meta.json
+ *
+ * 인자는 "이번에 디스크에 쓴 최종 내용"(병합 결과)이어야 한다. 요청으로 들어온
+ * locales를 그대로 남기면 파일 내용과 이력이 어긋난다.
+ * 조회는 GET /api/pipeline/locale-history 참고.
+ */
+function archiveLocaleFiles(written: Record<string, object>, at: Date): string {
+  const runId = localeRunId(at);
+  const runDir = path.join(LOCALE_HISTORY_DIR, runId);
+  fs.mkdirSync(runDir, { recursive: true });
+
+  for (const [lang, data] of Object.entries(written)) {
+    fs.writeFileSync(path.join(runDir, `${lang}.json`), JSON.stringify(data, null, 2), 'utf-8');
+  }
+
+  const meta = {
+    runId,
+    at: at.toISOString(),
+    languages: Object.keys(written),
+    keyCount: written.en ? countLocaleKeys(written.en) : 0,
+  };
+  fs.writeFileSync(path.join(runDir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf-8');
+  console.log(`🗄️  Archived: ${runDir} (${meta.keyCount} keys)`);
+
+  pruneLocaleHistory();
+  return runId;
+}
+
+/** locale 파일 저장. 반환값은 이번 실행의 이력 id다. */
+export function writeLocaleFiles(locales: Record<string, object>): string {
   if (!fs.existsSync(CONFIG.outputDir)) {
     fs.mkdirSync(CONFIG.outputDir, { recursive: true });
   }
+
+  /** 실제로 디스크에 쓴 내용 (병합 결과) — 이력에 그대로 남긴다 */
+  const written: Record<string, object> = {};
 
   for (const [lang, data] of Object.entries(locales)) {
     const filePath = path.join(CONFIG.outputDir, `${lang}.json`);
@@ -1109,7 +1188,10 @@ export function writeLocaleFiles(locales: Record<string, object>): void {
     deepMerge(merged, data as Record<string, any>);
     fs.writeFileSync(filePath, JSON.stringify(merged, null, 2), 'utf-8');
     console.log(`✅ Generated: ${filePath}`);
+    written[lang] = merged;
   }
+
+  return archiveLocaleFiles(written, new Date());
 }
 
 /**
@@ -1363,10 +1445,89 @@ interface GeneratedComponent {
 }
 
 /**
- * Figma 구조를 JSON 문자열로 변환 (EXAONE 프롬프트용)
- * 불필요한 정보는 제거하고 핵심만 남김
+ * 컴포넌트 생성 결과.
+ *
+ * 실패를 null로 삼키면 "생성된 컴포넌트 없음" 한 줄만 남고 exit code도 0이라
+ * 화면은 그대로 "완료"로 표시된다. 실패 이유를 호출부까지 올린다.
  */
-function simplifyStructureForPrompt(structure: FigmaFrameStructure, depth = 0): string {
+interface ComponentGenerationResult {
+  components: GeneratedComponent[];
+  /** 프레임별 실패 이유 (빈 배열이면 전부 성공) */
+  failures: string[];
+}
+
+/**
+ * 프롬프트에서 제외할 노드 타입.
+ *
+ * 아이콘 path(VECTOR)와 장식 도형은 UI 구조에 기여하지 않으면서 노드 수를 폭증시킨다.
+ * 실측(프레임 15682:100905): 전체 1,423개 중 VECTOR 241 / ELLIPSE 26 / RECTANGLE 35.
+ * 이것들이 프롬프트에 들어가면 모델이 아이콘 라이브러리를 상상해서 import하려 든다
+ * (react-icons는 이 프로젝트 의존성에도 없다).
+ */
+const PROMPT_SKIP_TYPES = new Set(['VECTOR', 'ELLIPSE', 'BOOLEAN_OPERATION', 'SLICE', 'STAR', 'LINE']);
+
+/** 프롬프트 구조 트리의 상한. 넘으면 잘라내고 표시한다 */
+const PROMPT_MAX_DEPTH = 8;
+const PROMPT_MAX_LINES = 300;
+
+function countStructureNodes(s: FigmaFrameStructure): number {
+  return 1 + (s.children ?? []).reduce((n, c) => n + countStructureNodes(c), 0);
+}
+
+/**
+ * 실제 화면 프레임을 골라낸다.
+ *
+ * 대상 프레임이 "페이지 래퍼"인 경우가 많다. 실측한 15682:100905는 이름이 "-"인
+ * 1920x1703 래퍼이고, 그 안에 UX 시나리오 문서 부속물(Table, .Row, Doc Title, No)과
+ * 실제 화면(Console_Setting_Group@User, 1245x701)이 형제로 들어 있다.
+ * 문서 표까지 프롬프트에 넣으면 모델이 그걸 UI로 착각해 시나리오 설명 테이블을
+ * 컴포넌트에 그려버린다.
+ *
+ * 판별 기준은 노드 수 점유율이다. 한 자식이 전체의 70% 이상을 차지하면 그게 화면이다
+ * (실측: Console_Setting_Group@User가 1,423개 중 1,360개 = 96%).
+ */
+function pickScreenFrame(structure: FigmaFrameStructure): FigmaFrameStructure {
+  const children = structure.children ?? [];
+  if (children.length < 2) return structure;
+
+  const total = countStructureNodes(structure);
+  let best: { node: FigmaFrameStructure; count: number } | null = null;
+  for (const child of children) {
+    const count = countStructureNodes(child);
+    if (!best || count > best.count) best = { node: child, count };
+  }
+  if (best && best.count / total >= 0.7) {
+    console.log(
+      `   ℹ️ 페이지 래퍼 "${structure.name}"에서 실제 화면 "${best.node.name}" 선택 ` +
+        `(노드 ${best.count}/${total})`
+    );
+    return best.node;
+  }
+  return structure;
+}
+
+/**
+ * Figma 구조를 프롬프트용 트리 텍스트로 변환.
+ *
+ * 전체 트리를 그대로 넣으면 안 된다. 실측으로 70,871자(약 2만 토큰)가 나왔고,
+ * 그 상태에서 모델이 반복 루프에 빠져 존재하지 않는 아이콘 이름을 수천 개 나열한
+ * 쓸 수 없는 코드를 만들었다. 그래서 장식 노드를 걷어내고 깊이/줄 수를 제한한다.
+ */
+function simplifyStructureForPrompt(
+  structure: FigmaFrameStructure,
+  depth = 0,
+  budget: { lines: number; truncated: boolean; maxDepth?: number } = {
+    lines: PROMPT_MAX_LINES,
+    truncated: false,
+  }
+): string {
+  const maxDepth = budget.maxDepth ?? PROMPT_MAX_DEPTH;
+  if (PROMPT_SKIP_TYPES.has(structure.type)) return '';
+  if (budget.lines <= 0) {
+    budget.truncated = true;
+    return '';
+  }
+
   const indent = '  '.repeat(depth);
   const lines: string[] = [];
   
@@ -1395,13 +1556,29 @@ function simplifyStructureForPrompt(structure: FigmaFrameStructure, depth = 0): 
       : '';
     lines.push(`${indent}${emoji} ${structure.type}: "${structure.name}"${layoutInfo}${sizeInfo}`);
   }
-  
+  budget.lines -= 1;
+
+  if (depth >= maxDepth) {
+    // 더 깊이 들어가지 않는다. 남은 자식이 있으면 있다는 사실만 알린다.
+    if ((structure.children ?? []).length > 0) {
+      lines.push(`${indent}  … (${structure.children!.length} more nested nodes omitted)`);
+      budget.lines -= 1;
+    }
+    return lines.join('\n');
+  }
+
   if (structure.children && structure.children.length > 0) {
     for (const child of structure.children) {
-      lines.push(simplifyStructureForPrompt(child, depth + 1));
+      const rendered = simplifyStructureForPrompt(child, depth + 1, budget);
+      if (rendered) lines.push(rendered);
     }
   }
-  
+
+  // 최상위에서 한 번만 잘렸음을 알린다
+  if (depth === 0 && budget.truncated) {
+    lines.push('… (structure truncated — deeper nodes omitted)');
+  }
+
   return lines.join('\n');
 }
 
@@ -1410,12 +1587,30 @@ function simplifyStructureForPrompt(structure: FigmaFrameStructure, depth = 0): 
  */
 export async function generateComponentsWithExaone(
   componentsMap: ComponentMapFrame[]
-): Promise<GeneratedComponent[]> {
+): Promise<ComponentGenerationResult> {
   const results: GeneratedComponent[] = [];
-  
-  // 캐시된 Figma 프레임 구조 가져오기
+  const failures: string[] = [];
+
+  // 캐시된 Figma 프레임 구조 가져오기 (같은 프로세스에서 Step 1이 선행되어야 채워진다)
   const frameStructures = getCachedFrameStructures();
-  
+
+  if (frameStructures.length === 0) {
+    return {
+      components: [],
+      failures: ['Figma 프레임 구조 캐시가 비어 있습니다 (Step 1 추출이 선행되어야 합니다)'],
+    };
+  }
+
+  // 자격증명이 없으면 프레임마다 401을 맞을 뿐이다. 호출 전에 끊고 이유를 알린다.
+  if (!CONFIG.friendliApiKey) {
+    return {
+      components: [],
+      failures: [
+        'FRIENDLI_API_KEY가 설정되지 않았습니다 (.env 또는 ~/.hermes/.env). EXAONE 호출이 전부 401이 되므로 생략했습니다',
+      ],
+    };
+  }
+
   // i18n 키 매핑 생성
   const textToKeyMap = new Map<string, string>();
   for (const frame of componentsMap) {
@@ -1429,25 +1624,83 @@ export async function generateComponentsWithExaone(
     mapI18nKeysToStructure(structure, textToKeyMap);
   }
   
-  // 각 프레임에 대해 컴포넌트 생성
-  for (const structure of frameStructures) {
-    const component = await generateComponentFromStructure(structure);
-    if (component) {
-      results.push(component);
+  // 각 프레임에 대해 컴포넌트 생성.
+  // 대상은 "실제 화면" 프레임이다 — 페이지 래퍼가 넘어오면 안쪽 화면을 골라낸다.
+  // 이름은 여기서 확정한다 (프레임 이름이 비어 있거나 중복일 수 있다).
+  const usedNames = new Set<string>();
+  for (let i = 0; i < frameStructures.length; i++) {
+    const structure = pickScreenFrame(frameStructures[i]);
+    const componentName = dedupeComponentName(componentNameFromFrame(structure, i), usedNames);
+    if (componentName !== toPascalCase(structure.name)) {
+      console.log(
+        `   ℹ️ 프레임 이름 "${structure.name}" → 컴포넌트 이름 ${componentName} (이름을 만들 수 없어 대체)`
+      );
+    }
+
+    const outcome = await generateComponentFromStructure(structure, componentName);
+    if (outcome.component) {
+      results.push(outcome.component);
+    } else {
+      failures.push(`${componentName}: ${outcome.error}`);
     }
   }
 
-  return results;
+  return { components: results, failures };
 }
 
+/**
+ * 컴포넌트 1개 생성.
+ *
+ * 잘림(truncation)에 취약한 단계다. 이 모델은 reasoning 모델이라 응답 토큰을
+ * 사고 과정과 코드가 나눠 쓰므로, 구조가 크면 코드가 중간에 끊겨 `export default`가
+ * 없는 조각이 온다(실측: 502 "export default 없음"). 그래서
+ *   - enable_thinking=false로 사고 토큰을 끄고
+ *   - max_tokens를 넉넉히 주고
+ *   - 그래도 끊기면 구조를 줄여 한 번 재시도한다.
+ */
 async function generateComponentFromStructure(
-  structure: FigmaFrameStructure
-): Promise<GeneratedComponent | null> {
-  const componentName = toPascalCase(structure.name);
+  structure: FigmaFrameStructure,
+  componentName: string
+): Promise<{ component: GeneratedComponent | null; error?: string }> {
+  // 1차: 기본 예산, 2차: 구조를 절반으로 줄여 재시도
+  const budgets = [
+    { maxDepth: PROMPT_MAX_DEPTH, maxLines: PROMPT_MAX_LINES },
+    { maxDepth: 5, maxLines: 120 },
+  ];
+
+  let last: { component: GeneratedComponent | null; error?: string } = {
+    component: null,
+    error: '시도하지 않음',
+  };
+
+  for (let attempt = 0; attempt < budgets.length; attempt++) {
+    if (attempt > 0) {
+      console.log(
+        `      ↻ 구조를 줄여 재시도 (depth ${budgets[attempt].maxDepth} / ${budgets[attempt].maxLines}줄) — 이전 실패: ${last.error}`
+      );
+    }
+    last = await requestComponentCode(structure, componentName, budgets[attempt]);
+    if (last.component) return last;
+    // 잘림/빈 응답이 아니라면(예: 401) 재시도해도 같다
+    if (!last.error?.includes('잘림') && !last.error?.includes('비어 있음')) return last;
+  }
+
+  return last;
+}
+
+async function requestComponentCode(
+  structure: FigmaFrameStructure,
+  componentName: string,
+  budget: { maxDepth: number; maxLines: number }
+): Promise<{ component: GeneratedComponent | null; error?: string }> {
   const fileName = `${componentName}.tsx`;
-  
+
   // Figma 구조를 읽기 쉬운 형태로 변환
-  const structureText = simplifyStructureForPrompt(structure);
+  const structureText = simplifyStructureForPrompt(structure, 0, {
+    lines: budget.maxLines,
+    truncated: false,
+    maxDepth: budget.maxDepth,
+  });
 
   const prompt = `You are an expert React developer. Generate a React component that EXACTLY matches this Figma design structure.
 
@@ -1489,12 +1742,25 @@ ${structureText}
 ### 4. TECHNICAL
 - Use React Bootstrap components
 - Use react-i18next useTranslation hook
-- TypeScript functional component
+- TypeScript functional component named ${componentName}
 - Export as default
 - Add reasonable padding/margin based on Figma spacing
 
+### 5. IMPORTS (STRICT — the file must compile)
+- Exactly TWO import statements: one from 'react-i18next', one from 'react-bootstrap'
+- Import ONLY the components you actually use. NEVER repeat a name. NEVER use \`as\` aliases
+- Allowed react-bootstrap names: Container, Row, Col, Card, Button, ButtonGroup, Form, InputGroup,
+  Table, Badge, Nav, Navbar, ListGroup, Alert, Spinner, ProgressBar, Modal, Tab, Tabs, Dropdown,
+  Pagination, Stack, Image
+- Sub-parts are properties, NOT separate imports: Card.Body / Card.Header / Card.Title,
+  ListGroup.Item, Form.Group / Form.Label / Form.Control, Modal.Body, Nav.Item / Nav.Link
+- NO icon libraries. react-icons / @fortawesome / lucide-react are NOT available.
+  For icons use a Bootstrap Button with a text label or omit them
+- Do NOT import React itself, and do NOT import reactstrap names (CardBody, InputGroupAddon, ...)
+
 ## OUTPUT
-Return ONLY the code. Start with imports. No explanations.
+Return ONLY the code, once. Start with imports, end with the export.
+No explanations, no repeated blocks, no placeholder lists of names.
 
 \`\`\`tsx
 import { useTranslation } from 'react-i18next';
@@ -1507,6 +1773,9 @@ import { Card, Row, Col, Button, ... } from 'react-bootstrap';
     console.log(`      → POST ${CONFIG.friendliApiUrl}`);
     console.log(`      → Model: ${CONFIG.friendliModel}`);
     console.log(`      → Component: ${componentName}`);
+    console.log(
+      `      → 구조 프롬프트: ${structureText.split('\n').length}줄 / ${structureText.length.toLocaleString()}자`
+    );
     const startTime = Date.now();
 
     const response = await fetch(CONFIG.friendliApiUrl, {
@@ -1520,7 +1789,15 @@ import { Card, Row, Col, Button, ... } from 'react-bootstrap';
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.2,
         top_p: 0.95,
-        max_tokens: 4000,
+        // 코드가 중간에 끊기면 export default가 없는 조각이 온다. 넉넉히 준다.
+        max_tokens: 8000,
+        // 같은 토큰을 반복하는 루프를 막는다. 실측으로 모델이 존재하지 않는 아이콘
+        // 이름(FiFileCircleCI...)을 수천 개 나열한 12KB짜리 쓰레기 코드를 만들었다.
+        frequency_penalty: 0.3,
+        // 사고 과정(reasoning)을 끈다. 이 모델은 reasoning 토큰이 응답 예산을 같이
+        // 먹는다 — 실측으로 사소한 프롬프트에도 reasoning 9,610자/1,846토큰을 쓰고
+        // 코드는 46자만 남겼다. 끄면 같은 프롬프트가 16토큰에 끝난다.
+        chat_template_kwargs: { enable_thinking: false },
       }),
     });
 
@@ -1528,8 +1805,12 @@ import { Card, Row, Col, Button, ... } from 'react-bootstrap';
     console.log(`      ✅ 응답 수신 (${elapsed}s, status: ${response.status})`);
 
     if (!response.ok) {
-      console.error(`      ❌ EXAONE 컴포넌트 생성 실패: ${response.status}`);
-      return null;
+      // 상태 코드만으로는 원인을 알 수 없다. 본문 앞부분까지 남긴다
+      // (401 "Please provide a valid credential." 같은 메시지가 여기 담긴다).
+      const body = await response.text().catch(() => '');
+      const detail = `HTTP ${response.status}${body ? ` - ${body.slice(0, 200)}` : ''}`;
+      console.error(`      ❌ EXAONE 컴포넌트 생성 실패: ${detail}`);
+      return { component: null, error: detail };
     }
 
     const data = await response.json();
@@ -1538,15 +1819,62 @@ import { Card, Row, Col, Button, ... } from 'react-bootstrap';
     // 코드 블록 마커 제거
     code = code.replace(/^```(?:tsx|typescript|jsx|javascript)?\n?/gm, '').replace(/```$/gm, '').trim();
 
+    // 빈 응답을 파일로 쓰면 "생성됐지만 내용 없는 tsx"가 남는다.
+    // 이 모델은 reasoning 모델이라 max_tokens가 부족하면 content가 비고
+    // reasoning_content만 채워져 온다(finish_reason: length). 그 경우를 구분해 알린다.
+    if (code.length === 0) {
+      const finish = data.choices?.[0]?.finish_reason ?? 'unknown';
+      const reasoningLen = (data.choices?.[0]?.message?.reasoning ?? '').length;
+      const hint =
+        finish === 'length'
+          ? ` (finish_reason=length, reasoning ${reasoningLen}자 — max_tokens 부족)`
+          : '';
+      console.error(`      ❌ EXAONE 응답에 코드가 없음${hint}`);
+      return { component: null, error: `응답 본문이 비어 있음${hint}` };
+    }
+
+    // 반복 루프 감지. 정상 코드에 600자를 넘는 한 줄은 거의 없다.
+    // (실측: import 한 줄이 8,000자를 넘고 존재하지 않는 아이콘 이름이 수백 번 반복됐다)
+    const longestLine = code
+      .split('\n')
+      .reduce((m: number, l: string) => Math.max(m, l.length), 0);
+    if (longestLine > 600) {
+      console.error(`      ❌ 응답이 반복 루프로 망가졌습니다 (최장 줄 ${longestLine}자)`);
+      return {
+        component: null,
+        error: `응답이 반복 루프로 망가짐 (최장 줄 ${longestLine}자)`,
+      };
+    }
+
+    // 컴포넌트 형태가 아니면 파일로 쓰지 않는다.
+    // 대부분은 응답이 max_tokens에서 끊긴 경우다 — finish_reason으로 구분해 알린다.
+    if (!code.includes('export default')) {
+      const finish = data.choices?.[0]?.finish_reason ?? 'unknown';
+      if (finish === 'length') {
+        console.error(
+          `      ❌ 응답이 max_tokens에서 잘림 (${code.length}자, export default 없음)`
+        );
+        return {
+          component: null,
+          error: `응답이 잘림 (finish_reason=length, ${code.length}자)`,
+        };
+      }
+      console.error(`      ❌ 생성된 코드에 export default가 없음 (finish_reason=${finish})`);
+      return { component: null, error: `export default 없음 (finish_reason=${finish})` };
+    }
+
     return {
-      name: componentName,
-      fileName,
-      code,
-      frame: structure.name,
+      component: {
+        name: componentName,
+        fileName,
+        code,
+        frame: structure.name,
+      },
     };
   } catch (error) {
-    console.error(`컴포넌트 생성 오류 (${componentName}):`, error);
-    return null;
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error(`컴포넌트 생성 오류 (${componentName}): ${detail}`);
+    return { component: null, error: detail };
   }
 }
 
@@ -1559,6 +1887,39 @@ function toPascalCase(str: string): string {
     .join('');
 }
 
+/**
+ * 프레임 이름으로 컴포넌트 이름(= 파일명 = export 식별자)을 만든다.
+ *
+ * toPascalCase()만 쓰면 안 되는 이유: Figma 프레임 이름이 "-"나 한글처럼 영숫자를
+ * 포함하지 않으면 결과가 빈 문자열이 된다. 실측으로 대상 프레임 이름이 "-"였고
+ *   - 파일이 `src/components/generated/.tsx`(숨김 파일)로 저장되고
+ *   - index.ts가 `export { default as  } from './';`가 되어 tsc가 깨졌고
+ *   - 화면 목록에는 이름 없는 항목만 떠서 "생성 안 됨"처럼 보였다.
+ * 이름을 못 만들면 Figma 노드 id로 대체한다(항상 존재하고 유일하다).
+ */
+function componentNameFromFrame(structure: FigmaFrameStructure, fallbackIndex: number): string {
+  const fromName = toPascalCase(structure.name);
+  if (/^[A-Za-z][A-Za-z0-9]*$/.test(fromName)) return fromName;
+
+  // 노드 id는 "15682:100905" 형태다. 식별자에 쓸 수 없는 문자만 치환한다.
+  const fromId = structure.id ? structure.id.replace(/[^A-Za-z0-9]+/g, '_') : '';
+  if (fromId) return `Frame${fromId}`;
+
+  return `GeneratedFrame${fallbackIndex + 1}`;
+}
+
+/** 같은 이름이 두 번 나오면 파일이 서로를 덮어쓴다. 뒤에 오는 쪽에 번호를 붙인다. */
+function dedupeComponentName(name: string, used: Set<string>): string {
+  if (!used.has(name)) {
+    used.add(name);
+    return name;
+  }
+  let n = 2;
+  while (used.has(`${name}${n}`)) n++;
+  used.add(`${name}${n}`);
+  return `${name}${n}`;
+}
+
 export function writeGeneratedComponents(components: GeneratedComponent[]): void {
   const outputDir = path.resolve(CONFIG.outputDir, '..', 'components', 'generated');
   
@@ -1566,13 +1927,20 @@ export function writeGeneratedComponents(components: GeneratedComponent[]): void
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  for (const component of components) {
+  // 이름이 식별자로 쓸 수 없으면 파일도 index.ts도 깨진다 (위 componentNameFromFrame 주석 참고)
+  const writable = components.filter((c) => {
+    if (/^[A-Za-z][A-Za-z0-9_]*$/.test(c.name)) return true;
+    console.error(`❌ 컴포넌트 이름이 올바르지 않아 저장을 건너뜁니다: "${c.name}" (frame: ${c.frame})`);
+    return false;
+  });
+
+  for (const component of writable) {
     const filePath = path.join(outputDir, component.fileName);
     fs.writeFileSync(filePath, component.code, 'utf-8');
     console.log(`✅ Generated: ${filePath}`);
   }
 
-  const indexContent = components
+  const indexContent = writable
     .map((c) => `export { default as ${c.name} } from './${c.name}';`)
     .join('\n');
   fs.writeFileSync(path.join(outputDir, 'index.ts'), indexContent, 'utf-8');
@@ -1673,11 +2041,17 @@ export async function runPipeline(fileKey?: string): Promise<void> {
 
   // Step 8: EXAONE React 컴포넌트 코드 생성 (Figma 구조 기반)
   console.log('⚛️  Step 8: EXAONE React 컴포넌트 생성 (Figma 구조 기반)...');
-  const generatedComponents = await generateComponentsWithExaone(componentsMap);
-  if (generatedComponents.length > 0) {
-    writeGeneratedComponents(generatedComponents);
-    console.log(`   생성된 컴포넌트: ${generatedComponents.length}개`);
-  } else {
+  const componentResult = await generateComponentsWithExaone(componentsMap);
+  if (componentResult.components.length > 0) {
+    writeGeneratedComponents(componentResult.components);
+    console.log(`   생성된 컴포넌트: ${componentResult.components.length}개`);
+  }
+  if (componentResult.failures.length > 0) {
+    // 서버(/api/pipeline/run)가 이 줄을 파싱해 SSE error 이벤트로 올린다.
+    console.error(`❌ Step 8 실패: 컴포넌트 ${componentResult.failures.length}건 생성 못 함`);
+    for (const f of componentResult.failures) console.error(`   - ${f}`);
+  }
+  if (componentResult.components.length === 0) {
     console.log('   ⚠️ 생성된 컴포넌트 없음');
   }
 

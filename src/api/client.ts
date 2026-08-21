@@ -155,6 +155,38 @@ export async function translateEntries(req: {
   return postPipeline<TranslateResult>('/pipeline/translate', req);
 }
 
+/** EXAONE이 생성한 React 컴포넌트 1개 */
+export interface GeneratedComponent {
+  name: string;
+  fileName: string;
+  code: string;
+  /** 원본 Figma 프레임 이름 */
+  frame: string;
+}
+
+export interface GenerateComponentsResult {
+  components: GeneratedComponent[];
+  /** 프레임별 실패 이유 (일부만 실패했을 때) */
+  failures: string[];
+  summary: { generated: number; failed: number; frames: number };
+}
+
+/**
+ * Step 8만 실행: Figma 구조 + i18n 키 매핑 → React 컴포넌트 코드 생성.
+ *
+ * 전체 파이프라인(/pipeline/run)과 달리 재추출·재번역을 하지 않는다.
+ * 화면에서 확인한 번역 결과(componentsMap)를 그대로 넘기면 그 키로 코드를 만든다.
+ * componentsMap을 생략하면 서버가 디스크의 components-map.json을 쓴다.
+ *
+ * 한 건도 만들지 못하면 502로 실패한다 — "생성 완료"로 위장하지 않는다.
+ */
+export function generateComponents(req?: {
+  componentsMap?: ComponentMapFrame[];
+  fileKey?: string;
+}): Promise<GenerateComponentsResult> {
+  return postPipeline<GenerateComponentsResult>('/pipeline/generate-components', req ?? {});
+}
+
 /** 파이프라인 API는 모두 `{ success, data, error }` 래퍼를 쓴다 */
 async function postPipeline<T>(pathname: string, payload: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${pathname}`, {
@@ -180,6 +212,34 @@ export function fetchLocale(lang: string): Promise<Record<string, unknown>> {
   return getJson<Record<string, unknown>>(`/pipeline/locales/${lang}`);
 }
 
+/** locale 실행 이력 1건 (src/data/locale-history/<runId>/) */
+export interface LocaleHistoryRun {
+  /** `20260821-110433` */
+  runId: string;
+  at: string | null;
+  languages: string[];
+  keyCount: number;
+}
+
+/**
+ * locale 실행 이력 목록 (최신순).
+ *
+ * src/locales/*.json은 실행마다 갱신되므로, 과거 시점 번역은 이 이력으로만 볼 수 있다.
+ */
+export function fetchLocaleHistory(): Promise<{ runs: LocaleHistoryRun[] }> {
+  return getJson<{ runs: LocaleHistoryRun[] }>('/pipeline/locale-history');
+}
+
+/** 특정 실행 시점의 locale JSON */
+export function fetchLocaleHistoryEntry(
+  runId: string,
+  lang: string
+): Promise<Record<string, unknown>> {
+  return getJson<Record<string, unknown>>(
+    `/pipeline/locale-history/${encodeURIComponent(runId)}/${encodeURIComponent(lang)}`
+  );
+}
+
 /** 다운로드 가능한 산출물 파일 (서버 allowlist와 일치해야 함) */
 export const DOWNLOADABLE_FILES = [
   'en.json',
@@ -195,30 +255,9 @@ export function downloadUrl(name: string): string {
   return `${API_BASE}/pipeline/download/${encodeURIComponent(name)}`;
 }
 
-/** 실행별 번역 스냅샷 CSV 다운로드 URL */
-export function translationsCsvUrl(runId: string): string {
-  return `${API_BASE}/pipeline/history/${encodeURIComponent(runId)}/translations.csv`;
-}
-
-export interface TranslationRow {
-  key: string;
-  en: string;
-  ko: string;
-  ja: string;
-  'zh-CN': string;
-}
-
-export interface TranslationSnapshot {
-  runId: string;
-  at: string;
-  rowCount: number;
-  rows: TranslationRow[];
-}
-
-/** 실행 시점 번역 결과(다국어 테이블) 조회 */
-export function fetchTranslationSnapshot(runId: string): Promise<TranslationSnapshot> {
-  return getJson<TranslationSnapshot>(`/pipeline/history/${encodeURIComponent(runId)}/translations`);
-}
+// 실행 요약 기록(pipeline-history)과 그에 딸린 번역 스냅샷/CSV API는 제거했다.
+// 실행 이력은 locale 사본(fetchLocaleHistory) 하나만 쓴다 — 기록이 두 곳으로
+// 갈라져 있으면 한쪽만 적재되는 일이 생긴다(실제로 그랬다).
 
 /** 번역 1건 수정 후 locale JSON에 저장 */
 export async function updateLocaleEntry(
