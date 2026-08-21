@@ -13,19 +13,15 @@
           "list": "목록",
           "lastUpdateTime": "마지막 업데이트 시간",
           "search": "검색",
-          "businessA": "Business A",
-          "workspaceA1": "Workspace A1",
           "groupAutoUpdateOn": "그룹 자동 업데이트: 켜짐",
           "businessSiteInformation": "비즈니스 사이트 정보",
           "businessSiteId": "비즈니스 사이트 ID *",
-          "supportingText": "supporting text",
           "subsidiary": "자회사",
           "licensePolicy": "라이선스 정책",
           "period": "기간",
           "businessSiteName": "비즈니스 사이트 이름",
           "regionCountry": "지역 / 국가 *",
           "asiaPacific": "아시아 및 태평양",
-          "label": "Label",
           "korea": "한국",
           "timeZone": "시간대",
           "utc0900AsiaSeoul": "(UTC+09:00) 아시아/서울",
@@ -40,7 +36,6 @@
           "businessSiteLogo": "비즈니스 사이트 로고",
           "image": "이미지 *",
           "unit": "단위",
-          "filenameSample00123Jpg": "FileName_sample_00123.jpg",
           "altText": "대체 텍스트",
           "lgLogoImage": "LG 로고 이미지",
           "themeColor": "테마 색상",
@@ -49,23 +44,18 @@
           "thema03": "테마 03",
           "thema04": "테마 04",
           "businessSiteAddress": "비즈니스 사이트 주소",
-          "magokjungang10RoGangseoGu": "MagokJungang 10-ro, Gangseo-gu, Seoul",
           "addressDetails": "주소 상세",
-          "30A101Bldg": "30, A101 bldg.",
           "addressMemo": "주소 메모",
           "setSingleSignOn": "SSO를 ON으로 설정하고 선택한 인증 유형의 세부 정보를 설정하세요.",
           "sortBy": "정렬 기준",
           "lastUpdated": "마지막 업데이트",
           "total": "전체",
-          "workspaceN": "워크스페이스 N",
-          "deviceN": "Device N",
-          "userN": "User N",
           "searchForWorkspace": "워크스페이스 검색",
           "workspaceName": "워크스페이스 이름",
           "deviceCount": "장치 수",
           "userCount": "사용자 수",
           "licensedProduct": "라이선스 제품",
-          "delete": "삭제",
+          "timeZone2": "Time Zone",
           "dashboard": "대시보드",
           "space": "공간",
           "devices": "장치",
@@ -101,7 +91,6 @@
           "save": "저장",
           "assignDevice": "장치 할당",
           "editGroup": "그룹 편집",
-          "button": "Button",
           "createBusinessSite": "비즈니스 사이트 생성",
           "turnOff": "끄기",
           "off": "끄기",
@@ -116,19 +105,6 @@
         },
         "placeholder": {
           "lgElectronics": "LG Electronics"
-        }
-      }
-    },
-    "doc": {
-      "title": {
-        "title": {
-          "settings": "설정"
-        },
-        "status": {
-          "modified": "Modified"
-        },
-        "label": {
-          "descriptionDescriptionDescriptionDescription": "Description Description \nDescription Description"
         }
       }
     }

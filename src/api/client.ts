@@ -88,6 +88,94 @@ export function fetchComponentsMap(): Promise<ComponentMapFrame[]> {
   return getJson<ComponentMapFrame[]>('/pipeline/components-map');
 }
 
+/** POST /pipeline/extract 가 돌려주는 i18n 엔트리 (Step 1~3 결과) */
+export interface ExtractedEntry {
+  key: string;
+  source: string;
+  /** `${frameName} > ${role}` 형태 */
+  context: string;
+  role: string;
+  translations: Record<string, string>;
+  contextOnly: boolean;
+}
+
+export interface ExtractionResult {
+  translationTargets: ExtractedEntry[];
+  /** 추출된 원문에 실제로 등장한 용어집 항목만 */
+  relevantGlossary: Record<string, Record<string, string>>;
+}
+
+/**
+ * Step 1~3 실행: Figma 텍스트 추출 → 문맥 분석 → i18n Key 생성.
+ *
+ * components-map.json을 읽던 방식과 다른 점: 매 호출마다 Figma를 실제로 조회한다.
+ * 따라서 파이프라인을 돌리지 않은 상태에서도 최신 디자인의 추출 결과를 볼 수 있고,
+ * 디스크에 남은 옛 산출물을 보여주는 일이 없다. 대신 응답이 느리다(Figma API 왕복).
+ *
+ * fileKey를 생략하면 서버가 저장된 프로젝트 설정 → 환경변수 순으로 결정한다.
+ */
+export async function extractTexts(opts?: { fileKey?: string }): Promise<ExtractionResult> {
+  return postPipeline<ExtractionResult>(
+    '/pipeline/extract',
+    opts?.fileKey ? { fileKey: opts.fileKey } : {}
+  );
+}
+
+/** 용어집 맵: 영문 용어 → { ko, ja, 'zh-CN' }. extract 응답과 translate 요청이 같은 형태다 */
+export type GlossaryPayload = Record<string, Record<string, string>>;
+
+export interface TranslateResult {
+  /** translations에 ko/ja/zh-CN이 채워진 엔트리 */
+  translated: ExtractedEntry[];
+  /** 언어별 중첩 리소스 (i18next addResourceBundle 형태) */
+  locales: Record<string, Record<string, unknown>>;
+  componentsMap: ComponentMapFrame[];
+  glossaryProposal: string;
+  summary: {
+    translatedCount: number;
+    localeLanguages: string[];
+    componentsMapFrames: number;
+  };
+}
+
+/**
+ * Step 4~7 실행: EXAONE 번역 → locale JSON → components map → 용어집 제안.
+ *
+ * 요청 필드명은 extract 응답의 `translationTargets` / `relevantGlossary`를 그대로 쓴다.
+ * 추출 → 확인 → 번역이 같은 이름의 같은 데이터를 주고받는다는 게 드러나야 한다.
+ * 번역 금지로 표시된 용어는 relevantGlossary에서 제외해서 보낸다(호출부 책임).
+ *
+ * 용어집은 이 요청 값으로만 결정된다 — 서버가 용어집 파일을 다시 읽지 않는다.
+ * 배치 번역이라 항목 수에 비례해 오래 걸린다 — 호출부에서 진행 상태를 보여줄 것.
+ */
+export async function translateEntries(req: {
+  translationTargets: ExtractedEntry[];
+  relevantGlossary: GlossaryPayload;
+}): Promise<TranslateResult> {
+  return postPipeline<TranslateResult>('/pipeline/translate', req);
+}
+
+/** 파이프라인 API는 모두 `{ success, data, error }` 래퍼를 쓴다 */
+async function postPipeline<T>(pathname: string, payload: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}${pathname}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  let body: { success?: boolean; data?: T; error?: string } | null = null;
+  try {
+    body = await res.json();
+  } catch {
+    /* 본문이 JSON이 아니면 상태 코드만 사용 */
+  }
+
+  if (!res.ok || !body?.success || !body.data) {
+    throw new Error(body?.error || `${res.status} ${res.statusText}`);
+  }
+  return body.data;
+}
+
 export function fetchLocale(lang: string): Promise<Record<string, unknown>> {
   return getJson<Record<string, unknown>>(`/pipeline/locales/${lang}`);
 }

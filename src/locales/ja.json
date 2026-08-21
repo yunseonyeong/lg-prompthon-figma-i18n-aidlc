@@ -13,19 +13,15 @@
           "list": "リスト",
           "lastUpdateTime": "最終更新時間",
           "search": "検索",
-          "businessA": "Business A",
-          "workspaceA1": "Workspace A1",
           "groupAutoUpdateOn": "グループ自動更新: オン",
           "businessSiteInformation": "ビジネスサイト情報",
           "businessSiteId": "ビジネスサイトID *",
-          "supportingText": "supporting text",
           "subsidiary": "子会社",
           "licensePolicy": "ライセンスポリシー",
           "period": "期間",
           "businessSiteName": "ビジネスサイト名",
           "regionCountry": "地域 / 国 *",
           "asiaPacific": "アジア＆太平洋",
-          "label": "Label",
           "korea": "韓国",
           "timeZone": "タイムゾーン",
           "utc0900AsiaSeoul": "(UTC+09:00) アジア/ソウル",
@@ -48,23 +44,18 @@
           "thema03": "テーマ03",
           "thema04": "テーマ04",
           "businessSiteAddress": "ビジネスサイトアドレス",
-          "magokjungang10RoGangseoGu": "MagokJungang 10-ro, Gangseo-gu, Seoul",
           "addressDetails": "住所詳細",
-          "30A101Bldg": "30, A101 bldg.",
           "addressMemo": "住所メモ",
-          "setSingleSignOn": "シングルサインオン (SSO)をONに設定し、選択した認証タイプの詳細を設定してください。",
+          "setSingleSignOn": "SSOをONに設定し、選択した認証タイプの詳細を設定してください。",
           "sortBy": "並び順",
           "lastUpdated": "最終更新日",
           "total": "合計",
-          "workspaceN": "ワークスペース N",
-          "deviceN": "Device N",
-          "userN": "User N",
           "searchForWorkspace": "ワークスペース検索",
           "workspaceName": "ワークスペース名",
           "deviceCount": "デバイス数",
           "userCount": "ユーザー数",
           "licensedProduct": "ライセンス製品",
-          "delete": "削除",
+          "timeZone2": "Time Zone",
           "dashboard": "ダッシュボード",
           "space": "スペース",
           "devices": "デバイス",
@@ -100,9 +91,8 @@
           "save": "保存",
           "assignDevice": "デバイス割り当て",
           "editGroup": "グループ編集",
-          "button": "Button",
           "createBusinessSite": "ビジネスサイト作成",
-          "turnOff": "Turn Off",
+          "turnOff": "オフ",
           "off": "オフ",
           "edit": "編集",
           "delete": "削除",
@@ -115,19 +105,6 @@
         },
         "placeholder": {
           "lgElectronics": "LG Electronics"
-        }
-      }
-    },
-    "doc": {
-      "title": {
-        "title": {
-          "settings": "設定"
-        },
-        "status": {
-          "modified": "Modified"
-        },
-        "label": {
-          "descriptionDescriptionDescriptionDescription": "Description Description \nDescription Description"
         }
       }
     }

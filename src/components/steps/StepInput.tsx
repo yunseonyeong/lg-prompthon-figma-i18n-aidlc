@@ -797,7 +797,7 @@ function StepInput({ onNext, onGoToPipeline }: StepInputProps) {
       </Modal>
 
       {/* Next Button */}
-      <div className="d-flex justify-content-end mt-4">
+      <div className="d-flex justify-content-end gap-2 mt-4">
         {/*
           이전에는 라벨이 '이어서 작업하기' / '🚀 시작하기'로 갈렸지만 두 분기의 동작이
           완전히 동일했다(onNext만 호출). 게다가 산출물이 디스크에 한 번 생기면
@@ -806,20 +806,20 @@ function StepInput({ onNext, onGoToPipeline }: StepInputProps) {
           기존 작업 유무는 위 대시보드 Alert와 파일 목록이 이미 보여준다.
         */}
         {/*
-          산출물이 없으면 Step 2로 보내면 안 된다. 거기서 에러 화면만 보고 막힌다.
-          바로 파이프라인 실행 화면(Step 5)으로 보낸다.
+          Step 2는 이제 components-map.json을 읽지 않고 POST /api/pipeline/extract를
+          호출해 Figma에서 직접 추출한다. 따라서 산출물이 없어도 눌러도 된다.
+          (이전에는 산출물이 없으면 Step 2가 에러 화면이라 파이프라인으로 우회시켰다.)
+          파이프라인 실행은 산출물이 없을 때만 보조 동선으로 함께 노출한다.
         */}
-        {hasExistingData ? (
-          <Button className="ux-btn-primary px-4 py-2" size="lg" onClick={onNext}>
-            텍스트 추출 결과 보기
-            <span className="ms-2">→</span>
-          </Button>
-        ) : (
-          <Button className="ux-btn-primary px-4 py-2" size="lg" onClick={onGoToPipeline}>
+        {!statusLoading && !hasExistingData && (
+          <Button variant="outline-primary" className="px-4 py-2" size="lg" onClick={onGoToPipeline}>
             ⚡ 파이프라인 실행하기
-            <span className="ms-2">→</span>
           </Button>
         )}
+        <Button className="ux-btn-primary px-4 py-2" size="lg" onClick={onNext}>
+          텍스트 추출 결과 보기
+          <span className="ms-2">→</span>
+        </Button>
       </div>
     </div>
   );

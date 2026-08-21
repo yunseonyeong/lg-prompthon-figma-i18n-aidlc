@@ -1,28 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, Row, Col, Table, Badge, Button, ButtonGroup, Alert, Form, Spinner } from 'react-bootstrap';
-import { useTranslation } from 'react-i18next';
 import Pagination, { usePagination } from '../Pagination';
 import { SkeletonRegion, SkeletonStatCards, SkeletonTable } from '../Skeleton';
-import { useComponentsMap } from '../../hooks/useFigmaData';
 import { updateLocaleEntry } from '../../api/client';
+import { retryTranslationRun, useTranslationRun } from '../../state/translationRun';
 import i18n from '../../i18n';
 
 interface StepTranslationProps {
   onNext: () => void;
   onBack: () => void;
-  /** 산출물이 없을 때 파이프라인 실행 화면으로 보낸다 (데드락 방지) */
+  /** 실행할 것이 없을 때 파이프라인 실행 화면으로 보낸다 (데드락 방지) */
   onGoToPipeline: () => void;
 }
-
-/**
- * 용어집(requirements/domain-glossary.md §3)에 명시된 오역 방지 규칙 예시.
- * 화면의 "오역 방지 N건" 수치를 이 배열 길이로 계산해 표기와 내용을 일치시킨다.
- */
-const MISTRANSLATION_CASES = [
-  { term: 'Withdraw', naive: '탈퇴', correct: '회수', reason: '라이선스 관리 문맥' },
-  { term: 'Vertical Type', naive: '세로 유형', correct: '산업 분야', reason: 'B2B 업종 분류 문맥' },
-  { term: 'Extend', naive: '확장', correct: '연장', reason: '유효기간 문맥' },
-] as const;
 
 /** 'a.b.c' + value → { a: { b: { c: value } } } (i18next addResourceBundle deep merge용) */
 function buildNested(dottedKey: string, value: string): Record<string, unknown> {
@@ -37,13 +26,28 @@ function buildNested(dottedKey: string, value: string): Record<string, unknown> 
   return root;
 }
 
+/** 진행 중 경과 시간(초). 번역이 수십 초 걸리므로 멈춘 화면처럼 보이지 않게 한다. */
+function useElapsedSeconds(startedAt: number | null, active: boolean): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!active || startedAt === null) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [active, startedAt]);
+  if (startedAt === null) return 0;
+  return Math.max(0, Math.floor((now - startedAt) / 1000));
+}
+
 function StepTranslation({ onNext, onBack, onGoToPipeline }: StepTranslationProps) {
-  const { t } = useTranslation();
+  // 번역 결과는 Step 3에서 시작한 POST /api/pipeline/translate 응답이다.
+  // 이전에는 components-map.json + locale 파일(i18next)을 조합해 보여줬는데,
+  // 그건 "지난 실행 산출물"이라 방금 확인한 용어집이 반영됐는지 알 수 없었다.
+  const run = useTranslationRun();
+  const elapsed = useElapsedSeconds(run.startedAt, run.status === 'running');
+
   const [reviewLang, setReviewLang] = useState<'ko' | 'ja' | 'zh-CN'>('ko');
 
   // ── 번역 인라인 편집 상태 ──
-  // 이전에는 editCount가 useState(0)로 고정되어 항상 "수동 수정 0건"만 표시했고,
-  // 편집 UI 자체가 없는데도 "클릭하여 수정할 수 있습니다"라고 안내하고 있었다.
   const [editing, setEditing] = useState<{ key: string; lang: string } | null>(null);
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
@@ -51,18 +55,54 @@ function StepTranslation({ onNext, onBack, onGoToPipeline }: StepTranslationProp
   /** `${key}::${lang}` → 수정된 값. 저장 성공한 항목만 담긴다. */
   const [edits, setEdits] = useState<Record<string, string>>({});
 
-  const { data, loading, error } = useComponentsMap();
-  // locale 로딩은 App에서 1회 수행한다 (src/i18n.ts loadLocalesFromApi)
-  const componentsMap = data ?? [];
+  const translated = run.data?.translated ?? [];
+  // 번역 금지 용어는 Step 3에서 이미 빠진 상태로 전송된다 (여기 있는 건 전부 적용된 용어)
+  const glossaryUsed = run.request?.relevantGlossary ?? {};
+  const glossaryTerms = useMemo(() => Object.keys(glossaryUsed), [glossaryUsed]);
 
-  const allItems = componentsMap.flatMap((frame) => frame.children.map((child) => child));
-  const uniqueKeys = allItems.filter(
-    (item, idx, arr) => arr.findIndex((x) => x.key === item.key) === idx
+  const uniqueKeys = useMemo(
+    () => translated.filter((item, idx, arr) => arr.findIndex((x) => x.key === item.key) === idx),
+    [translated]
   );
 
   const { paginatedItems, handlePageChange, totalItems, pageSize } = usePagination(uniqueKeys, 15);
 
   const editCount = Object.keys(edits).length;
+
+  const glossaryHitCount = uniqueKeys.filter((item) =>
+    glossaryTerms.some((term) => item.source.includes(term))
+  ).length;
+
+  /**
+   * 번역이 비어 있거나 원문과 같은 항목 수.
+   *
+   * /translate는 EXAONE 호출이 실패해도(예: 401) success: true로 응답하고
+   * 번역되지 않은 엔트리를 그대로 돌려준다. 실측으로 확인한 동작이다.
+   * 수치로 드러내지 않으면 "번역 완료"로 오해된다.
+   */
+  const untranslatedCount = uniqueKeys.filter((item) => {
+    const value = edits[`${item.key}::${reviewLang}`] ?? item.translations[reviewLang];
+    return !value || value === item.source;
+  }).length;
+
+  const langNames: Record<string, string> = {
+    ko: '🇰🇷 한국어',
+    ja: '🇯🇵 日本語',
+    'zh-CN': '🇨🇳 中文',
+  };
+
+  const getBadgeVariant = (role: string) => {
+    const variants: Record<string, string> = {
+      title: 'primary',
+      label: 'info',
+      button: 'success',
+      placeholder: 'warning',
+      status: 'secondary',
+      description: 'dark',
+      message: 'danger',
+    };
+    return variants[role] || 'secondary';
+  };
 
   const startEdit = (key: string, current: string) => {
     setSaveError(null);
@@ -102,33 +142,49 @@ function StepTranslation({ onNext, onBack, onGoToPipeline }: StepTranslationProp
     }
   };
 
-  const glossaryTerms = ['License', 'Workspace', 'Device', 'Settings', 'Dashboard', 'Content'];
-
-  const glossaryHitCount = uniqueKeys.filter((item) =>
-    glossaryTerms.some((term) => item.originalText.includes(term))
-  ).length;
-
-  const langNames: Record<string, string> = {
-    ko: '🇰🇷 한국어',
-    ja: '🇯🇵 日本語',
-    'zh-CN': '🇨🇳 中文',
-  };
-
-  const getBadgeVariant = (type: string) => {
-    const variants: Record<string, string> = {
-      title: 'primary',
-      label: 'info',
-      button: 'success',
-      placeholder: 'warning',
-      status: 'secondary',
-    };
-    return variants[type] || 'secondary';
-  };
-
-  if (loading) {
+  // ── 아직 번역을 시작하지 않은 상태 ──
+  if (run.status === 'idle') {
     return (
-      <SkeletonRegion label="번역 결과를 불러오는 중">
+      <>
         <h4 className="mb-4">Step 4. EXAONE 번역 리뷰</h4>
+        <Alert variant="secondary">
+          <Alert.Heading className="h6">번역을 아직 실행하지 않았습니다</Alert.Heading>
+          <div className="small mb-0">
+            Step 3 용어집에서 내용을 확인한 뒤 <strong>“EXAONE 번역 시작”</strong>을 누르면
+            추출 텍스트와 용어집이 <code>POST /api/pipeline/translate</code>로 전송됩니다.
+          </div>
+        </Alert>
+        <div className="d-flex justify-content-between">
+          <Button variant="outline-secondary" onClick={onBack}>
+            ← 용어집으로
+          </Button>
+          <Button variant="primary" onClick={onBack}>
+            📚 용어집 확인하고 번역 시작
+          </Button>
+        </div>
+      </>
+    );
+  }
+
+  // ── 번역 진행 중 ──
+  if (run.status === 'running') {
+    return (
+      <SkeletonRegion label="EXAONE 번역이 진행 중입니다">
+        <h4 className="mb-2">Step 4. EXAONE 번역 리뷰</h4>
+        <Alert variant="info" className="d-flex align-items-center gap-3">
+          <Spinner animation="border" size="sm" />
+          <div className="small">
+            <strong>
+              EXAONE 번역 중... {elapsed}초 경과 ({run.request?.translationTargets.length ?? 0}개
+              텍스트,
+              용어집 {Object.keys(run.request?.relevantGlossary ?? {}).length}개)
+            </strong>
+            <div className="text-muted">
+              10개 단위 배치로 호출하므로 항목 수에 비례해 시간이 걸립니다. 다른 단계로 이동해도
+              실행은 계속됩니다.
+            </div>
+          </div>
+        </Alert>
         <div className="mb-4">
           <SkeletonStatCards count={4} />
         </div>
@@ -139,89 +195,137 @@ function StepTranslation({ onNext, onBack, onGoToPipeline }: StepTranslationProp
     );
   }
 
-  if (error || uniqueKeys.length === 0) {
+  // ── 실패 ──
+  if (run.status === 'error' || uniqueKeys.length === 0) {
     return (
       <>
         <h4 className="mb-4">Step 4. EXAONE 번역 리뷰</h4>
-        <Alert variant={error ? 'danger' : 'secondary'}>
-          {error ? `불러오기 실패: ${error}` : '번역할 항목이 없습니다.'}
-          <div className="small mt-1">파이프라인을 실행하면 번역 결과가 생성됩니다.</div>
+        <Alert variant={run.status === 'error' ? 'danger' : 'secondary'}>
+          <Alert.Heading className="h6">
+            {run.status === 'error' ? '번역에 실패했습니다' : '번역 결과가 비어 있습니다'}
+          </Alert.Heading>
+          {run.error && <div className="small mb-2">{run.error}</div>}
+          <div className="small text-muted mb-0">
+            EXAONE(Friendli) API 키와 API 서버 상태를 확인하세요 — <code>npm run dev:all</code>
+          </div>
         </Alert>
         <div className="d-flex justify-content-between">
           <Button variant="outline-secondary" onClick={onBack}>
             ← 이전
           </Button>
-          <Button variant="primary" onClick={onGoToPipeline}>
-            ⚡ 파이프라인 실행하러 가기
-          </Button>
+          <div className="d-flex gap-2">
+            <Button
+              variant="outline-primary"
+              onClick={() => void retryTranslationRun()}
+              disabled={!run.request}
+            >
+              ↻ 다시 번역
+            </Button>
+            <Button variant="primary" onClick={onGoToPipeline}>
+              ⚡ 파이프라인 실행하러 가기
+            </Button>
+          </div>
         </div>
       </>
     );
   }
 
+  // ── 완료 ──
+  const durationSec =
+    run.startedAt && run.finishedAt ? Math.round((run.finishedAt - run.startedAt) / 1000) : null;
+
   return (
     <>
       <h4 className="mb-4">Step 4. EXAONE 번역 리뷰</h4>
       <p className="text-muted mb-4">
-        EXAONE 2.0이 <strong>UX 문맥과 도메인 용어집</strong>을 참조하여 번역했습니다.
+        EXAONE 2.0이 <strong>UX 문맥과 Step 3에서 확인한 용어집</strong>을 참조하여 번역했습니다.
       </p>
 
-      {/* EXAONE Analysis */}
+      {/* 실행 요약 — 하드코딩된 문구 대신 이번 응답의 실제 값 */}
       <Card className="mb-4 border-info">
         <Card.Header className="bg-info text-white">
-          <strong>🤖 EXAONE 문맥 분석 결과</strong>
+          <strong>🤖 번역 실행 요약</strong>
         </Card.Header>
         <Card.Body>
           <Row>
             <Col md={4}>
               <div className="text-center">
-                <div className="fs-5 fw-bold text-info">LG Business Cloud Console</div>
-                <div className="small text-muted">감지된 도메인</div>
+                <div className="fs-5 fw-bold text-info">{run.data?.summary.translatedCount ?? 0}건</div>
+                <div className="small text-muted">번역된 텍스트</div>
               </div>
             </Col>
             <Col md={4}>
               <div className="text-center">
-                <div className="fs-5 fw-bold">라이선스, 권한, 비즈니스 분류</div>
-                <div className="small text-muted">문맥 분석</div>
+                <div className="fs-5 fw-bold">
+                  {(run.data?.summary.localeLanguages ?? []).join(', ') || '—'}
+                </div>
+                <div className="small text-muted">생성된 locale</div>
               </div>
             </Col>
             <Col md={4}>
               <div className="text-center">
-                {/* 하드코딩 '3건' 대신 아래 사례 카드의 실제 개수를 쓴다 */}
-                <div className="fs-5 fw-bold text-warning">{MISTRANSLATION_CASES.length}건</div>
-                <div className="small text-muted">오역 방지 규칙 (용어집 기준)</div>
+                <div className="fs-5 fw-bold text-warning">
+                  {durationSec !== null ? `${durationSec}초` : '—'}
+                </div>
+                <div className="small text-muted">소요 시간</div>
               </div>
             </Col>
           </Row>
         </Card.Body>
       </Card>
 
-      {/* Context Examples */}
-      <Alert variant="light" className="border mb-4">
-        {/* "실제 적용 사례"는 측정값을 뜻하는 표현이라 오해를 준다.
-            이 항목들은 용어집 §3에 정의된 규칙이므로 그렇게 표기한다. */}
-        <h6 className="mb-3">💡 용어집 기반 오역 방지 규칙 (domain-glossary.md §3)</h6>
-        <Row>
-          {MISTRANSLATION_CASES.map((c) => (
-            <Col md={4} key={c.term}>
-              <div className="mb-2">
-                <Badge bg="danger" className="me-2">❌ 단순 번역</Badge>
-                "{c.term}" → <strong>{c.naive}</strong>
-              </div>
-              <div>
-                <Badge bg="success" className="me-2">✅ 문맥 반영</Badge>
-                "{c.term}" → <strong>{c.correct}</strong>
-              </div>
-              <div className="small text-muted mt-1">
-                {c.reason} → "{c.correct}"
-              </div>
-            </Col>
-          ))}
-        </Row>
-      </Alert>
+      {untranslatedCount > 0 && (
+        <Alert variant="warning" className="d-flex align-items-start gap-3">
+          <span className="fs-4">🈳</span>
+          <div className="small flex-grow-1">
+            <strong>
+              {langNames[reviewLang]} 번역이 없는 항목 {untranslatedCount}/{uniqueKeys.length}건
+            </strong>
+            <div className="text-muted">
+              원문이 그대로 남아 있습니다. EXAONE(Friendli) 호출이 실패해도 API는 성공으로
+              응답하므로, 이 수치가 크면 서버 로그와 <code>FRIENDLI_API_KEY</code>를 확인하세요.
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="warning"
+            className="flex-shrink-0"
+            onClick={() => void retryTranslationRun()}
+            disabled={!run.request}
+          >
+            ↻ 다시 번역
+          </Button>
+        </Alert>
+      )}
 
-      {/* Quality Summary — 하드코딩된 '용어집 일치율 100%', '오역 방지 3건', '문맥 분석 PASS'를
-          실제로 계산 가능한 값으로 교체했다. 근거 없는 수치를 화면에 띄우지 않는다. */}
+      {/* 이번 번역에 실제로 전달된 용어집 */}
+      {glossaryTerms.length > 0 && (
+        <Alert variant="light" className="border mb-4">
+          <h6 className="mb-3">
+            📖 번역에 전달된 용어집 <code>relevantGlossary</code> ({glossaryTerms.length}개)
+          </h6>
+          <div className="d-flex gap-2 flex-wrap">
+            {glossaryTerms.map((term) => (
+              <Badge
+                key={term}
+                bg="light"
+                text="dark"
+                className="border px-2 py-1 fw-normal"
+                style={{ fontSize: '0.8rem' }}
+              >
+                <strong>{term}</strong>
+                <span className="mx-1">→</span>
+                <span className="text-success">{glossaryUsed[term]?.[reviewLang] || '—'}</span>
+              </Badge>
+            ))}
+          </div>
+          <div className="small text-muted mt-2">
+            번역 금지로 표시한 용어는 이 목록에서 제외된 상태로 전송됐습니다.
+          </div>
+        </Alert>
+      )}
+
+      {/* Quality Summary */}
       <Row className="mb-4">
         {[
           { label: '고유 i18n Key', value: `${uniqueKeys.length}개`, color: 'primary' },
@@ -282,17 +386,20 @@ function StepTranslation({ onNext, onBack, onGoToPipeline }: StepTranslationProp
           </thead>
           <tbody>
             {paginatedItems.map((item) => {
-              const isGlossary = glossaryTerms.some((term) => item.originalText.includes(term));
-              const translated = t(item.key, { lng: reviewLang });
+              const isGlossary = glossaryTerms.some((term) => item.source.includes(term));
+              const editKey = `${item.key}::${reviewLang}`;
+              // 응답의 번역문이 기준이고, 저장 성공한 수정이 있으면 그것을 우선한다
+              const translatedText =
+                edits[editKey] ?? item.translations[reviewLang] ?? item.source;
               const isEditing = editing?.key === item.key && editing?.lang === reviewLang;
-              const wasEdited = edits[`${item.key}::${reviewLang}`] !== undefined;
+              const wasEdited = edits[editKey] !== undefined;
 
               return (
                 <tr key={item.key} className={isGlossary ? 'table-info' : ''}>
                   <td>
-                    <Badge bg={getBadgeVariant(item.type)}>{item.type}</Badge>
+                    <Badge bg={getBadgeVariant(item.role)}>{item.role}</Badge>
                   </td>
-                  <td>{item.originalText}</td>
+                  <td>{item.source}</td>
                   <td className="fw-semibold">
                     {isEditing ? (
                       <div className="d-flex gap-2 align-items-center">
@@ -321,15 +428,18 @@ function StepTranslation({ onNext, onBack, onGoToPipeline }: StepTranslationProp
                         title="클릭하여 수정"
                         className="d-inline-block w-100"
                         style={{ cursor: 'text' }}
-                        onClick={() => startEdit(item.key, translated)}
+                        onClick={() => startEdit(item.key, translatedText)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            startEdit(item.key, translated);
+                            startEdit(item.key, translatedText);
                           }
                         }}
                       >
-                        {translated}
+                        {/* 번역문이 원문과 같으면 미번역 상태다. 회색으로 구분한다 */}
+                        <span className={translatedText === item.source ? 'text-muted' : ''}>
+                          {translatedText}
+                        </span>
                         {wasEdited && (
                           <Badge bg="info" className="ms-2 fw-normal">
                             수정됨
@@ -338,9 +448,7 @@ function StepTranslation({ onNext, onBack, onGoToPipeline }: StepTranslationProp
                       </span>
                     )}
                   </td>
-                  <td>
-                    {isGlossary && <Badge bg="light" text="dark">📖</Badge>}
-                  </td>
+                  <td>{isGlossary && <Badge bg="light" text="dark">📖</Badge>}</td>
                 </tr>
               );
             })}

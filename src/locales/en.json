@@ -19,11 +19,11 @@
           "subsidiary": "Subsidiary",
           "licensePolicy": "License Policy",
           "period": "Period",
-          "businessSiteName": "Business Site Name",
+          "businessSiteName": "Business Site Name *",
           "regionCountry": "Region / Country *",
           "asiaPacific": "Asia & Pacific",
           "korea": "Korea",
-          "timeZone": "Time Zone",
+          "timeZone": "Time Zone *",
           "utc0900AsiaSeoul": "(UTC+09:00) Asia/Seoul",
           "verticalType": "Vertical Type *",
           "systemIntegrator": "System Integrator",
@@ -55,7 +55,7 @@
           "deviceCount": "Device Count",
           "userCount": "User Count",
           "licensedProduct": "Licensed Product",
-          "delete": "Delete",
+          "timeZone2": "Time Zone",
           "dashboard": "Dashboard",
           "space": "Space",
           "devices": "Devices",
@@ -105,13 +105,6 @@
         },
         "placeholder": {
           "lgElectronics": "LG Electronics"
-        }
-      }
-    },
-    "doc": {
-      "title": {
-        "title": {
-          "settings": "Settings"
         }
       }
     }

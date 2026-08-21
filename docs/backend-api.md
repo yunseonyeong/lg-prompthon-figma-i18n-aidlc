@@ -461,7 +461,7 @@ MCP 연결을 시도(lazy, 1회)하고 상태를 반환합니다. **Figma 토큰
 
 ## 프론트엔드 클라이언트 커버리지
 
-`src/api/client.ts`가 감싼 것은 5개뿐입니다.
+`src/api/client.ts`가 감싼 것은 아래 9개입니다.
 
 | 함수 | 엔드포인트 |
 |---|---|
@@ -470,8 +470,22 @@ MCP 연결을 시도(lazy, 1회)하고 상태를 반환합니다. **Figma 토큰
 | `fetchComponentsMap()` | GET `/pipeline/components-map` |
 | `fetchLocale(lang)` | GET `/pipeline/locales/:lang` |
 | `updateLocaleEntry(lang, key, value)` | PUT `/pipeline/locales/:lang` |
+| `fetchProjectConfig()` / `saveProjectConfig(c)` | GET/PUT `/config` |
+| `extractTexts({ fileKey })` | POST `/pipeline/extract` |
+| `translateEntries({ translationTargets, relevantGlossary })` | POST `/pipeline/translate` |
 
-용어집, config, 히스토리, 파이프라인 실행은 이 모듈을 거치지 않습니다. 해당 화면들이 `fetch`를 직접 호출하고 있으므로, 새 호출을 추가할 때는 이 클라이언트에 모으는 편이 에러 처리(`getJson`의 `detail` 추출)를 재사용할 수 있어 유리합니다.
+`extract` / `translate`는 `{ success, data, error }` 래퍼를 쓰므로 `postPipeline()` 헬퍼가 래퍼를 풀고 실패 시 `error`를 예외 메시지로 올립니다.
+
+화면 연결은 이렇습니다.
+
+- Step 2 텍스트 추출 → `useExtraction()`이 `extractTexts()` 호출. 결과(`translationTargets`, `relevantGlossary`)를 모듈 캐시에 보관해 Step 3이 재사용합니다.
+- Step 3 용어집 → `relevantGlossary`를 표로 보여주고, 편집·번역 여부 토글은 **로컬 상태로만** 반영합니다. 서버 호출은 "EXAONE 번역 시작"에서 한 번뿐입니다. 이때 **번역 금지로 표시한 용어는 제외**해서 보냅니다.
+- `POST /pipeline/translate`의 요청 필드는 extract 응답과 같은 이름을 씁니다: `translationTargets`, `relevantGlossary`. 이전 이름 `entries` / `glossary`도 폴백으로 남겨뒀습니다(`translationTargets || entries`, `relevantGlossary || glossary || {}`).
+- Step 4 번역 리뷰 → `src/state/translationRun.ts` 스토어가 실행 상태(idle/running/done/error)와 응답을 보관합니다. Step 이동으로 언마운트돼도 실행이 유지됩니다.
+
+주의: `/translate`는 EXAONE 호출이 실패해도 `success: true`로 응답하고 번역이 비어 있는 엔트리를 그대로 돌려줍니다(실측: Friendli 401). Step 4가 "번역 없는 항목 N건"으로 이를 드러냅니다.
+
+용어집 카탈로그(`/glossary`), 히스토리, 파이프라인 SSE 실행은 이 모듈을 거치지 않습니다. 해당 화면들이 `fetch`를 직접 호출하고 있으므로, 새 호출을 추가할 때는 이 클라이언트에 모으는 편이 에러 처리(`getJson`의 `detail` 추출)를 재사용할 수 있어 유리합니다.
 
 ---
 
