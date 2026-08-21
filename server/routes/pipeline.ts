@@ -9,7 +9,7 @@ import { Router, Request, Response } from 'express';
 import {
   extractTextsFromFigma,
   analyzeContext,
-  generateI18nKey,
+  assignI18nKeys,
   translateWithExaone,
   generateLocaleFiles,
   writeLocaleFiles,
@@ -116,19 +116,16 @@ pipelineRouter.post('/extract', async (req: Request, res: Response): Promise<voi
     const frameContexts = analyzeContext(textNodes);
     console.log(`   분석된 프레임: ${frameContexts.size}개`);
 
-    // Step 3: i18n Key 생성
+    // Step 3: i18n Key 생성 (기존 en.json의 key 재사용)
     console.log('🔑 [API] Step 3: i18n Key 생성...');
-    const entries: I18nEntry[] = textNodes.map((node) => ({
-      key: generateI18nKey(node, frameContexts),
-      source: node.text,
-      context: `${node.frameName} > ${node.role}`,
-      role: node.role,
-      translations: { en: node.text },
-      contextOnly: false,
-    }));
+    const assignment = assignI18nKeys(textNodes, frameContexts);
+    const entries = assignment.entries;
 
     const translationTargets = entries;
-    console.log(`   생성된 Key: ${entries.length}개`);
+    console.log(`   생성된 Key: ${entries.length}개 (노드 ${assignment.stats.nodes}개 → 원문 중복 제거)`);
+    console.log(
+      `   key 재사용: 기존 en.json ${assignment.stats.reusedRegistered}건 / 이번 실행 내 ${assignment.stats.reusedInRun}건`
+    );
 
     // textNodes를 캐시 (translate API에서 사용)
     cachedTextNodes = textNodes;
