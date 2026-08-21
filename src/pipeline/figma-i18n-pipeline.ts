@@ -1104,8 +1104,41 @@ export function writeLocaleFiles(locales: Record<string, object>): void {
 
   for (const [lang, data] of Object.entries(locales)) {
     const filePath = path.join(CONFIG.outputDir, `${lang}.json`);
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
+    // 기존 파일이 있으면 읽어서 merge (기존 데이터 보존, 신규 key만 추가)
+    let merged: Record<string, any> = {};
+    if (fs.existsSync(filePath)) {
+      try {
+        merged = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+      } catch {
+        // 파싱 실패 시 빈 객체로 시작
+      }
+    }
+
+    deepMerge(merged, data as Record<string, any>);
+    fs.writeFileSync(filePath, JSON.stringify(merged, null, 2), 'utf-8');
     console.log(`✅ Generated: ${filePath}`);
+  }
+}
+
+/**
+ * 깊은 병합: 기존 객체에 새 데이터를 추가/업데이트한다.
+ * - 기존에 있는 key는 유지 (덮어쓰지 않음)
+ * - 새로운 key만 추가
+ */
+function deepMerge(target: Record<string, any>, source: Record<string, any>): void {
+  for (const key of Object.keys(source)) {
+    if (!(key in target)) {
+      // 기존에 없는 key → 추가
+      target[key] = source[key];
+    } else if (
+      typeof target[key] === 'object' && target[key] !== null &&
+      typeof source[key] === 'object' && source[key] !== null
+    ) {
+      // 양쪽 다 객체면 재귀 병합
+      deepMerge(target[key], source[key]);
+    }
+    // 기존에 이미 있는 leaf key는 건드리지 않음 (보존)
   }
 }
 
