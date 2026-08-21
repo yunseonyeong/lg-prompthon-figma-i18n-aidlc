@@ -3,7 +3,7 @@
  *
  * POST /api/pipeline/extract   - Step 1~3: Figma 텍스트 추출 → 문맥 분석 → i18n Key 생성
  * POST /api/pipeline/translate  - Step 4~7: EXAONE 번역 → Locale JSON → Components Map → 용어집 제안
- * POST /api/pipeline/generate-components - Step 8: EXAONE React 컴포넌트 생성
+ * POST /api/pipeline/generate-components - Step 8: figma-structure.json → React 컴포넌트 코드
  */
 
 import { Router, Request, Response } from 'express';
@@ -18,10 +18,9 @@ import {
   writeComponentsMap,
   generateGlossaryProposal,
   writeGlossaryProposal,
-  generateComponentsWithExaone,
   writeGeneratedComponents,
-  getCachedFrameStructures,
 } from '../../src/pipeline/figma-i18n-pipeline.js';
+import { generateComponentsFromStructure } from '../../src/codegen/figma-to-tsx.js';
 import { initRetriever, retrieverStatus } from '../../src/retrieval/index.js';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -508,74 +507,33 @@ locale, term, reason은 FAIL인 경우에만 포함하세요.`;
 }
 
 // ===== API 3: POST /generate-components =====
-// Step 8: Figma 구조 + i18n 키 매핑 → EXAONE React 컴포넌트 코드
+// Step 8: figma-structure.json → React 컴포넌트 코드 (LLM 호출 없음)
 //
-// 전체 파이프라인(/pipeline/run)을 다시 돌리지 않고 이 단계만 실행한다.
-// 화면에서 확인한 번역 결과(componentsMap)를 그대로 입력으로 받기 때문에
-// 재추출·재번역 없이 "코드 생성"만 눌러도 결과가 나온다.
-
-interface GenerateComponentsRequest {
-  /** translate 응답의 componentsMap. 없으면 디스크의 components-map.json을 쓴다 */
-  componentsMap?: ComponentMapFrame[];
-  /** 프레임 구조 캐시가 비었을 때 재추출에 사용할 파일 키 */
-  fileKey?: string;
-}
-
-interface ComponentMapFrame {
-  frame: string;
-  frameId: string;
-  children: { type: string; key: string; originalText: string }[];
-}
+// 입력이 Step 6 미리보기와 동일한 파일이고 변환 규칙도 같다(src/codegen/figma-to-tsx.ts).
+// 미리보기에서 보이는 화면이 그대로 코드가 되므로 두 단계가 어긋나지 않는다.
+// i18n 키는 구조에 붙어 있는 값을 쓰고, 없으면 components-map.json으로 보완한다.
 
 pipelineRouter.post(
   '/generate-components',
-  async (req: Request, res: Response): Promise<void> => {
+  async (_req: Request, res: Response): Promise<void> => {
     try {
-      const { componentsMap, fileKey } = req.body as GenerateComponentsRequest;
-
-      // 1) i18n 키 매핑 확보 (요청 → 디스크 산출물)
-      let map: ComponentMapFrame[] | null =
-        Array.isArray(componentsMap) && componentsMap.length > 0 ? componentsMap : null;
-      if (!map) {
-        map = loadComponentsMapFromDisk();
-        console.log(`🗺️  [API] components-map.json 사용 (${map?.length ?? 0} 프레임)`);
-      }
-      if (!map || map.length === 0) {
-        res.status(400).setHeader('Content-Type', 'application/json');
-        res.send(
-          JSON.stringify(
-            {
-              success: false,
-              error:
-                'i18n 키 매핑이 없습니다. 번역을 먼저 실행하거나 componentsMap을 함께 전달하세요.',
-            },
-            null,
-            2
-          )
-        );
-        return;
-      }
-
-      // 2) Figma 프레임 구조 확보.
-      //    generateComponentsWithExaone은 같은 프로세스에서 채워진 캐시를 읽는다.
-      //    서버가 재시작됐거나 extract를 거치지 않았으면 비어 있으므로 여기서 추출한다.
-      if (getCachedFrameStructures().length === 0) {
-        const targetFileKey = fileKey || process.env.FIGMA_FILE_KEY || 'zdG3CHXVU6TzD4cc28o5Yb';
-        console.log(`📄 [API] 프레임 구조 캐시가 비어 Figma에서 재추출 (${targetFileKey})`);
-        await extractTextsFromFigma(targetFileKey);
-        console.log(`   프레임 구조: ${getCachedFrameStructures().length}개`);
-      }
-
-      // 3) Step 8 실행
-      console.log('⚛️  [API] Step 8: EXAONE React 컴포넌트 생성...');
-      const result = await generateComponentsWithExaone(map as any[]);
+      // Step 6 미리보기가 읽는 것과 같은 파일을 입력으로 쓴다.
+      // EXAONE을 호출하지 않는다 — 미리보기와 코드가 어긋나지 않게 같은 규칙으로 변환만 한다.
+      console.log('⚛️  [API] Step 8: figma-structure.json → React 컴포넌트 코드 생성...');
+      const result = generateComponentsFromStructure({
+        structurePath: path.resolve(__dirname, '../../src/figma-structure.json'),
+        componentsMapPath: path.resolve(__dirname, '../../src/components-map.json'),
+      });
 
       if (result.components.length > 0) {
         writeGeneratedComponents(result.components);
       }
       for (const f of result.failures) console.error(`   ❌ ${f}`);
       console.log(
-        `   생성 ${result.components.length}개 / 실패 ${result.failures.length}개`
+        `   생성 ${result.components.length}개 / 실패 ${result.failures.length}개` +
+          result.components
+            .map((c) => `\n   - ${c.fileName}: 노드 ${c.stats.nodes} / 키 ${c.stats.mappedKeys}`)
+            .join('')
       );
 
       // 한 건도 못 만들었으면 성공으로 응답하지 않는다.
@@ -606,7 +564,7 @@ pipelineRouter.post(
               summary: {
                 generated: result.components.length,
                 failed: result.failures.length,
-                frames: map.length,
+                frames: result.components.length + result.failures.length,
               },
             },
           },
@@ -630,17 +588,6 @@ pipelineRouter.post(
     }
   }
 );
-
-// ===== Helper: components-map.json 로드 =====
-function loadComponentsMapFromDisk(): ComponentMapFrame[] | null {
-  const mapPath = path.resolve(__dirname, '../../src/components-map.json');
-  try {
-    if (!fs.existsSync(mapPath)) return null;
-    return JSON.parse(fs.readFileSync(mapPath, 'utf-8'));
-  } catch {
-    return null;
-  }
-}
 
 // ===== Helper: 용어집 로드 =====
 function loadGlossary(): Record<string, Record<string, string>> {

@@ -19,11 +19,9 @@
     "esModuleInterop": true,
     "types": ["vite/client", "node"]
   },
-  "include": ["src", "scripts", "server"],
-  // EXAONE이 생성한 초안 코드는 타입 검사 대상에서 뺀다.
-  // 이 파일들을 import하는 코드는 없고(화면은 /api/pipeline/components로 텍스트로 읽어 보여준다),
-  // LLM 출력이 항상 컴파일 가능하다고 보장할 수 없다. 포함시키면 파이프라인 실행 한 번으로
-  // 프로젝트 전체 typecheck/build가 깨진다(실측: 미사용 import, 누락된 Form import).
-  // 생성 결과를 실제로 쓸 때는 이 디렉터리에서 꺼내 검토·수정한 뒤 src로 옮기는 흐름이다.
-  "exclude": ["src/components/generated"]
+  // 생성된 컴포넌트도 타입 검사에 포함한다.
+  // Step 8이 LLM 대신 figma-structure.json을 결정론적으로 변환하도록 바뀐 뒤로는
+  // 출력이 항상 컴파일 가능하다(실측: tsc 통과). 검사에 넣어두면 생성기가 깨진 코드를
+  // 만들기 시작하는 순간 빌드가 잡아준다.
+  "include": ["src", "scripts", "server"]
 }

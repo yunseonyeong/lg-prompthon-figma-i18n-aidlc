@@ -270,6 +270,21 @@ src/data/locale-history/
 
 화면에서는 Step 5의 "🗂️ Locale JSON" 탭 상단 "생성 시점" 드롭다운으로 현재본과 과거 실행을 바꿔 볼 수 있습니다(과거 사본은 읽기 전용).
 
+### Step 6 미리보기의 렌더 소스
+
+Step 6은 두 가지로 그릴 수 있습니다. 상단 "렌더 소스" 선택으로 바꿉니다.
+
+| 소스 | 무엇을 그리는가 | 경로 |
+|---|---|---|
+| 생성된 컴포넌트 (기본) | Step 8이 만든 `.tsx`를 **실제로 실행**한 결과 | `src/components/generated/*.tsx` |
+| Figma 구조 | 정규화된 `FigmaNodeView` 트리를 렌더러가 직접 그린 결과 | `GET /api/figma/structure` |
+
+같은 규칙에서 나온 두 결과이므로 화면이 일치해야 합니다. 다르면 생성기(`src/codegen/figma-to-tsx.ts`)와 렌더러(`FigmaFrameRenderer`)가 어긋난 것입니다.
+
+구현은 `src/components/GeneratedComponentPreview.tsx`이고 `import.meta.glob('./generated/*.tsx')`으로 파일을 찾습니다. 배럴(`index.ts`)을 static import하면 폴더가 비었을 때 빌드가 깨지는데, glob은 매칭이 없으면 빈 객체가 되어 "아직 생성 안 됨"을 화면에서 다룰 수 있습니다(실측: 폴더를 지운 상태에서도 `tsc`/`vite build` 통과). 생성 코드는 자동 산출물이라 런타임 에러가 날 수 있으므로 에러 바운더리로 감싸 파일명과 메시지를 보여줍니다.
+
+주의: glob은 dev 서버/빌드 시점에 해석됩니다. 방금 생성한 파일이 안 보이면 새로고침하세요.
+
 ### PUT /api/pipeline/locales/:lang
 
 번역 1건을 수정합니다. 프론트엔드 번역 편집 UI의 저장 경로입니다.
@@ -467,7 +482,14 @@ MCP 연결을 시도(lazy, 1회)하고 상태를 반환합니다. **Figma 토큰
 
 - Step 2 텍스트 추출 → `useExtraction()`이 `extractTexts()` 호출. 결과(`translationTargets`, `relevantGlossary`)를 모듈 캐시에 보관해 Step 3이 재사용합니다.
 - Step 3 용어집 → `relevantGlossary`를 표로 보여주고, 편집·번역 여부 토글은 **로컬 상태로만** 반영합니다. 서버 호출은 "EXAONE 번역 시작"에서 한 번뿐입니다. 이때 **번역 금지로 표시한 용어는 제외**해서 보냅니다.
-- Step 4의 "코드 생성" → `POST /pipeline/generate-components`. Step 8만 단독 실행합니다. 번역 응답의 `componentsMap`을 그대로 보내므로 재추출·재번역이 없고, 생략하면 서버가 `src/components-map.json`을 씁니다. Figma 프레임 구조 캐시(같은 프로세스의 extract 결과)가 비어 있으면 서버가 Figma에서 자동 재추출합니다. 한 건도 만들지 못하면 502로 실패합니다 — "완료"로 위장하지 않습니다. 실행 상태는 `src/state/componentRun.ts` 스토어가 들고 있어 Step을 옮겨도 유지됩니다.
+- Step 4의 "코드 생성" → `POST /pipeline/generate-components`. **LLM을 호출하지 않습니다.** `src/figma-structure.json`(Step 6 미리보기가 읽는 것과 같은 파일)을 `src/codegen/figma-to-tsx.ts`가 JSX로 옮깁니다. 변환 규칙은 미리보기 렌더러(`FigmaFrameRenderer`, pixel 모드)와 1:1로 대응하므로 화면에 보이는 것이 그대로 코드가 됩니다.
+  - 좌표가 있는 노드 → `position: absolute` + `left/top` + Figma 크기 / 없으면 Auto Layout(flex)
+  - TEXT는 `height` 대신 `minHeight` (번역 오버플로를 잘라내지 않음)
+  - i18n 키는 구조에 붙은 값을 쓰고, 없으면 `components-map.json`의 원문 완전일치로 보완
+  - UX 문서 요소(No/Classification/Description 설명 표, 장표 제목)는 미리보기와 같은 규칙으로 제외
+  - 한 건도 만들지 못하면 502. 실행 상태는 `src/state/componentRun.ts` 스토어가 들고 있어 Step을 옮겨도 유지됩니다.
+  - 파이프라인 Step 8(`/pipeline/run`)도 같은 모듈을 씁니다. 두 경로의 결과가 같습니다.
+  - 실측: 프레임 1개(노드 796, i18n 키 67) 생성에 0.08초, 152KB tsx, `tsc` 통과.
 - `POST /pipeline/translate`의 요청 필드는 extract 응답과 같은 이름을 씁니다: `translationTargets`, `relevantGlossary`. 이전 이름 `entries` / `glossary`도 폴백으로 남겨뒀습니다(`translationTargets || entries`, `relevantGlossary || glossary || {}`).
 - Step 4 번역 리뷰 → `src/state/translationRun.ts` 스토어가 실행 상태(idle/running/done/error)와 응답을 보관합니다. Step 이동으로 언마운트돼도 실행이 유지됩니다.
 

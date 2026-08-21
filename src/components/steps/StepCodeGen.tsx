@@ -431,9 +431,6 @@ function StepCodeGen({ onNext, onBack }: StepCodeGenProps) {
                     <div className="text-success mb-1">
                       // src/components/generated/{selectedComponent.name}.tsx
                     </div>
-                    <div className="text-info mb-2">
-                      // 🤖 EXAONE AI가 자동 생성한 React 컴포넌트
-                    </div>
                     <pre className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
                       {selectedComponent.code}
                     </pre>
