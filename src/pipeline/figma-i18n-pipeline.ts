@@ -833,42 +833,41 @@ export function assignI18nKeys(
  * (예: Workspace → "워크스페이스" vs "작업 공간")
  * 이를 막기 위해 번역된 핵심 용어를 누적하여 다음 배치 프롬프트에 주입한다.
  */
-const CONSISTENCY_TERMS = [
-  'Workspace',
-  'Business Site',
-  'Group',
-  'Device',
-  'Settings',
-  'Player',
-  'Content',
-  'Schedule',
-  'Channel',
-  'License',
-  'Console',
-];
+// const CONSISTENCY_TERMS = [
+//   'Workspace',
+//   'Business Site',
+//   'Group',
+//   'Device',
+//   'Settings',
+//   'Player',
+//   'Content',
+//   'Schedule',
+//   'Channel',
+//   'License',
+//   'Console',
+// ];
 
-function buildRunningGlossary(
-  translated: I18nEntry[]
-): Record<string, Record<string, string>> {
-  const running: Record<string, Record<string, string>> = {};
-
-  for (const entry of translated) {
-    // 단독으로 등장한 핵심 용어만 수집 (예: "Device" 텍스트 자체)
-    const source = entry.source.trim();
-    const matchedTerm = CONSISTENCY_TERMS.find(
-      (term) => term.toLowerCase() === source.toLowerCase()
-    );
-    if (matchedTerm && entry.translations.ko && entry.translations.ko !== source) {
-      running[matchedTerm] = {
-        ko: entry.translations.ko,
-        ja: entry.translations.ja || '',
-        'zh-CN': entry.translations['zh-CN'] || '',
-      };
-    }
-  }
-
-  return running;
-}
+// function buildRunningGlossary(
+//   translated: I18nEntry[]
+// ): Record<string, Record<string, string>> {
+//   const running: Record<string, Record<string, string>> = {};
+//
+//   for (const entry of translated) {
+//     const source = entry.source.trim();
+//     const matchedTerm = CONSISTENCY_TERMS.find(
+//       (term) => term.toLowerCase() === source.toLowerCase()
+//     );
+//     if (matchedTerm && entry.translations.ko && entry.translations.ko !== source) {
+//       running[matchedTerm] = {
+//         ko: entry.translations.ko,
+//         ja: entry.translations.ja || '',
+//         'zh-CN': entry.translations['zh-CN'] || '',
+//       };
+//     }
+//   }
+//
+//   return running;
+// }
 
 export async function translateWithExaone(
   entries: I18nEntry[],
@@ -878,29 +877,18 @@ export async function translateWithExaone(
   const results: I18nEntry[] = [];
 
   // 핵심 용어를 먼저 번역하여 기준을 확립 (일관성 앵커)
-  const anchorEntries = entries.filter((e) =>
-    CONSISTENCY_TERMS.some((t) => t.toLowerCase() === e.source.trim().toLowerCase())
-  );
-  const restEntries = entries.filter((e) => !anchorEntries.includes(e));
+  // const anchorEntries = entries.filter((e) =>
+  //   CONSISTENCY_TERMS.some((t) => t.toLowerCase() === e.source.trim().toLowerCase())
+  // );
+  // const restEntries = entries.filter((e) => !anchorEntries.includes(e));
+  const restEntries = entries;
 
-  let runningGlossary = { ...glossary };
-
-  if (anchorEntries.length > 0) {
-    console.log(`   앵커 용어 우선 번역: ${anchorEntries.length}개`);
-    const anchorsTranslated = await translateBatch(anchorEntries, runningGlossary, contextEntries);
-    results.push(...anchorsTranslated);
-    // 앵커 번역 결과를 용어집에 병합 → 이후 배치가 이를 따르도록 강제
-    runningGlossary = { ...runningGlossary, ...buildRunningGlossary(anchorsTranslated) };
-  }
-
-  // 나머지를 배치 처리 (누적 용어집 주입)
+  // 나머지를 배치 처리 (항상 원본 glossary 사용)
   const batchSize = 10;
   for (let i = 0; i < restEntries.length; i += batchSize) {
     const batch = restEntries.slice(i, i + batchSize);
-    const translated = await translateBatch(batch, runningGlossary, contextEntries);
+    const translated = await translateBatch(batch, glossary, contextEntries);
     results.push(...translated);
-    // 배치 결과에서 새 용어 발견 시 누적
-    runningGlossary = { ...runningGlossary, ...buildRunningGlossary(translated) };
   }
 
   return results;
@@ -948,6 +936,9 @@ async function translateBatch(
   const glossaryContext = Object.entries(glossary)
     .map(([en, translations]) => `  "${en}" → ko: "${translations.ko}", ja: "${translations.ja}", zh-CN: "${translations['zh-CN']}"`)
     .join('\n');
+
+  console.log(`      ↳ glossary 프롬프트 (${Object.keys(glossary).length}건):`);
+  console.log(glossaryContext || '        (비어있음)');
 
   const textsToTranslate = targets
     .map((e, i) => `${i + 1}. "${e.source}" (context: ${e.context}, role: ${e.role})`)

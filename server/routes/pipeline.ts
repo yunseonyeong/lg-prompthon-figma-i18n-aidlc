@@ -204,6 +204,46 @@ pipelineRouter.post('/translate', async (req: Request, res: Response): Promise<v
       return;
     }
 
+    // Step 4.5: Glossary 준수 검증 + FAIL 재번역 (EXAONE 재호출)
+    if (Object.keys(userGlossary).length > 0) {
+      console.log('🔍 [API] Step 4.5: Glossary 준수 검증...');
+      const targetEntries = translated.filter((entry) =>
+        Object.keys(userGlossary).some((term) =>
+          entry.source.toLowerCase().includes(term.toLowerCase())
+        )
+      );
+      console.log(`   검증 대상: ${targetEntries.length}개`);
+
+      const allViolations: GlossaryViolation[] = [];
+      const batchSize = 10;
+      for (let i = 0; i < targetEntries.length; i += batchSize) {
+        const batch = targetEntries.slice(i, i + batchSize);
+        console.log(`   ⏱️ 검증 배치 ${Math.floor(i / batchSize) + 1}/${Math.ceil(targetEntries.length / batchSize)}...`);
+        const violations = await validateGlossaryBatch(batch, userGlossary);
+        allViolations.push(...violations);
+      }
+
+      const failCount = allViolations.filter((v) => v.verdict === 'FAIL').length;
+      const passCount = allViolations.filter((v) => v.verdict === 'PASS').length;
+      console.log(`   검증 완료: PASS ${passCount} / FAIL ${failCount}`);
+
+      // Step 4.6: FAIL 항목 재번역
+      const failedViolations = allViolations.filter((v) => v.verdict === 'FAIL');
+      if (failedViolations.length > 0) {
+        console.log(`🔄 [API] Step 4.6: FAIL ${failedViolations.length}건 재번역...`);
+        const retranslated = await retranslateFailedEntries(failedViolations, translated, userGlossary);
+
+        // 재번역 결과를 translated에 반영
+        for (const entry of retranslated) {
+          const idx = (translated as any[]).findIndex((t: any) => t.key === entry.key);
+          if (idx !== -1) {
+            (translated as any[])[idx] = entry;
+          }
+        }
+        console.log(`   재번역 반영: ${retranslated.length}건`);
+      }
+    }
+
     // Step 5: Locale JSON 출력
     console.log('💾 [API] Step 5: Locale JSON 출력...');
     const locales = generateLocaleFiles(translated);
@@ -253,6 +293,215 @@ pipelineRouter.post('/translate', async (req: Request, res: Response): Promise<v
     }, null, 2));
   }
 });
+
+// ===== Glossary 검증 타입 및 함수 =====
+
+interface GlossaryViolation {
+  key: string;
+  source: string;
+  locale: string;
+  actual: string;
+  expected: string;
+  term: string;
+  verdict: 'PASS' | 'FAIL';
+  reason?: string;
+}
+
+// FAIL 항목을 용어집 위반 사유와 함께 EXAONE에 재번역 요청
+async function retranslateFailedEntries(
+  violations: GlossaryViolation[],
+  translated: I18nEntry[],
+  glossary: Record<string, Record<string, string>>
+): Promise<I18nEntry[]> {
+  const failedKeys = new Set(violations.map((v) => v.key));
+  const failedEntries = translated.filter((e) => failedKeys.has(e.key));
+  if (failedEntries.length === 0) return [];
+
+  const glossaryRules = Object.entries(glossary)
+    .map(([en, tr]) => `  "${en}" → ko: "${tr.ko}", ja: "${tr.ja}", zh-CN: "${tr['zh-CN']}"`)
+    .join('\n');
+
+  const violationDetails = failedEntries.map((entry, i) => {
+    const v = violations.find((vl) => vl.key === entry.key);
+    return `${i + 1}. 원문: "${entry.source}"\n   현재 번역 - ko: "${entry.translations.ko || ''}", ja: "${entry.translations.ja || ''}", zh-CN: "${entry.translations['zh-CN'] || ''}"\n   위반 사유: ${v?.reason || '용어집 미준수'}`;
+  }).join('\n');
+
+  const prompt = `당신은 전문 번역가입니다. 아래 항목들은 용어집 규칙을 위반하여 재번역이 필요합니다.
+
+용어집 (반드시 준수):
+${glossaryRules}
+
+중요 규칙:
+1. 용어집에 등록된 용어가 원문에 포함되어 있으면, 번역에서 반드시 용어집의 번역을 사용하세요.
+2. 부분 일치도 해당됩니다. 예: "Device Group"에 "Device"가 포함되므로 ko 번역에 반드시 "디바이스"를 사용해야 합니다.
+3. 용어집 외의 일반 단어는 자연스럽게 번역하세요.
+
+재번역 대상:
+${violationDetails}
+
+위 항목들을 용어집 규칙을 반드시 지켜서 다시 번역하세요. JSON 배열만 응답하세요:
+[
+  { "index": 1, "ko": "...", "ja": "...", "zh-CN": "..." },
+  ...
+]`;
+
+  try {
+    const apiUrl = process.env.FRIENDLI_API_URL || 'https://api.friendli.ai/dedicated/v1/chat/completions';
+    const apiKey = process.env.FRIENDLI_API_KEY || '';
+    const model = process.env.FRIENDLI_MODEL || 'depe675tjc2rcpo';
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.1,
+        top_p: 0.95,
+        chat_template_kwargs: {
+          enable_thinking: false,
+          preserve_thinking: false,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`EXAONE retranslate error: ${response.status} - ${errorBody.slice(0, 200)}`);
+      return [];
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return [];
+
+    const results = JSON.parse(jsonMatch[0]);
+    const retranslated: I18nEntry[] = [];
+
+    for (const r of results) {
+      const entry = failedEntries[r.index - 1];
+      if (!entry) continue;
+
+      const clean = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
+      retranslated.push({
+        ...entry,
+        translations: {
+          en: entry.source.trim(),
+          ko: clean(r.ko),
+          ja: clean(r.ja),
+          'zh-CN': clean(r['zh-CN']),
+        },
+      });
+    }
+
+    return retranslated;
+  } catch (error) {
+    console.error('Retranslate error:', error);
+    return [];
+  }
+}
+
+// EXAONE에 glossary 준수 여부 검증 요청
+async function validateGlossaryBatch(
+  entries: I18nEntry[],
+  glossary: Record<string, Record<string, string>>
+): Promise<GlossaryViolation[]> {
+  const glossaryRules = Object.entries(glossary)
+    .map(([en, tr]) => `  "${en}" → ko: "${tr.ko}", ja: "${tr.ja}", zh-CN: "${tr['zh-CN']}"`)
+    .join('\n');
+
+  const items = entries.map((e, i) => {
+    const translations = Object.entries(e.translations)
+      .filter(([lang]) => lang !== 'en')
+      .map(([lang, val]) => `${lang}: "${val}"`)
+      .join(', ');
+    return `${i + 1}. source: "${e.source}" → ${translations}`;
+  }).join('\n');
+
+  const prompt = `당신은 번역 품질 검증자입니다. 아래 번역 결과가 용어집 규칙을 준수했는지 검사하세요.
+
+용어집 (필수 준수):
+${glossaryRules}
+
+규칙: 원문(source)에 용어집 용어가 포함되어 있으면, 번역에서 반드시 해당 용어집의 번역을 사용해야 합니다. 부분 일치도 해당됩니다. 예를 들어 "Device Group"에는 "Device"가 포함되므로 한국어 번역에 반드시 "디바이스"가 들어가야 합니다.
+
+검사 대상 번역:
+${items}
+
+각 항목에 대해 용어집 준수 여부를 판정하세요. 반드시 JSON 배열만 응답하세요:
+[
+  { "index": 1, "verdict": "PASS" 또는 "FAIL", "locale": "위반된 언어(ko/ja/zh-CN)", "term": "위반된 용어집 용어", "reason": "간단한 사유" },
+  ...
+]
+
+통과한 항목은: { "index": 1, "verdict": "PASS" }
+locale, term, reason은 FAIL인 경우에만 포함하세요.`;
+
+  try {
+    const apiUrl = process.env.FRIENDLI_API_URL || 'https://api.friendli.ai/dedicated/v1/chat/completions';
+    const apiKey = process.env.FRIENDLI_API_KEY || '';
+    const model = process.env.FRIENDLI_MODEL || 'depe675tjc2rcpo';
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.1,
+        top_p: 0.95,
+        chat_template_kwargs: {
+          enable_thinking: false,
+          preserve_thinking: false,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`EXAONE API error: ${response.status} - ${errorBody.slice(0, 200)}`);
+      return [];
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) return [];
+
+    const results = JSON.parse(jsonMatch[0]);
+    const violations: GlossaryViolation[] = [];
+
+    for (const r of results) {
+      const entry = entries[r.index - 1];
+      if (!entry) continue;
+
+      violations.push({
+        key: entry.key,
+        source: entry.source,
+        locale: r.locale || '',
+        actual: r.locale ? (entry.translations[r.locale] || '') : '',
+        expected: r.term && r.locale ? (glossary[r.term]?.[r.locale] || '') : '',
+        term: r.term || '',
+        verdict: r.verdict,
+        reason: r.reason || '',
+      });
+    }
+
+    return violations;
+  } catch (error) {
+    console.error('Glossary validation error:', error);
+    return [];
+  }
+}
 
 // ===== Helper: 용어집 로드 =====
 function loadGlossary(): Record<string, Record<string, string>> {
