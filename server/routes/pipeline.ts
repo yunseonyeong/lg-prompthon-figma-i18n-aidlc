@@ -68,8 +68,8 @@ interface ExtractResponse {
 }
 
 interface TranslateRequest {
-  entries: I18nEntry[];
-  glossary?: Record<string, Record<string, string>>;
+  translationTargets: I18nEntry[];
+  relevantGlossary?: Record<string, Record<string, string>>;
 }
 
 interface TranslateResponse {
@@ -169,13 +169,13 @@ pipelineRouter.post('/extract', async (req: Request, res: Response): Promise<voi
 
 pipelineRouter.post('/translate', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { entries, glossary } = req.body as TranslateRequest;
+    const { translationTargets, relevantGlossary } = req.body as TranslateRequest;
 
-    if (!entries || !Array.isArray(entries) || entries.length === 0) {
+    if (!translationTargets || !Array.isArray(translationTargets) || translationTargets.length === 0) {
       res.status(400).setHeader('Content-Type', 'application/json');
       res.send(JSON.stringify({
         success: false,
-        error: 'entries 배열이 필요합니다. /api/pipeline/extract 결과의 translationTargets를 전달하세요.',
+        error: 'translationTargets 배열이 필요합니다. /api/pipeline/extract 결과를 전달하세요.',
       }, null, 2));
       return;
     }
@@ -190,11 +190,11 @@ pipelineRouter.post('/translate', async (req: Request, res: Response): Promise<v
       `   리트리버: 용어 ${rs.glossaryTerms} / 확정 ${rs.confirmed} / 거부 ${rs.rejected} / 벡터검색 ${rs.vectorReady ? 'ON' : 'OFF'}`
     );
 
-    // 사용자가 보낸 glossary만 사용 (없으면 빈 객체 → 용어집 없이 번역)
-    const userGlossary = glossary || {};
+    // 사용자가 보낸 relevantGlossary만 사용 (없으면 빈 객체 → 용어집 없이 번역)
+    const userGlossary = relevantGlossary || {};
     console.log(`   사용자 용어집: ${Object.keys(userGlossary).length}개`);
     console.log('   ⏱️ translateWithExaone 시작...');
-    const translated = await translateWithExaone(entries as any[], userGlossary);
+    const translated = await translateWithExaone(translationTargets as any[], userGlossary);
     console.log('   ⏱️ translateWithExaone 완료');
     console.log(`   번역 완료: ${translated.length}개`);
 
